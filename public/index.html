@@ -71,7 +71,7 @@
     <div id="student-login" class="login-wrapper">
         <div class="card">
             <h2>Vào Lớp Học</h2>
-            <p>Nhập đúng Mã Học Sinh (FBNxxxxx) để chia sẻ màn hình làm bài</p>
+            <p>Nhập Mã Học Sinh (FBNxxxxx) để chia sẻ màn hình làm bài</p>
             <div class="form-group">
                 <label>Chọn Lớp Học</label>
                 <select id="st-class" class="form-control">
@@ -102,7 +102,7 @@
             <p>Nhập email giáo dục và mật khẩu để quản lý lớp</p>
             <div class="form-group">
                 <label>Email Giáo Viên (@fe.edu.vn)</label>
-                <input type="email" id="tc-email" class="form-control">
+                <input type="email" id="tc-email" class="form-control" placeholder="Ví dụ: vanda3@fe.edu.vn">
             </div>
             <div class="form-group">
                 <label>Mật Khẩu Quản Trị</label>
@@ -153,7 +153,7 @@
     <!-- Màn Hình Học Sinh -->
     <div id="student-ui" class="dashboard">
         <div class="alert-banner">
-            ⚠️ Hệ thống đang giám sát màn hình của bạn. Vui lòng KHÔNG dừng chia sẻ hoặc tắt tab!
+            ⚠️ Hệ thống đang giám sát toàn bộ màn hình của bạn. Vui lòng KHÔNG dừng chia sẻ hoặc tắt tab!
         </div>
         <div class="dash-header">
             <div class="dash-title">Bài Giảng Của Giáo Viên</div>
@@ -181,7 +181,6 @@
         let screenStream = null;
         let currentZoomStudentId = null;
 
-        // Chuông cảnh báo khi HS tự tắt app
         const alarmSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
         if (window.location.hash === '#teacher') switchToTeacherLogin();
@@ -220,17 +219,23 @@
                 }
 
                 try {
+                    // Cấu hình ép buộc mở mặc định tab "Toàn màn hình" (monitor)
                     screenStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: { displaySurface: "monitor" },
-                        audio: false
+                        video: {
+                            displaySurface: "monitor"
+                        },
+                        audio: false,
+                        surfaceSwitching: "exclude",
+                        selfBrowserSurface: "exclude"
                     });
 
-                    // Kiểm tra bắt buộc chọn Toàn Màn Hình
+                    // Bắt buộc kiểm tra nguồn chia sẻ là Toàn Màn Hình
                     const track = screenStream.getVideoTracks()[0];
                     const settings = track.getSettings();
+                    
                     if (settings.displaySurface && settings.displaySurface !== 'monitor') {
                         track.stop();
-                        return alert("CẢNH BÁO: Bạn BẮT BUỘC phải chọn 'Toàn màn hình' (Entire Screen) mới được vào lớp!");
+                        return alert("CẢNH BÁO TỪ HỆ THỐNG:\nBạn BẮT BUỘC phải chọn tab 'Toàn màn hình' (Entire Screen) thì mới được phép vào lớp!");
                     }
 
                     document.getElementById('student-login').style.display = 'none';
@@ -239,7 +244,7 @@
                     myRole = 'student';
                     socket.emit('join-room', { role: 'student', name, className, studentCode: res.formattedCode });
 
-                    // Bắt đầu chụp ảnh gửi 3s/lần
+                    // Chu kỳ chụp ảnh 3 giây/lần
                     startSnapshotLoop('student-image', 640, 0.5);
 
                     track.onended = () => {
@@ -248,7 +253,7 @@
                     };
 
                 } catch (err) {
-                    alert('Bạn cần đồng ý chia sẻ màn hình mới có thể làm bài!');
+                    alert('Bạn cần đồng ý chia sẻ toàn màn hình mới có thể vào lớp làm bài!');
                 }
             });
         }
@@ -264,7 +269,10 @@
                 if (!res.success) return alert(res.message);
 
                 try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: { displaySurface: "monitor" }, 
+                        audio: false 
+                    });
 
                     document.getElementById('teacher-login').style.display = 'none';
                     document.getElementById('teacher-ui').style.display = 'block';
@@ -321,7 +329,7 @@
                 card.id = `st-card-${studentId}`;
                 card.setAttribute('data-class', className);
                 
-                // Sự kiện Chuột Phải để Phóng To (Zoom)
+                // Chuột Phải để Phóng To (Zoom)
                 card.oncontextmenu = (e) => {
                     e.preventDefault();
                     openZoomModal(studentId, `${name} (${code} - ${className})`, image);
@@ -357,7 +365,6 @@
         socket.on('student-app-closed', ({ studentId, name, className, code, time }) => {
             if (myRole !== 'teacher') return;
 
-            // Phát âm thanh cảnh báo
             alarmSound.play().catch(() => {});
 
             let card = document.getElementById(`st-card-${studentId}`);
@@ -373,14 +380,14 @@
             updateStats();
         });
 
-        // Nhận ảnh Slide bài giảng từ Giáo viên (Máy HS)
+        // Nhận ảnh Slide từ Giáo viên
         socket.on('teacher-image-update', (imageData) => {
             if (myRole === 'student') {
                 document.getElementById('tc-slide-view-img').src = imageData;
             }
         });
 
-        // HÀM CHUỘT PHẢI PHÓNG TO MÀN HÌNH (ZOOM MODAL)
+        // PHÓNG TO MÀN HÌNH (ZOOM MODAL)
         function openZoomModal(studentId, title, currentImg) {
             currentZoomStudentId = studentId;
             document.getElementById('modal-title').innerText = `Đang xem thu nhỏ chi tiết: ${title}`;
