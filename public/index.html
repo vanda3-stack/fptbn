@@ -13,7 +13,7 @@
         .login-wrapper { display: flex; justify-content: center; align-items: center; flex: 1; padding: 20px; }
         .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #f8fafc; text-align: center; }
-        .card p { font-size: 14px; color: #94a3b8; text-align: center; margin-bottom: 24px; }
+        .card p { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 24px; }
         
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
@@ -29,19 +29,38 @@
 
         /* Dashboard View */
         .dashboard { padding: 20px; display: none; }
-        .dash-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 16px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
+        .dash-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 16px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 16px; }
         .dash-title { font-size: 18px; font-weight: 700; }
+        .stats-group { display: flex; gap: 10px; }
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .badge-danger { background: #991b1b; color: #fef2f2; }
 
-        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; overflow: hidden; }
-        .student-header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; }
-        .student-name { font-size: 14px; font-weight: 600; color: #f8fafc; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #1e293b; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
+        .filter-select { background: #0f172a; color: white; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; }
+
+        /* Lưới màn hình HS thu nhỏ */
+        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+        .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; cursor: context-menu; transition: transform 0.1s, border-color 0.2s; }
+        .student-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
+        .student-card.offline { border: 2px solid #ef4444; background: #450a0a; }
+
+        .student-header { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; font-size: 12px; }
+        .student-name { font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+        .student-code { font-size: 10px; color: #38bdf8; font-weight: bold; }
+        
         .img-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
         .img-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
-        .teacher-preview { max-width: 320px; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #334155; }
-        
+        .status-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(239, 68, 68, 0.85); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; text-align: center; padding: 8px; }
+
+        .hint-text { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+        /* Modal Phóng To Màn Hình (Zoom) */
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { max-width: 90%; max-height: 80vh; border: 2px solid #38bdf8; border-radius: 8px; }
+        .modal-header { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #fff; }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 32px; font-weight: bold; cursor: pointer; }
+
         .alert-banner { background: #991b1b; color: #fef2f2; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; margin-bottom: 16px; }
         .sync-tag { font-size: 11px; background: #10b981; color: #064e3b; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
     </style>
@@ -52,18 +71,26 @@
     <div id="student-login" class="login-wrapper">
         <div class="card">
             <h2>Vào Lớp Học</h2>
-            <p>Nhập thông tin để bắt đầu chia sẻ màn hình làm bài</p>
+            <p>Nhập đúng Mã Học Sinh (FBNxxxxx) để chia sẻ màn hình làm bài</p>
+            <div class="form-group">
+                <label>Chọn Lớp Học</label>
+                <select id="st-class" class="form-control">
+                    <option value="10A1">Lớp 10A1</option>
+                    <option value="10A2">Lớp 10A2</option>
+                    <option value="11A1">Lớp 11A1</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mã Học Sinh</label>
+                <input type="text" id="st-code" class="form-control" placeholder="Ví dụ: FBN12345">
+            </div>
             <div class="form-group">
                 <label>Họ và Tên Học Sinh</label>
                 <input type="text" id="st-name" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
             </div>
-            <div class="form-group">
-                <label>Tên Lớp / Mã Lớp</label>
-                <input type="text" id="st-class" class="form-control" placeholder="Ví dụ: 10A1">
-            </div>
-            <button class="btn btn-primary" onclick="startStudent()">Vào Lớp</button>
+            <button class="btn btn-primary" onclick="startStudent()">Đăng Nhập & Chia Sẻ</button>
             <div class="role-switch">
-                <a onclick="switchToTeacherLogin()">Bạn là Giáo viên?</a>
+                <a onclick="switchToTeacherLogin()">Cổng dành cho Giáo viên</a>
             </div>
         </div>
     </div>
@@ -72,62 +99,92 @@
     <div id="teacher-login" class="login-wrapper" style="display: none;">
         <div class="card">
             <h2>Bảng Điều Khiển Giáo Viên</h2>
-            <p>Nhập tên để phát Slide và giám sát lớp học</p>
+            <p>Nhập email giáo dục và mật khẩu để quản lý lớp</p>
             <div class="form-group">
-                <label>Tên Giáo Viên</label>
-                <input type="text" id="tc-name" class="form-control" placeholder="Ví dụ: Thầy Minh">
+                <label>Email Giáo Viên (@fe.edu.vn)</label>
+                <input type="email" id="tc-email" class="form-control" placeholder="Ví dụ: vanda3@fe.edu.vn">
             </div>
-            <button class="btn btn-primary" onclick="startTeacher()">Bắt Đầu Giảng Bài</button>
+            <div class="form-group">
+                <label>Mật Khẩu Quản Trị</label>
+                <input type="password" id="tc-pass" class="form-control" placeholder="Nhập 123456">
+            </div>
+            <button class="btn btn-primary" onclick="startTeacher()">Bắt Đầu Giám Sát</button>
             <div class="role-switch">
-                <a onclick="switchToStudentLogin()">Cổng đăng nhập Học sinh</a>
+                <a onclick="switchToStudentLogin()">Cổng dành cho Học sinh</a>
             </div>
         </div>
     </div>
 
-    <!-- Màn Hình Giáo Viên -->
+    <!-- Bảng Điều Khiển Giáo Viên -->
     <div id="teacher-ui" class="dashboard">
         <div class="dash-header">
-            <div class="dash-title">Hệ Thống Giám Sát Màn Hình (Tự động cập nhật 3s/lần)</div>
-            <div class="badge">Sĩ số: <span id="count">0</span></div>
-        </div>
-        <div style="margin-bottom: 10px; font-size: 14px; color: #94a3b8;">Slide bạn đang phát cho cả lớp:</div>
-        <div class="teacher-preview">
-            <div class="img-container">
-                <img id="tc-my-slides-img" src="" alt="Slide của GV">
+            <div class="dash-title">Hệ Thống Giám Sát Màn Hình Lớp Học</div>
+            <div class="stats-group">
+                <div class="badge">Đang xem: <span id="count-online">0</span></div>
+                <div class="badge badge-danger">Đã tắt/Rời: <span id="count-offline">0</span></div>
             </div>
         </div>
-        <hr style="border-color: #334155; margin-bottom: 20px;">
-        <div style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Danh Sách Màn Hình Học Sinh:</div>
+
+        <div class="toolbar">
+            <div>
+                <label style="font-size: 13px; margin-right: 8px;">Lọc theo lớp:</label>
+                <select id="filter-class" class="filter-select" onchange="filterStudents()">
+                    <option value="ALL">Tất cả các lớp</option>
+                    <option value="10A1">Lớp 10A1</option>
+                    <option value="10A2">Lớp 10A2</option>
+                    <option value="11A1">Lớp 11A1</option>
+                </select>
+            </div>
+            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> vào ô màn hình HS bất kỳ để <b>Phóng To</b> xem chi tiết!</div>
+        </div>
+
+        <div style="margin-bottom: 8px; font-size: 13px; color: #94a3b8;">Slide bạn đang phát cho cả lớp (3s/lần):</div>
+        <div style="max-width: 260px; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #334155;">
+            <div class="img-container">
+                <img id="tc-my-slides-img" src="" alt="Slide GV">
+            </div>
+        </div>
+
+        <hr style="border-color: #334155; margin-bottom: 16px;">
+        <div style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Màn Hình Làm Bài Của Học Sinh:</div>
         <div id="students-grid" class="students-grid"></div>
     </div>
 
     <!-- Màn Hình Học Sinh -->
     <div id="student-ui" class="dashboard">
         <div class="alert-banner">
-            ⚠️ Hệ thống đang giám sát màn hình của bạn (3s/lần). Vui lòng KHÔNG dừng chia sẻ màn hình.
+            ⚠️ Hệ thống đang giám sát màn hình của bạn. Vui lòng KHÔNG dừng chia sẻ hoặc tắt tab!
         </div>
         <div class="dash-header">
-            <div class="dash-title">Bài Giảng / Slide Của Giáo Viên</div>
+            <div class="dash-title">Bài Giảng Của Giáo Viên</div>
             <span class="sync-tag">LIVE 3S</span>
         </div>
         <div style="max-width: 900px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 1px solid #334155;">
             <div class="img-container" style="padding-top: 56.25%;">
-                <img id="tc-slide-view-img" src="" alt="Đang chờ Giáo viên chia sẻ Slide...">
+                <img id="tc-slide-view-img" src="" alt="Đang chờ Giáo viên phát slide...">
             </div>
         </div>
     </div>
 
-    <!-- Canvas ẩn để xử lý chụp ảnh -->
+    <!-- Modal Phóng To Màn Hình (Zoom) -->
+    <div id="zoom-modal" class="modal">
+        <span class="close-btn" onclick="closeZoomModal()">&times;</span>
+        <div id="modal-title" class="modal-header">Đang xem màn hình...</div>
+        <img id="modal-img" class="modal-content" src="" alt="Zoom Screen">
+    </div>
+
     <canvas id="snapshot-canvas" style="display: none;"></canvas>
 
     <script>
         const socket = io();
         let myRole = '';
         let screenStream = null;
+        let currentZoomStudentId = null;
 
-        if (window.location.hash === '#teacher') {
-            switchToTeacherLogin();
-        }
+        // Chuông cảnh báo khi HS tự tắt app
+        const alarmSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        if (window.location.hash === '#teacher') switchToTeacherLogin();
 
         function switchToTeacherLogin() {
             document.getElementById('student-login').style.display = 'none';
@@ -139,72 +196,92 @@
             document.getElementById('student-login').style.display = 'flex';
         }
 
-        // --- HỌC SINH ---
+        // --- ĐĂNG NHẬP HỌC SINH ---
         async function startStudent() {
+            const className = document.getElementById('st-class').value;
+            const code = document.getElementById('st-code').value.trim();
             const name = document.getElementById('st-name').value.trim();
-            const className = document.getElementById('st-class').value.trim();
-            
+
+            if (!code) return alert('Vui lòng nhập Mã Học Sinh!');
             if (!name) return alert('Vui lòng nhập Họ và Tên!');
 
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { displaySurface: "monitor" },
-                    audio: false
-                });
+            // 1. Kiểm tra iPad / Mobile
+            const isMobileOriPad = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-                // Ép buộc chọn Toàn màn hình
-                const track = screenStream.getVideoTracks()[0];
-                const settings = track.getSettings();
-                if (settings.displaySurface && settings.displaySurface !== 'monitor') {
-                    track.stop();
-                    return alert("CẢNH BÁO: Bạn BẮT BUỘC phải chọn 'Toàn màn hình' (Entire Screen) thì mới được vào lớp!");
+            if (isMobileOriPad) {
+                return alert("⚠️ CẢNH BÁO THIẾT BỊ:\niPad và Điện thoại không hỗ trợ quay màn hình qua Web.\nVui lòng chuyển sang dùng Máy tính (Laptop/PC) để vào lớp!");
+            }
+
+            // 2. Xác thực thông tin với Server
+            socket.emit('auth-user', { role: 'student', studentCode: code, studentName: name, className }, async (res) => {
+                if (!res.success) {
+                    return alert(res.message);
                 }
 
-                document.getElementById('student-login').style.display = 'none';
-                document.getElementById('student-ui').style.display = 'block';
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { displaySurface: "monitor" },
+                        audio: false
+                    });
 
-                myRole = 'student';
-                socket.emit('join-room', { role: 'student', name, className });
+                    // Kiểm tra bắt buộc chọn Toàn Màn Hình
+                    const track = screenStream.getVideoTracks()[0];
+                    const settings = track.getSettings();
+                    if (settings.displaySurface && settings.displaySurface !== 'monitor') {
+                        track.stop();
+                        return alert("CẢNH BÁO: Bạn BẮT BUỘC phải chọn 'Toàn màn hình' (Entire Screen) mới được vào lớp!");
+                    }
 
-                // Chu kỳ 3s chụp ảnh gửi cho GV
-                startSnapshotLoop('student-image', 640, 0.5);
+                    document.getElementById('student-login').style.display = 'none';
+                    document.getElementById('student-ui').style.display = 'block';
 
-                track.onended = () => {
-                    alert('Bạn đã dừng chia sẻ màn hình. Hệ thống sẽ tải lại!');
-                    location.reload();
-                };
+                    myRole = 'student';
+                    socket.emit('join-room', { role: 'student', name, className, studentCode: res.formattedCode });
 
-            } catch (err) {
-                alert('Bạn phải đồng ý chia sẻ toàn màn hình thì mới được vào lớp!');
-            }
+                    // Bắt đầu chụp ảnh gửi 3s/lần
+                    startSnapshotLoop('student-image', 640, 0.5);
+
+                    track.onended = () => {
+                        alert('Bạn đã dừng chia sẻ màn hình. Hệ thống tự động ghi nhận!');
+                        location.reload();
+                    };
+
+                } catch (err) {
+                    alert('Bạn cần đồng ý chia sẻ màn hình mới có thể làm bài!');
+                }
+            });
         }
 
-        // --- GIÁO VIÊN ---
+        // --- ĐĂNG NHẬP GIÁO VIÊN ---
         async function startTeacher() {
-            const name = document.getElementById('tc-name').value.trim();
-            if (!name) return alert('Vui lòng nhập tên!');
+            const email = document.getElementById('tc-email').value.trim();
+            const pass = document.getElementById('tc-pass').value.trim();
 
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
-                    audio: false
-                });
+            if (!email) return alert('Vui lòng nhập Email Giáo viên!');
 
-                document.getElementById('teacher-login').style.display = 'none';
-                document.getElementById('teacher-ui').style.display = 'block';
+            socket.emit('auth-user', { role: 'teacher', teacherEmail: email, teacherPass: pass }, async (res) => {
+                if (!res.success) return alert(res.message);
 
-                myRole = 'teacher';
-                socket.emit('join-room', { role: 'teacher', name });
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
-                // Chu kỳ 3s chụp Slide phát cho cả lớp (Độ nét cao hơn: 1280px)
-                startSnapshotLoop('teacher-image', 1280, 0.7);
+                    document.getElementById('teacher-login').style.display = 'none';
+                    document.getElementById('teacher-ui').style.display = 'block';
 
-            } catch (err) {
-                alert('Bạn cần chia sẻ màn hình Slide bài giảng!');
-            }
+                    myRole = 'teacher';
+                    socket.emit('join-room', { role: 'teacher', name: email.split('@')[0] });
+
+                    // Phát Slide 3s/lần
+                    startSnapshotLoop('teacher-image', 1280, 0.7);
+
+                } catch (err) {
+                    alert('Giáo viên cần mở phát Slide màn hình!');
+                }
+            });
         }
 
-        // --- HÀM TẠO ẢNH CHỤP ĐỊNH KỲ (3 GIÂY / LẦN) ---
+        // --- CHU KỲ CHỤP ẢNH CANVAS 3 GIÂY/LẦN ---
         function startSnapshotLoop(eventName, maxWidth, quality) {
             const video = document.createElement('video');
             video.srcObject = screenStream;
@@ -222,7 +299,6 @@
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     const imageData = canvas.toDataURL('image/jpeg', quality);
                     
-                    // Hiển thị trực tiếp preview trên máy GV
                     if (eventName === 'teacher-image') {
                         document.getElementById('tc-my-slides-img').src = imageData;
                     }
@@ -232,10 +308,10 @@
             }, 3000);
         }
 
-        // --- NHẬN DỮ LIỆU TỪ SERVER ---
-        
-        // Màn hình GV nhận ảnh từ Học sinh
-        socket.on('student-image-update', ({ studentId, name, className, image }) => {
+        // --- BẢNG GIÁM SÁT DÀNH CHO GIÁO VIÊN ---
+
+        // Nhận ảnh từ Học sinh
+        socket.on('student-image-update', ({ studentId, name, className, code, image }) => {
             if (myRole !== 'teacher') return;
 
             let card = document.getElementById(`st-card-${studentId}`);
@@ -243,39 +319,100 @@
                 card = document.createElement('div');
                 card.className = 'student-card';
                 card.id = `st-card-${studentId}`;
+                card.setAttribute('data-class', className);
+                
+                // Sự kiện Chuột Phải để Phóng To (Zoom)
+                card.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    openZoomModal(studentId, `${name} (${code} - ${className})`, image);
+                };
+
                 card.innerHTML = `
                     <div class="student-header">
-                        <div class="student-name">${name} (${className})</div>
+                        <span class="student-name">${name}</span>
+                        <span class="student-code">${code}</span>
                     </div>
                     <div class="img-container">
-                        <img id="img-${studentId}" src="${image}" alt="Màn hình HS">
+                        <img id="img-${studentId}" src="${image}" alt="Screen">
                     </div>
                 `;
                 document.getElementById('students-grid').appendChild(card);
-                updateCount();
             } else {
+                card.classList.remove('offline');
+                const overlay = card.querySelector('.status-overlay');
+                if (overlay) overlay.remove();
+
                 document.getElementById(`img-${studentId}`).src = image;
             }
+
+            if (currentZoomStudentId === studentId) {
+                document.getElementById('modal-img').src = image;
+            }
+
+            filterStudents();
+            updateStats();
         });
 
-        // Màn hình HS nhận ảnh Slide từ Giáo viên
+        // Nhận tín hiệu khi HS TỰ TẮT ỨNG DỤNG / THOÁT TAB
+        socket.on('student-app-closed', ({ studentId, name, className, code, time }) => {
+            if (myRole !== 'teacher') return;
+
+            // Phát âm thanh cảnh báo
+            alarmSound.play().catch(() => {});
+
+            let card = document.getElementById(`st-card-${studentId}`);
+            if (card) {
+                card.classList.add('offline');
+                if (!card.querySelector('.status-overlay')) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'status-overlay';
+                    overlay.innerHTML = `⚠️ ĐÃ TẮT ỨNG DỤNG<br><span style="font-size:10px;">Thoát lúc: ${time}</span>`;
+                    card.querySelector('.img-container').appendChild(overlay);
+                }
+            }
+            updateStats();
+        });
+
+        // Nhận ảnh Slide bài giảng từ Giáo viên (Máy HS)
         socket.on('teacher-image-update', (imageData) => {
             if (myRole === 'student') {
                 document.getElementById('tc-slide-view-img').src = imageData;
             }
         });
 
-        socket.on('user-disconnected', (id) => {
-            const card = document.getElementById(`st-card-${id}`);
-            if (card) {
-                card.remove();
-                updateCount();
-            }
-        });
+        // HÀM CHUỘT PHẢI PHÓNG TO MÀN HÌNH (ZOOM MODAL)
+        function openZoomModal(studentId, title, currentImg) {
+            currentZoomStudentId = studentId;
+            document.getElementById('modal-title').innerText = `Đang xem thu nhỏ chi tiết: ${title}`;
+            document.getElementById('modal-img').src = currentImg;
+            document.getElementById('zoom-modal').style.display = 'flex';
+        }
 
-        function updateCount() {
-            const count = document.querySelectorAll('.student-card').length;
-            document.getElementById('count').innerText = count;
+        function closeZoomModal() {
+            currentZoomStudentId = null;
+            document.getElementById('zoom-modal').style.display = 'none';
+        }
+
+        // LỌC THEO LỚP
+        function filterStudents() {
+            const filter = document.getElementById('filter-class').value;
+            const cards = document.querySelectorAll('.student-card');
+
+            cards.forEach(card => {
+                if (filter === 'ALL' || card.getAttribute('data-class') === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function updateStats() {
+            const total = document.querySelectorAll('.student-card').length;
+            const offline = document.querySelectorAll('.student-card.offline').length;
+            
+            document.getElementById('count-online').innerText = total - offline;
+            document.getElementById('count-offline').innerText = offline;
         }
     </script>
 </body>
