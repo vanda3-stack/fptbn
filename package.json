@@ -1,13 +1,13 @@
 {
   "name": "giam-sat-lop-hoc",
   "version": "1.0.0",
-  "description": "He thong giam sat man hinh lop hoc mien phi",
+  "description": "He thong giam sat man hinh mien phi qua Snapshot 3s",
   "main": "server.js",
   "scripts": {
-  "start": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-  "express": "^4.18.2",
-  "socket.io": "^4.7.2"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
   }
-  }
+}
