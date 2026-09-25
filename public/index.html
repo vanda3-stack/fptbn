@@ -38,28 +38,29 @@
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #1e293b; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
         .filter-select { background: #0f172a; color: white; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; }
 
-        /* Lưới màn hình HS thu nhỏ */
-        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+        /* Lưới màn hình HS: Tăng kích thước tối thiểu từ 210px -> 320px để xem RÕ HƠN */
+        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
         .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; cursor: context-menu; transition: transform 0.1s, border-color 0.2s; }
         .student-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
         .student-card.offline { border: 2px solid #ef4444; background: #450a0a; }
 
-        .student-header { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; font-size: 12px; }
-        .student-name { font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-        .student-code { font-size: 10px; color: #38bdf8; font-weight: bold; }
+        .student-header { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; font-size: 13px; }
+        .student-name { font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .student-code { font-size: 11px; color: #38bdf8; font-weight: bold; }
         
         .img-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
         .img-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
-        .status-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(239, 68, 68, 0.85); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; text-align: center; padding: 8px; }
+        .status-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(185, 28, 28, 0.9); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; text-align: center; padding: 12px; z-index: 10; }
 
-        .hint-text { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .hint-text { font-size: 12px; color: #94a3b8; }
 
         /* Modal Phóng To Màn Hình (Zoom) */
-        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; flex-direction: column; }
-        .modal-content { max-width: 90%; max-height: 80vh; border: 2px solid #38bdf8; border-radius: 8px; }
-        .modal-header { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #fff; }
-        .close-btn { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 32px; font-weight: bold; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { max-width: 95vw; max-height: 88vh; border: 2px solid #38bdf8; border-radius: 8px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.3); }
+        .modal-header { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #fff; text-align: center; }
+        .close-btn { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 36px; font-weight: bold; cursor: pointer; opacity: 0.8; }
+        .close-btn:hover { opacity: 1; color: #ef4444; }
 
         .alert-banner { background: #991b1b; color: #fef2f2; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; margin-bottom: 16px; }
         .sync-tag { font-size: 11px; background: #10b981; color: #064e3b; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
@@ -82,11 +83,11 @@
             </div>
             <div class="form-group">
                 <label>Mã Học Sinh</label>
-                <input type="text" id="st-code" class="form-control" placeholder="Ví dụ: FBN12345">
+                <input type="text" id="st-code" class="form-control" placeholder="Nhập Mã Học Sinh">
             </div>
             <div class="form-group">
                 <label>Họ và Tên Học Sinh</label>
-                <input type="text" id="st-name" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
+                <input type="text" id="st-name" class="form-control" placeholder="Nhập Họ và Tên">
             </div>
             <button class="btn btn-primary" onclick="startStudent()">Đăng Nhập & Chia Sẻ</button>
             <div class="role-switch">
@@ -95,18 +96,18 @@
         </div>
     </div>
 
-    <!-- Đăng Nhập Giáo Viên -->
+    <!-- Đăng Nhập Giáo Viên (Đã bảo mật, không có gợi ý email) -->
     <div id="teacher-login" class="login-wrapper" style="display: none;">
         <div class="card">
             <h2>Bảng Điều Khiển Giáo Viên</h2>
-            <p>Nhập email giáo dục và mật khẩu để quản lý lớp</p>
+            <p>Xác thực tài khoản cán bộ quản lý lớp</p>
             <div class="form-group">
-                <label>Email Giáo Viên (@fe.edu.vn)</label>
-                <input type="email" id="tc-email" class="form-control" placeholder="Ví dụ: vanda3@fe.edu.vn">
+                <label>Email Cán Bộ / Giáo Viên</label>
+                <input type="email" id="tc-email" class="form-control" placeholder="Nhập email">
             </div>
             <div class="form-group">
                 <label>Mật Khẩu Quản Trị</label>
-                <input type="password" id="tc-pass" class="form-control" placeholder="Nhập 123456">
+                <input type="password" id="tc-pass" class="form-control" placeholder="Nhập mật khẩu">
             </div>
             <button class="btn btn-primary" onclick="startTeacher()">Bắt Đầu Giám Sát</button>
             <div class="role-switch">
@@ -135,11 +136,11 @@
                     <option value="11A1">Lớp 11A1</option>
                 </select>
             </div>
-            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> vào ô màn hình HS bất kỳ để <b>Phóng To</b> xem chi tiết!</div>
+            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> vào màn hình HS để <b>Phóng To</b> (Bấm ESC hoặc Click bên ngoài để đóng).</div>
         </div>
 
         <div style="margin-bottom: 8px; font-size: 13px; color: #94a3b8;">Slide bạn đang phát cho cả lớp (3s/lần):</div>
-        <div style="max-width: 260px; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #334155;">
+        <div style="max-width: 280px; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #334155;">
             <div class="img-container">
                 <img id="tc-my-slides-img" src="" alt="Slide GV">
             </div>
@@ -166,10 +167,10 @@
         </div>
     </div>
 
-    <!-- Modal Phóng To Màn Hình (Zoom) -->
-    <div id="zoom-modal" class="modal">
+    <!-- Modal Phóng To Màn Hình (Bấm ESC hoặc Click bên ngoài để thoát) -->
+    <div id="zoom-modal" class="modal" onclick="closeZoomModalOnBg(event)">
         <span class="close-btn" onclick="closeZoomModal()">&times;</span>
-        <div id="modal-title" class="modal-header">Đang xem màn hình...</div>
+        <div id="modal-title" class="modal-header">Đang xem chi tiết...</div>
         <img id="modal-img" class="modal-content" src="" alt="Zoom Screen">
     </div>
 
@@ -219,17 +220,15 @@
                 }
 
                 try {
-                    // Cấu hình ép buộc mở mặc định tab "Toàn màn hình" (monitor)
+                    // Cấu hình ép mở mặc định tab Toàn Màn Hình
                     screenStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: {
-                            displaySurface: "monitor"
-                        },
+                        video: { displaySurface: "monitor" },
                         audio: false,
                         surfaceSwitching: "exclude",
                         selfBrowserSurface: "exclude"
                     });
 
-                    // Bắt buộc kiểm tra nguồn chia sẻ là Toàn Màn Hình
+                    // Kiểm tra bắt buộc chọn Toàn màn hình
                     const track = screenStream.getVideoTracks()[0];
                     const settings = track.getSettings();
                     
@@ -244,7 +243,7 @@
                     myRole = 'student';
                     socket.emit('join-room', { role: 'student', name, className, studentCode: res.formattedCode });
 
-                    // Chu kỳ chụp ảnh 3 giây/lần
+                    // Chụp ảnh 3s/lần
                     startSnapshotLoop('student-image', 640, 0.5);
 
                     track.onended = () => {
@@ -263,7 +262,7 @@
             const email = document.getElementById('tc-email').value.trim();
             const pass = document.getElementById('tc-pass').value.trim();
 
-            if (!email) return alert('Vui lòng nhập Email Giáo viên!');
+            if (!email) return alert('Vui lòng nhập Email!');
 
             socket.emit('auth-user', { role: 'teacher', teacherEmail: email, teacherPass: pass }, async (res) => {
                 if (!res.success) return alert(res.message);
@@ -361,7 +360,7 @@
             updateStats();
         });
 
-        // Nhận tín hiệu khi HS TỰ TẮT ỨNG DỤNG / THOÁT TAB
+        // Nhận tín hiệu khi HS TỰ TẮT ỨNG DỤNG / THOÁT TAB / RỜI LỚP
         socket.on('student-app-closed', ({ studentId, name, className, code, time }) => {
             if (myRole !== 'teacher') return;
 
@@ -373,7 +372,7 @@
                 if (!card.querySelector('.status-overlay')) {
                     const overlay = document.createElement('div');
                     overlay.className = 'status-overlay';
-                    overlay.innerHTML = `⚠️ ĐÃ TẮT ỨNG DỤNG<br><span style="font-size:10px;">Thoát lúc: ${time}</span>`;
+                    overlay.innerHTML = `⚠️ ĐÃ TẮT ỨNG DỤNG / THOÁT TAB<br><span style="font-size:11px; margin-top:4px;">Thoát lúc: ${time}</span>`;
                     card.querySelector('.img-container').appendChild(overlay);
                 }
             }
@@ -390,7 +389,7 @@
         // PHÓNG TO MÀN HÌNH (ZOOM MODAL)
         function openZoomModal(studentId, title, currentImg) {
             currentZoomStudentId = studentId;
-            document.getElementById('modal-title').innerText = `Đang xem thu nhỏ chi tiết: ${title}`;
+            document.getElementById('modal-title').innerText = `Màn hình chi tiết: ${title}`;
             document.getElementById('modal-img').src = currentImg;
             document.getElementById('zoom-modal').style.display = 'flex';
         }
@@ -398,6 +397,18 @@
         function closeZoomModal() {
             currentZoomStudentId = null;
             document.getElementById('zoom-modal').style.display = 'none';
+        }
+
+        // Bấm phím ESC để thoát Modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeZoomModal();
+        });
+
+        // Click ra khoảng đen bên ngoài Modal để thoát
+        function closeZoomModalOnBg(e) {
+            if (e.target.id === 'zoom-modal') {
+                closeZoomModal();
+            }
         }
 
         // LỌC THEO LỚP
