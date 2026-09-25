@@ -8,7 +8,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: { origin: "*" },
-  maxHttpBufferSize: 1e7 // Bộ đệm 10MB nhận ảnh sắc nét
+  maxHttpBufferSize: 1e7
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -118,18 +118,19 @@ io.on('connection', (socket) => {
     socket.to('classroom').emit('teacher-image-update', imageData);
   });
 
-  // Xử lý Ngắt kết nối (Stop Share / Tắt Tab)
+  // Xử lý Ngắt kết nối (Stop Share / Tắt Tab / Rời đi)
   socket.on('disconnect', () => {
     if (socket.role === 'student' && connectedStudents[socket.id]) {
       const timeStr = new Date().toLocaleTimeString('vi-VN');
+      const studentInfo = connectedStudents[socket.id];
       delete connectedStudents[socket.id];
 
-      // Gửi sự kiện ngắt kết nối kèm Tên + Mã HS để hiện Thông báo góc phải
+      // Gửi tín hiệu ngắt kết nối để máy GV tự động thông báo & xóa thẻ
       io.to('classroom').emit('student-app-closed', {
         studentId: socket.id,
-        name: socket.userName,
-        className: socket.className,
-        code: socket.studentCode,
+        name: studentInfo.name,
+        className: studentInfo.className,
+        code: studentInfo.code,
         time: timeStr
       });
     }
