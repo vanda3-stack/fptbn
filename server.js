@@ -8,7 +8,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: { origin: "*" },
-  maxHttpBufferSize: 1e7 // Bộ đệm 10MB để nhận ảnh Base64
+  maxHttpBufferSize: 1e7 // Bộ đệm 10MB nhận ảnh sắc nét
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,14 +20,12 @@ app.get('/', (req, res) => {
 // --- CẤU HÌNH XÁC THỰC GIÁO VIÊN ---
 const TEACHER_PASS = "123456";
 
-// Kiểm tra đuôi email tổ chức
 function isValidTeacherEmail(email) {
   if (!email) return false;
   const cleanEmail = email.trim().toLowerCase();
   return cleanEmail.endsWith('@fe.edu.vn');
 }
 
-// Kiểm tra định dạng Mã Học Sinh: FBN + 5 chữ số
 function isValidStudentCode(code) {
   if (!code) return false;
   const regex = /^FBN\d{5}$/i; 
@@ -40,7 +38,7 @@ const connectedStudents = {};
 io.on('connection', (socket) => {
   console.log('Kết nối mới:', socket.id);
 
-  // Xác thực người dùng
+  // Xác thực Đăng nhập
   socket.on('auth-user', ({ role, teacherEmail, teacherPass, studentCode, className, studentName }, callback) => {
     if (role === 'teacher') {
       if (!isValidTeacherEmail(teacherEmail)) {
@@ -120,13 +118,13 @@ io.on('connection', (socket) => {
     socket.to('classroom').emit('teacher-image-update', imageData);
   });
 
-  // Xử lý NGẮT KẾT NỐI TỨC THÌ (Tắt tab / Đóng trình duyệt / Dừng chia sẻ)
+  // Xử lý Ngắt kết nối (Stop Share / Tắt Tab)
   socket.on('disconnect', () => {
     if (socket.role === 'student' && connectedStudents[socket.id]) {
       const timeStr = new Date().toLocaleTimeString('vi-VN');
       delete connectedStudents[socket.id];
 
-      // Gửi tín hiệu ngắt kết nối lập tức tới máy GV
+      // Gửi sự kiện ngắt kết nối kèm Tên + Mã HS để hiện Thông báo góc phải
       io.to('classroom').emit('student-app-closed', {
         studentId: socket.id,
         name: socket.userName,
