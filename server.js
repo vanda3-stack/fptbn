@@ -20,14 +20,11 @@ app.get('/', (req, res) => {
 // --- CẤU HÌNH XÁC THỰC GIÁO VIÊN ---
 const TEACHER_PASS = "123456";
 
-// Danh sách email GV được phép (Hoặc bắt buộc đuôi @fe.edu.vn)
+// Kiểm tra đuôi email tổ chức
 function isValidTeacherEmail(email) {
   if (!email) return false;
   const cleanEmail = email.trim().toLowerCase();
-  
-  // Kiểm tra đuôi email tổ chức
-  const isFeDomain = cleanEmail.endsWith('@fe.edu.vn');
-  return isFeDomain;
+  return cleanEmail.endsWith('@fe.edu.vn');
 }
 
 // Kiểm tra định dạng Mã Học Sinh: FBN + 5 chữ số
@@ -43,19 +40,19 @@ const connectedStudents = {};
 io.on('connection', (socket) => {
   console.log('Kết nối mới:', socket.id);
 
-  // Khung xác thực Đăng nhập
+  // Xác thực người dùng
   socket.on('auth-user', ({ role, teacherEmail, teacherPass, studentCode, className, studentName }, callback) => {
     if (role === 'teacher') {
       if (!isValidTeacherEmail(teacherEmail)) {
         return callback({ 
           success: false, 
-          message: "Email Giáo viên không hợp lệ! Vui lòng nhập đúng email trường (@fe.edu.vn), ví dụ: vanda3@fe.edu.vn" 
+          message: "Email đăng nhập không đúng định dạng cho phép!" 
         });
       }
       if (teacherPass !== TEACHER_PASS) {
         return callback({ 
           success: false, 
-          message: "Mật khẩu Giáo viên không chính xác!" 
+          message: "Mật khẩu xác thực không chính xác!" 
         });
       }
       callback({ success: true });
@@ -64,7 +61,7 @@ io.on('connection', (socket) => {
       if (!isValidStudentCode(studentCode)) {
         return callback({ 
           success: false, 
-          message: "Mã Học Sinh không đúng định dạng! Mã hợp lệ bao gồm chữ FBN và 5 chữ số (Ví dụ: FBN12345)." 
+          message: "Mã Học Sinh không đúng định dạng! Mã bao gồm tiền tố FBN và 5 chữ số (Ví dụ: FBN12345)." 
         });
       }
 
@@ -96,13 +93,10 @@ io.on('connection', (socket) => {
         lastTime: new Date().toLocaleTimeString('vi-VN')
       };
 
-      // Gửi ngay Slide bài giảng GV cho HS mới vào
       if (latestTeacherImage) {
         socket.emit('teacher-image-update', latestTeacherImage);
       }
     }
-
-    io.to('classroom').emit('room-presence-update', Object.values(connectedStudents));
   });
 
   // Nhận ảnh màn hình từ Học sinh (3s/lần)
@@ -120,20 +114,19 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Nhận ảnh Slide bài giảng từ Giáo viên (3s/lần)
+  // Nhận ảnh Slide từ Giáo viên (3s/lần)
   socket.on('teacher-image', (imageData) => {
     latestTeacherImage = imageData;
     socket.to('classroom').emit('teacher-image-update', imageData);
   });
 
-  // Xử lý khi HS tự ngắt kết nối hoặc tắt ứng dụng
+  // Xử lý NGẮT KẾT NỐI TỨC THÌ (Tắt tab / Đóng trình duyệt / Dừng chia sẻ)
   socket.on('disconnect', () => {
     if (socket.role === 'student' && connectedStudents[socket.id]) {
       const timeStr = new Date().toLocaleTimeString('vi-VN');
-      connectedStudents[socket.id].status = 'offline';
-      connectedStudents[socket.id].disconnectTime = timeStr;
+      delete connectedStudents[socket.id];
 
-      // Phát thông báo tắt ứng dụng tới máy GV
+      // Gửi tín hiệu ngắt kết nối lập tức tới máy GV
       io.to('classroom').emit('student-app-closed', {
         studentId: socket.id,
         name: socket.userName,
