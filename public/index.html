@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Giám Sát Lớp Học</title>
+    <title>Hệ Thống Giám Sát Lớp Học - FPT</title>
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -23,11 +23,13 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #0284c7; color: white; }
         .btn-primary:hover { background: #0369a1; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
         
         .role-switch { margin-top: 20px; text-align: center; font-size: 13px; color: #64748b; }
         .role-switch a { color: #38bdf8; text-decoration: none; font-weight: 500; cursor: pointer; }
 
-        /* Dashboard View */
+        /* Dashboard Views */
         .dashboard { padding: 20px; display: none; }
         .dash-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 16px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 16px; }
         .dash-title { font-size: 18px; font-weight: 700; }
@@ -38,7 +40,7 @@
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #1e293b; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
         .filter-select { background: #0f172a; color: white; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; }
 
-        /* Lưới màn hình HS thu nhỏ gọn 240px */
+        /* Lưới màn hình HS thu nhỏ & Tăng tốc GPU CSS */
         .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
         .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; cursor: context-menu; transition: transform 0.1s, border-color 0.2s; }
         .student-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
@@ -48,11 +50,14 @@
         .student-code { font-size: 10px; color: #38bdf8; font-weight: bold; }
         
         .img-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
-        .img-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+        .img-container img { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; 
+            will-change: transform; transform: translateZ(0); image-rendering: -webkit-optimize-contrast;
+        }
 
         .hint-text { font-size: 12px; color: #94a3b8; }
 
-        /* Khung Thông Báo Cảnh Báo Nổi Ở Góc Trên Bên Phải */
+        /* Thông báo nổi góc màn hình */
         #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 360px; pointer-events: none; }
         .alert-toast { background: #7f1d1d; border: 2px solid #ef4444; color: #fff; padding: 14px 16px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); pointer-events: auto; animation: slideIn 0.3s ease-out; }
         .alert-toast-title { font-weight: bold; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
@@ -62,7 +67,7 @@
 
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Modal Phóng To Màn Hình HD dành cho GV */
+        /* Modal Phóng To HD */
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.94); justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { max-width: 96vw; max-height: 90vh; border: 2px solid #38bdf8; border-radius: 8px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.4); object-fit: contain; }
         .modal-header { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #fff; text-align: center; }
@@ -72,7 +77,7 @@
         .alert-banner { background: #991b1b; color: #fef2f2; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; margin-bottom: 16px; }
         .sync-tag { font-size: 11px; background: #10b981; color: #064e3b; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
 
-        /* KHUNG HIỂN THỊ BÀI GIẢNG DÀNH CHO HỌC SINH */
+        /* Khung hiển thị Slide của GV cho HS */
         .student-lecture-box {
             width: 100%;
             height: calc(85vh - 80px);
@@ -84,16 +89,12 @@
             justify-content: center;
             align-items: center;
         }
-        .student-lecture-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .student-lecture-box img { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
 
-    <!-- Khung Chứa Thông Báo Góc Màn Hình -->
+    <!-- Khung Chứa Thông Báo -->
     <div id="notification-container"></div>
 
     <!-- Đăng Nhập Học Sinh -->
@@ -111,11 +112,11 @@
             </div>
             <div class="form-group">
                 <label>Mã Học Sinh</label>
-                <input type="text" id="st-code" class="form-control" placeholder="Nhập Mã Học Sinh">
+                <input type="text" id="st-code" class="form-control" placeholder="Ví dụ: FBN12345">
             </div>
             <div class="form-group">
                 <label>Họ và Tên Học Sinh</label>
-                <input type="text" id="st-name" class="form-control" placeholder="Nhập Họ và Tên">
+                <input type="text" id="st-name" class="form-control" placeholder="Nhập đầy đủ Họ và Tên">
             </div>
             <button class="btn btn-primary" onclick="startStudent()">Đăng Nhập & Chia Sẻ</button>
             <div class="role-switch">
@@ -131,7 +132,7 @@
             <p>Xác thực tài khoản cán bộ quản lý lớp</p>
             <div class="form-group">
                 <label>Email Cán Bộ / Giáo Viên</label>
-                <input type="email" id="tc-email" class="form-control" placeholder="Nhập email">
+                <input type="email" id="tc-email" class="form-control" placeholder="example@fe.edu.vn">
             </div>
             <div class="form-group">
                 <label>Mật Khẩu Quản Trị</label>
@@ -164,10 +165,14 @@
                     <option value="11A1">Lớp 11A1</option>
                 </select>
             </div>
-            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> để phóng to HD (Bấm <b>ESC</b> hoặc click ra ngoài để đóng).</div>
+            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> vào thẻ màn hình bất kỳ để phóng to xem HD (Bấm <b>ESC</b> để đóng).</div>
         </div>
 
-        <div style="margin-bottom: 8px; font-size: 13px; color: #94a3b8;">Slide bạn đang phát cho cả lớp (3s/lần):</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; max-width: 240px;">
+            <span style="font-size: 13px; color: #94a3b8;">Slide bạn đang phát:</span>
+            <button class="btn btn-success" style="padding: 4px 8px; font-size: 11px; width: auto;" onclick="reStartTeacherShare()">▶️ Bật / Chia Sẻ Lại Slide</button>
+        </div>
+        
         <div style="max-width: 240px; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #334155;">
             <div class="img-container">
                 <img id="tc-my-slides-img" src="" alt="Slide GV">
@@ -194,7 +199,7 @@
         </div>
     </div>
 
-    <!-- Modal Phóng To Màn Hình HD dành cho GV -->
+    <!-- Modal Phóng To Màn Hình HD -->
     <div id="zoom-modal" class="modal" onclick="closeZoomModalOnBg(event)">
         <span class="close-btn" onclick="closeZoomModal()">&times;</span>
         <div id="modal-title" class="modal-header">Đang xem chi tiết...</div>
@@ -207,6 +212,7 @@
         const socket = io();
         let myRole = '';
         let screenStream = null;
+        let snapshotTimer = null;
         let currentZoomStudentId = null;
         let totalOfflineCount = 0;
 
@@ -223,6 +229,20 @@
             document.getElementById('teacher-login').style.display = 'none';
             document.getElementById('student-login').style.display = 'flex';
         }
+
+        // Tự động khôi phục phiên kết nối nếu mạng gián đoạn
+        socket.on('connect', () => {
+            const savedData = sessionStorage.getItem('student_info');
+            if (savedData && myRole === 'student') {
+                const info = JSON.parse(savedData);
+                socket.emit('join-room', { 
+                    role: 'student', 
+                    name: info.name, 
+                    className: info.className, 
+                    studentCode: info.studentCode 
+                });
+            }
+        });
 
         // --- ĐĂNG NHẬP HỌC SINH ---
         async function startStudent() {
@@ -264,10 +284,20 @@
                     document.getElementById('student-login').style.display = 'none';
                     document.getElementById('student-ui').style.display = 'block';
 
-                    myRole = 'student';
-                    socket.emit('join-room', { role: 'student', name, className, studentCode: res.formattedCode });
+                    window.addEventListener('beforeunload', (e) => {
+                        e.preventDefault();
+                        e.returnValue = 'Bạn có chắc chắn muốn thoát khỏi lớp học không?';
+                    });
 
-                    startSnapshotLoop('student-image', 1280, 0.7);
+                    myRole = 'student';
+                    
+                    const studentData = { name, className, studentCode: res.formattedCode };
+                    sessionStorage.setItem('student_info', JSON.stringify(studentData));
+
+                    socket.emit('join-room', { role: 'student', ...studentData });
+
+                    // Gửi ảnh 3s/lần với kích thước và chất lượng được tối ưu nhẹ cho server
+                    startSnapshotLoop('student-image', 960, 0.5);
 
                     track.onended = () => {
                         alert('Bạn đã dừng chia sẻ màn hình. Hệ thống tự động ghi nhận!');
@@ -302,7 +332,11 @@
                     myRole = 'teacher';
                     socket.emit('join-room', { role: 'teacher', name: email.split('@')[0] });
 
-                    startSnapshotLoop('teacher-image', 1280, 0.7);
+                    startSnapshotLoop('teacher-image', 1280, 0.6);
+
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        console.log("GV đã tạm dừng phát slide màn hình.");
+                    };
 
                 } catch (err) {
                     alert('Giáo viên cần mở phát Slide màn hình!');
@@ -310,7 +344,32 @@
             });
         }
 
+        // Hàm phát lại Slide cho Giáo viên
+        async function reStartTeacherShare() {
+            try {
+                if (screenStream) {
+                    screenStream.getTracks().forEach(track => track.stop());
+                }
+
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { displaySurface: "monitor" }, 
+                    audio: false 
+                });
+
+                startSnapshotLoop('teacher-image', 1280, 0.6);
+
+                screenStream.getVideoTracks()[0].onended = () => {
+                    console.log("GV đã tạm dừng phát slide màn hình.");
+                };
+
+            } catch (err) {
+                console.log("GV hủy chọn màn hình mới.");
+            }
+        }
+
         function startSnapshotLoop(eventName, maxWidth, quality) {
+            if (snapshotTimer) clearInterval(snapshotTimer);
+
             const video = document.createElement('video');
             video.srcObject = screenStream;
             video.play();
@@ -318,8 +377,8 @@
             const canvas = document.getElementById('snapshot-canvas');
             const ctx = canvas.getContext('2d');
 
-            setInterval(() => {
-                if (video.videoWidth > 0) {
+            snapshotTimer = setInterval(() => {
+                if (video.videoWidth > 0 && screenStream && screenStream.active) {
                     const scale = Math.min(1, maxWidth / video.videoWidth);
                     canvas.width = video.videoWidth * scale;
                     canvas.height = video.videoHeight * scale;
@@ -336,26 +395,33 @@
             }, 3000);
         }
 
-        // Nhận ảnh từ Học sinh
+        // Cập nhật thẻ hiển thị của học sinh trên màn hình GV
         socket.on('student-image-update', ({ studentId, name, className, code, image }) => {
             if (myRole !== 'teacher') return;
+
+            const displayName = (name && name !== 'undefined') ? name : 'Học Sinh';
+            const displayCode = (code && code !== 'undefined') ? code : 'FBN00000';
+            const displayClass = (className && className !== 'undefined') ? className : '10A1';
+
+            const junkCard = document.getElementById('st-card-undefined');
+            if (junkCard) junkCard.remove();
 
             let card = document.getElementById(`st-card-${studentId}`);
             if (!card) {
                 card = document.createElement('div');
                 card.className = 'student-card';
                 card.id = `st-card-${studentId}`;
-                card.setAttribute('data-class', className);
+                card.setAttribute('data-class', displayClass);
                 
                 card.oncontextmenu = (e) => {
                     e.preventDefault();
-                    openZoomModal(studentId, `${name} (${code} - ${className})`, image);
+                    openZoomModal(studentId, `${displayName} (${displayCode} - ${displayClass})`, image);
                 };
 
                 card.innerHTML = `
                     <div class="student-header">
-                        <span class="student-name">${name}</span>
-                        <span class="student-code">${code}</span>
+                        <span class="student-name">${displayName}</span>
+                        <span class="student-code">${displayCode}</span>
                     </div>
                     <div class="img-container">
                         <img id="img-${studentId}" src="${image}" alt="Screen">
@@ -374,22 +440,23 @@
             updateStats();
         });
 
-        // XỬ LÝ KHI HỌC SINH TỰ Ý NGUYÊN HOẶC TẮT TAB / NGẮT CHIA SẺ MÀN HÌNH
+        // Xử lý khi Học sinh ngắt kết nối thực sự
         socket.on('student-app-closed', ({ studentId, name, className, code, time }) => {
             if (myRole !== 'teacher') return;
 
+            const displayName = (name && name !== 'undefined') ? name : 'Học sinh';
+            const displayCode = (code && code !== 'undefined') ? code : 'N/A';
+            const displayClass = (className && className !== 'undefined') ? className : '';
+
             alarmSound.play().catch(() => {});
 
-            // 1. Hiện thông báo nổi ở góc phải cho GV ghi nhận thông tin
-            showNotificationToast(name, code, className, time);
+            showNotificationToast(displayName, displayCode, displayClass, time);
 
-            // 2. TỰ ĐỘNG XÓA MÀN HÌNH CỦA HỌC SINH NÀY KHỎI DANH SÁCH GIÁM SÁT
             let card = document.getElementById(`st-card-${studentId}`);
             if (card) {
                 card.remove();
             }
 
-            // Nếu đang mở Zoom màn hình này thì đóng cửa sổ Zoom
             if (currentZoomStudentId === studentId) {
                 closeZoomModal();
             }
@@ -398,7 +465,6 @@
             updateStats();
         });
 
-        // Hàm tạo Thông Báo Nổi Góc Phải Màn Hình
         function showNotificationToast(name, code, className, time) {
             const container = document.getElementById('notification-container');
             const toast = document.createElement('div');
@@ -407,7 +473,7 @@
             toast.innerHTML = `
                 <div class="alert-toast-title">⚠️ HỌC SINH TỰ Ý THOÁT / NGẮT LỚP</div>
                 <div class="alert-toast-body">
-                    Học sinh: <b>${name}</b> (${code}) - Lớp <b>${className}</b><br>
+                    Học sinh: <b>${name}</b> (${code}) ${className ? `- Lớp <b>${className}</b>` : ''}<br>
                     Thời gian ngắt: ${time}
                 </div>
                 <button class="alert-toast-btn" onclick="this.parentElement.remove()">Đã Ghi Nhận</button>
