@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Giám Sát Lớp Học - FPT</title>
+    <title>Hệ Thống Giám Sát Màn Hình WebRTC - Google Meet Level</title>
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -18,98 +18,43 @@
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
-        .form-control:focus { border-color: #38bdf8; }
         
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #0284c7; color: white; }
         .btn-primary:hover { background: #0369a1; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
-        
+
         .role-switch { margin-top: 20px; text-align: center; font-size: 13px; color: #64748b; }
         .role-switch a { color: #38bdf8; text-decoration: none; font-weight: 500; cursor: pointer; }
 
-        /* Dashboard Views */
         .dashboard { padding: 20px; display: none; }
         .dash-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 16px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 16px; }
         .dash-title { font-size: 18px; font-weight: 700; }
-        .stats-group { display: flex; gap: 10px; }
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-        .badge-danger { background: #991b1b; color: #fef2f2; }
 
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #1e293b; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
-        .filter-select { background: #0f172a; color: white; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; }
-
-        /* Lưới màn hình HS thu nhỏ & Tăng tốc GPU CSS */
-        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-        .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; cursor: context-menu; transition: transform 0.1s, border-color 0.2s; }
-        .student-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
-
+        /* LƯỚI VIDEO WEBRTC */
+        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+        .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; }
         .student-header { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; font-size: 12px; }
-        .student-name { font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+        .student-name { font-weight: 600; color: #f8fafc; }
         .student-code { font-size: 10px; color: #38bdf8; font-weight: bold; }
         
-        .img-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
-        .img-container img { 
+        .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+        .video-container video { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; 
-            will-change: transform; transform: translateZ(0); image-rendering: -webkit-optimize-contrast;
         }
 
-        .hint-text { font-size: 12px; color: #94a3b8; }
-
-        /* Thông báo nổi góc màn hình */
-        #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 360px; pointer-events: none; }
-        .alert-toast { background: #7f1d1d; border: 2px solid #ef4444; color: #fff; padding: 14px 16px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); pointer-events: auto; animation: slideIn 0.3s ease-out; }
-        .alert-toast-title { font-weight: bold; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        .alert-toast-body { font-size: 12px; color: #fca5a5; margin-bottom: 10px; }
-        .alert-toast-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; float: right; }
-        .alert-toast-btn:hover { background: #dc2626; }
-
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* Modal Phóng To HD */
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.94); justify-content: center; align-items: center; flex-direction: column; }
-        .modal-content { max-width: 96vw; max-height: 90vh; border: 2px solid #38bdf8; border-radius: 8px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.4); object-fit: contain; }
-        .modal-header { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #fff; text-align: center; }
-        .close-btn { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 36px; font-weight: bold; cursor: pointer; opacity: 0.8; }
-        .close-btn:hover { opacity: 1; color: #ef4444; }
-
-        .alert-banner { background: #991b1b; color: #fef2f2; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 8px; margin-bottom: 16px; }
-        .sync-tag { font-size: 11px; background: #10b981; color: #064e3b; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-
-        /* Khung hiển thị Slide của GV cho HS */
-        .student-lecture-box {
-            width: 100%;
-            height: calc(85vh - 80px);
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #334155;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .student-lecture-box img { width: 100%; height: 100%; object-fit: contain; }
+        .modal-video { max-width: 96vw; max-height: 90vh; border: 2px solid #38bdf8; border-radius: 8px; object-fit: contain; }
+        .close-btn { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 36px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Khung Chứa Thông Báo -->
-    <div id="notification-container"></div>
-
-    <!-- Đăng Nhập Học Sinh -->
+    <!-- Login Học Sinh -->
     <div id="student-login" class="login-wrapper">
         <div class="card">
-            <h2>Vào Lớp Học</h2>
-            <p>Nhập Mã Học Sinh (FBNxxxxx) để chia sẻ màn hình làm bài</p>
-            <div class="form-group">
-                <label>Chọn Lớp Học</label>
-                <select id="st-class" class="form-control">
-                    <option value="10A1">Lớp 10A1</option>
-                    <option value="10A2">Lớp 10A2</option>
-                    <option value="11A1">Lớp 11A1</option>
-                </select>
-            </div>
+            <h2>Vào Lớp Học (WebRTC)</h2>
+            <p>Chia sẻ màn hình trực tiếp mượt như Google Meet</p>
             <div class="form-group">
                 <label>Mã Học Sinh</label>
                 <input type="text" id="st-code" class="form-control" placeholder="Ví dụ: FBN12345">
@@ -125,11 +70,11 @@
         </div>
     </div>
 
-    <!-- Đăng Nhập Giáo Viên -->
+    <!-- Login Giáo Viên -->
     <div id="teacher-login" class="login-wrapper" style="display: none;">
         <div class="card">
             <h2>Bảng Điều Khiển Giáo Viên</h2>
-            <p>Xác thực tài khoản cán bộ quản lý lớp</p>
+            <p>Giám sát Video Real-time 60fps</p>
             <div class="form-group">
                 <label>Email Cán Bộ / Giáo Viên</label>
                 <input type="email" id="tc-email" class="form-control" placeholder="example@fe.edu.vn">
@@ -145,78 +90,41 @@
         </div>
     </div>
 
-    <!-- Bảng Điều Khiển Giáo Viên -->
+    <!-- Dashboard Giáo Viên -->
     <div id="teacher-ui" class="dashboard">
         <div class="dash-header">
-            <div class="dash-title">Hệ Thống Giám Sát Màn Hình Lớp Học</div>
-            <div class="stats-group">
-                <div class="badge">Đang theo dõi: <span id="count-online">0</span></div>
-                <div class="badge badge-danger">Lượt HS ngắt/rời: <span id="count-offline">0</span></div>
-            </div>
+            <div class="dash-title">Giám Sát Màn Hình WebRTC (Google Meet Standard)</div>
+            <div class="badge">Đang kết nối: <span id="count-online">0</span> HS</div>
         </div>
-
-        <div class="toolbar">
-            <div>
-                <label style="font-size: 13px; margin-right: 8px;">Lọc theo lớp:</label>
-                <select id="filter-class" class="filter-select" onchange="filterStudents()">
-                    <option value="ALL">Tất cả các lớp</option>
-                    <option value="10A1">Lớp 10A1</option>
-                    <option value="10A2">Lớp 10A2</option>
-                    <option value="11A1">Lớp 11A1</option>
-                </select>
-            </div>
-            <div class="hint-text">💡 <b>Mẹo:</b> Click <b>Chuột Phải</b> vào thẻ màn hình bất kỳ để phóng to xem HD (Bấm <b>ESC</b> để đóng).</div>
-        </div>
-
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; max-width: 240px;">
-            <span style="font-size: 13px; color: #94a3b8;">Slide bạn đang phát:</span>
-            <button class="btn btn-success" style="padding: 4px 8px; font-size: 11px; width: auto;" onclick="reStartTeacherShare()">▶️ Bật / Chia Sẻ Lại Slide</button>
-        </div>
-        
-        <div style="max-width: 240px; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #334155;">
-            <div class="img-container">
-                <img id="tc-my-slides-img" src="" alt="Slide GV">
-            </div>
-        </div>
-
-        <hr style="border-color: #334155; margin-bottom: 16px;">
-        <div style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">Màn Hình Làm Bài Của Học Sinh Đang Trong Lớp:</div>
         <div id="students-grid" class="students-grid"></div>
     </div>
 
-    <!-- Màn Hình Học Sinh -->
+    <!-- Dashboard Học Sinh -->
     <div id="student-ui" class="dashboard">
-        <div class="alert-banner">
-            ⚠️ Hệ thống đang giám sát toàn bộ màn hình của bạn. Vui lòng KHÔNG dừng chia sẻ hoặc tắt tab!
-        </div>
-        <div class="dash-header">
-            <div class="dash-title">Bài Giảng Của Giáo Viên</div>
-            <span class="sync-tag">LIVE 3S</span>
-        </div>
-        
-        <div class="student-lecture-box">
-            <img id="tc-slide-view-img" src="" alt="Đang chờ Giáo viên phát slide...">
+        <div style="background: #065f46; color: #ecfdf5; padding: 16px; text-align: center; font-size: 15px; font-weight: 600; border-radius: 8px;">
+            ✅ Màn hình của bạn đang được phát trực tiếp qua luồng WebRTC tới Giáo viên.
         </div>
     </div>
 
-    <!-- Modal Phóng To Màn Hình HD -->
+    <!-- Modal Phóng To Video -->
     <div id="zoom-modal" class="modal" onclick="closeZoomModalOnBg(event)">
         <span class="close-btn" onclick="closeZoomModal()">&times;</span>
-        <div id="modal-title" class="modal-header">Đang xem chi tiết...</div>
-        <img id="modal-img" class="modal-content" src="" alt="Zoom Screen">
+        <video id="modal-video" class="modal-video" autoplay playsinline></video>
     </div>
-
-    <canvas id="snapshot-canvas" style="display: none;"></canvas>
 
     <script>
         const socket = io();
         let myRole = '';
-        let screenStream = null;
-        let snapshotTimer = null;
-        let currentZoomStudentId = null;
-        let totalOfflineCount = 0;
+        let localStream = null;
+        const peerConnections = {}; // Lưu giữ các kết nối WebRTC với từng học sinh
 
-        const alarmSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        // Cấu hình STUN Server miễn phí của Google
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
 
         if (window.location.hash === '#teacher') switchToTeacherLogin();
 
@@ -230,303 +138,177 @@
             document.getElementById('student-login').style.display = 'flex';
         }
 
-        // Tự động khôi phục phiên kết nối nếu mạng gián đoạn
-        socket.on('connect', () => {
-            const savedData = sessionStorage.getItem('student_info');
-            if (savedData && myRole === 'student') {
-                const info = JSON.parse(savedData);
-                socket.emit('join-room', { 
-                    role: 'student', 
-                    name: info.name, 
-                    className: info.className, 
-                    studentCode: info.studentCode 
-                });
-            }
-        });
-
-        // --- ĐĂNG NHẬP HỌC SINH ---
+        // --- HỌC SINH ĐĂNG NHẬP & PHÁT STREAM ---
         async function startStudent() {
-            const className = document.getElementById('st-class').value;
             const code = document.getElementById('st-code').value.trim();
             const name = document.getElementById('st-name').value.trim();
 
-            if (!code) return alert('Vui lòng nhập Mã Học Sinh!');
-            if (!name) return alert('Vui lòng nhập Họ và Tên!');
+            if (!code || !name) return alert('Vui lòng điền đầy đủ thông tin!');
 
-            const isMobileOriPad = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-            if (isMobileOriPad) {
-                return alert("⚠️ CẢNH BÁO THIẾT BỊ:\niPad và Điện thoại không hỗ trợ quay màn hình qua Web.\nVui lòng chuyển sang dùng Máy tính (Laptop/PC) để vào lớp!");
-            }
-
-            socket.emit('auth-user', { role: 'student', studentCode: code, studentName: name, className }, async (res) => {
-                if (!res.success) {
-                    return alert(res.message);
-                }
+            socket.emit('auth-user', { role: 'student', studentCode: code, studentName: name }, async (res) => {
+                if (!res.success) return alert(res.message);
 
                 try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({
-                        video: { displaySurface: "monitor" },
-                        audio: false,
-                        surfaceSwitching: "exclude",
-                        selfBrowserSurface: "exclude"
+                    // Lấy luồng chia sẻ màn hình mượt (FPS: 30)
+                    localStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { frameRate: { ideal: 30, max: 60 } },
+                        audio: false
                     });
-
-                    const track = screenStream.getVideoTracks()[0];
-                    const settings = track.getSettings();
-                    
-                    if (settings.displaySurface && settings.displaySurface !== 'monitor') {
-                        track.stop();
-                        return alert("CẢNH BÁO TỪ HỆ THỐNG:\nBạn BẮT BUỘC phải chọn tab 'Toàn màn hình' (Entire Screen) thì mới được phép vào lớp!");
-                    }
 
                     document.getElementById('student-login').style.display = 'none';
                     document.getElementById('student-ui').style.display = 'block';
 
-                    window.addEventListener('beforeunload', (e) => {
-                        e.preventDefault();
-                        e.returnValue = 'Bạn có chắc chắn muốn thoát khỏi lớp học không?';
-                    });
-
                     myRole = 'student';
-                    
-                    const studentData = { name, className, studentCode: res.formattedCode };
-                    sessionStorage.setItem('student_info', JSON.stringify(studentData));
-
-                    socket.emit('join-room', { role: 'student', ...studentData });
-
-                    // Gửi ảnh 3s/lần với kích thước và chất lượng được tối ưu nhẹ cho server
-                    startSnapshotLoop('student-image', 960, 0.5);
-
-                    track.onended = () => {
-                        alert('Bạn đã dừng chia sẻ màn hình. Hệ thống tự động ghi nhận!');
-                        location.reload();
-                    };
+                    socket.emit('join-room', { role: 'student', name, studentCode: res.formattedCode });
 
                 } catch (err) {
-                    alert('Bạn cần đồng ý chia sẻ toàn màn hình mới có thể vào lớp làm bài!');
+                    alert('Bạn cần cấp quyền chia sẻ màn hình!');
                 }
             });
         }
 
-        // --- ĐĂNG NHẬP GIÁO VIÊN ---
+        // --- GIÁO VIÊN ĐĂNG NHẬP ---
         async function startTeacher() {
             const email = document.getElementById('tc-email').value.trim();
             const pass = document.getElementById('tc-pass').value.trim();
 
             if (!email) return alert('Vui lòng nhập Email!');
 
-            socket.emit('auth-user', { role: 'teacher', teacherEmail: email, teacherPass: pass }, async (res) => {
+            socket.emit('auth-user', { role: 'teacher', teacherEmail: email, teacherPass: pass }, (res) => {
                 if (!res.success) return alert(res.message);
 
-                try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-                        video: { displaySurface: "monitor" }, 
-                        audio: false 
-                    });
+                document.getElementById('teacher-login').style.display = 'none';
+                document.getElementById('teacher-ui').style.display = 'block';
 
-                    document.getElementById('teacher-login').style.display = 'none';
-                    document.getElementById('teacher-ui').style.display = 'block';
-
-                    myRole = 'teacher';
-                    socket.emit('join-room', { role: 'teacher', name: email.split('@')[0] });
-
-                    startSnapshotLoop('teacher-image', 1280, 0.6);
-
-                    screenStream.getVideoTracks()[0].onended = () => {
-                        console.log("GV đã tạm dừng phát slide màn hình.");
-                    };
-
-                } catch (err) {
-                    alert('Giáo viên cần mở phát Slide màn hình!');
-                }
+                myRole = 'teacher';
+                socket.emit('join-room', { role: 'teacher', name: email.split('@')[0] });
             });
         }
 
-        // Hàm phát lại Slide cho Giáo viên
-        async function reStartTeacherShare() {
-            try {
-                if (screenStream) {
-                    screenStream.getTracks().forEach(track => track.stop());
-                }
-
-                screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: { displaySurface: "monitor" }, 
-                    audio: false 
-                });
-
-                startSnapshotLoop('teacher-image', 1280, 0.6);
-
-                screenStream.getVideoTracks()[0].onended = () => {
-                    console.log("GV đã tạm dừng phát slide màn hình.");
-                };
-
-            } catch (err) {
-                console.log("GV hủy chọn màn hình mới.");
+        // --- TẠO KẾT NỐI WEBRTC KHI CÓ HỌC SINH MỚI (GIÁO VIÊN) ---
+        socket.on('student-joined-webrtc', ({ socketId, studentCode, name }) => {
+            if (myRole === 'teacher') {
+                createPeerConnection(socketId, studentCode, name, true);
             }
-        }
+        });
 
-        function startSnapshotLoop(eventName, maxWidth, quality) {
-            if (snapshotTimer) clearInterval(snapshotTimer);
+        socket.on('all-online-students', (students) => {
+            if (myRole === 'teacher') {
+                students.forEach(st => createPeerConnection(st.socketId, st.code, st.name, true));
+            }
+        });
 
-            const video = document.createElement('video');
-            video.srcObject = screenStream;
-            video.play();
+        // HÀM TẠO WEBRTC PEER CONNECTION
+        function createPeerConnection(targetSocketId, studentCode, name, isTeacher) {
+            const pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[targetSocketId] = pc;
 
-            const canvas = document.getElementById('snapshot-canvas');
-            const ctx = canvas.getContext('2d');
+            if (!isTeacher && localStream) {
+                // Học sinh đẩy các luồng track video màn hình sang cho Giáo viên
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
 
-            snapshotTimer = setInterval(() => {
-                if (video.videoWidth > 0 && screenStream && screenStream.active) {
-                    const scale = Math.min(1, maxWidth / video.videoWidth);
-                    canvas.width = video.videoWidth * scale;
-                    canvas.height = video.videoHeight * scale;
+            // Gửi các ứng viên ICE Candidate
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-ice-candidate', { targetSocketId, candidate: event.candidate });
+                }
+            };
 
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = canvas.toDataURL('image/jpeg', quality);
-                    
-                    if (eventName === 'teacher-image') {
-                        document.getElementById('tc-my-slides-img').src = imageData;
+            // Nếu là Giáo viên: Nhận luồng Video trực tiếp từ Học sinh
+            if (isTeacher) {
+                pc.ontrack = (event) => {
+                    let card = document.getElementById(`st-card-${studentCode}`);
+                    if (!card) {
+                        card = document.createElement('div');
+                        card.className = 'student-card';
+                        card.id = `st-card-${studentCode}`;
+                        card.innerHTML = `
+                            <div class="student-header">
+                                <span class="student-name">${name}</span>
+                                <span class="student-code">${studentCode}</span>
+                            </div>
+                            <div class="video-container">
+                                <video id="video-${studentCode}" autoplay playsinline muted></video>
+                            </div>
+                        `;
+                        card.onclick = () => openZoomModal(event.streams[0]);
+                        document.getElementById('students-grid').appendChild(card);
                     }
-
-                    socket.emit(eventName, imageData);
-                }
-            }, 3000);
-        }
-
-        // Cập nhật thẻ hiển thị của học sinh trên màn hình GV
-        socket.on('student-image-update', ({ studentId, name, className, code, image }) => {
-            if (myRole !== 'teacher') return;
-
-            const displayName = (name && name !== 'undefined') ? name : 'Học Sinh';
-            const displayCode = (code && code !== 'undefined') ? code : 'FBN00000';
-            const displayClass = (className && className !== 'undefined') ? className : '10A1';
-
-            const junkCard = document.getElementById('st-card-undefined');
-            if (junkCard) junkCard.remove();
-
-            let card = document.getElementById(`st-card-${studentId}`);
-            if (!card) {
-                card = document.createElement('div');
-                card.className = 'student-card';
-                card.id = `st-card-${studentId}`;
-                card.setAttribute('data-class', displayClass);
-                
-                card.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    openZoomModal(studentId, `${displayName} (${displayCode} - ${displayClass})`, image);
+                    
+                    const videoElem = document.getElementById(`video-${studentCode}`);
+                    if (videoElem) videoElem.srcObject = event.streams[0];
+                    updateStats();
                 };
 
-                card.innerHTML = `
-                    <div class="student-header">
-                        <span class="student-name">${displayName}</span>
-                        <span class="student-code">${displayCode}</span>
-                    </div>
-                    <div class="img-container">
-                        <img id="img-${studentId}" src="${image}" alt="Screen">
-                    </div>
-                `;
-                document.getElementById('students-grid').appendChild(card);
-            } else {
-                document.getElementById(`img-${studentId}`).src = image;
+                // Giáo viên khởi tạo Offer
+                pc.createOffer().then(offer => {
+                    pc.setLocalDescription(offer);
+                    socket.emit('webrtc-offer', { targetSocketId, offer, studentCode, name });
+                });
             }
-
-            if (currentZoomStudentId === studentId) {
-                document.getElementById('modal-img').src = image;
-            }
-
-            filterStudents();
-            updateStats();
-        });
-
-        // Xử lý khi Học sinh ngắt kết nối thực sự
-        socket.on('student-app-closed', ({ studentId, name, className, code, time }) => {
-            if (myRole !== 'teacher') return;
-
-            const displayName = (name && name !== 'undefined') ? name : 'Học sinh';
-            const displayCode = (code && code !== 'undefined') ? code : 'N/A';
-            const displayClass = (className && className !== 'undefined') ? className : '';
-
-            alarmSound.play().catch(() => {});
-
-            showNotificationToast(displayName, displayCode, displayClass, time);
-
-            let card = document.getElementById(`st-card-${studentId}`);
-            if (card) {
-                card.remove();
-            }
-
-            if (currentZoomStudentId === studentId) {
-                closeZoomModal();
-            }
-
-            totalOfflineCount++;
-            updateStats();
-        });
-
-        function showNotificationToast(name, code, className, time) {
-            const container = document.getElementById('notification-container');
-            const toast = document.createElement('div');
-            toast.className = 'alert-toast';
-            
-            toast.innerHTML = `
-                <div class="alert-toast-title">⚠️ HỌC SINH TỰ Ý THOÁT / NGẮT LỚP</div>
-                <div class="alert-toast-body">
-                    Học sinh: <b>${name}</b> (${code}) ${className ? `- Lớp <b>${className}</b>` : ''}<br>
-                    Thời gian ngắt: ${time}
-                </div>
-                <button class="alert-toast-btn" onclick="this.parentElement.remove()">Đã Ghi Nhận</button>
-                <div style="clear:both;"></div>
-            `;
-            container.appendChild(toast);
         }
 
-        socket.on('teacher-image-update', (imageData) => {
+        // --- XỬ LÝ SIGNALING WEBRTC CHUNG ---
+        socket.on('webrtc-offer', async ({ senderSocketId, offer, studentCode, name }) => {
             if (myRole === 'student') {
-                document.getElementById('tc-slide-view-img').src = imageData;
+                const pc = new RTCPeerConnection(rtcConfig);
+                peerConnections[senderSocketId] = pc;
+
+                if (localStream) {
+                    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                }
+
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('webrtc-ice-candidate', { targetSocketId: senderSocketId, candidate: event.candidate });
+                    }
+                };
+
+                await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                socket.emit('webrtc-answer', { targetSocketId: senderSocketId, answer });
             }
         });
 
-        function openZoomModal(studentId, title, currentImg) {
-            currentZoomStudentId = studentId;
-            document.getElementById('modal-title').innerText = `Chi tiết màn hình: ${title}`;
-            document.getElementById('modal-img').src = currentImg;
+        socket.on('webrtc-answer', async ({ senderSocketId, answer }) => {
+            const pc = peerConnections[senderSocketId];
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            }
+        });
+
+        socket.on('webrtc-ice-candidate', async ({ senderSocketId, candidate }) => {
+            const pc = peerConnections[senderSocketId];
+            if (pc) {
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        });
+
+        socket.on('student-disconnected', ({ studentCode }) => {
+            const card = document.getElementById(`st-card-${studentCode}`);
+            if (card) card.remove();
+            updateStats();
+        });
+
+        function updateStats() {
+            document.getElementById('count-online').innerText = document.querySelectorAll('.student-card').length;
+        }
+
+        function openZoomModal(stream) {
+            const modalVideo = document.getElementById('modal-video');
+            modalVideo.srcObject = stream;
             document.getElementById('zoom-modal').style.display = 'flex';
         }
 
         function closeZoomModal() {
-            currentZoomStudentId = null;
             document.getElementById('zoom-modal').style.display = 'none';
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeZoomModal();
-        });
-
         function closeZoomModalOnBg(e) {
-            if (e.target.id === 'zoom-modal') {
-                closeZoomModal();
-            }
-        }
-
-        function filterStudents() {
-            const filter = document.getElementById('filter-class').value;
-            const cards = document.querySelectorAll('.student-card');
-
-            cards.forEach(card => {
-                if (filter === 'ALL' || card.getAttribute('data-class') === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        function updateStats() {
-            const onlineCount = document.querySelectorAll('.student-card').length;
-            document.getElementById('count-online').innerText = onlineCount;
-            document.getElementById('count-offline').innerText = totalOfflineCount;
+            if (e.target.id === 'zoom-modal') closeZoomModal();
         }
     </script>
 </body>
