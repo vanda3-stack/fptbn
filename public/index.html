@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Giám Sát Màn Hình WebRTC - Google Meet Level</title>
+    <title>Hệ Thống Lớp Học Trực Tuyến & Giám Sát WebRTC</title>
     <script src="/socket.io/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -22,6 +22,8 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #0284c7; color: white; }
         .btn-primary:hover { background: #0369a1; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
 
         .role-switch { margin-top: 20px; text-align: center; font-size: 13px; color: #64748b; }
         .role-switch a { color: #38bdf8; text-decoration: none; font-weight: 500; cursor: pointer; }
@@ -31,7 +33,12 @@
         .dash-title { font-size: 18px; font-weight: 700; }
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
 
-        /* LƯỚI VIDEO WEBRTC */
+        /* MÀN HÌNH BÀI GIẢNG GIÁO VIÊN (DÀNH CHO HỌC SINH) */
+        .teacher-screen-box { background: #000; border: 2px solid #0284c7; border-radius: 12px; overflow: hidden; margin-bottom: 20px; display: none; position: relative; width: 100%; height: 500px; }
+        .teacher-screen-box video { width: 100%; height: 100%; object-fit: contain; }
+        .screen-label { position: absolute; top: 10px; left: 10px; background: rgba(2, 132, 199, 0.9); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+        /* LƯỚI GIÁM SÁT HỌC SINH */
         .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
         .student-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; position: relative; }
         .student-header { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-bottom: 1px solid #334155; font-size: 12px; }
@@ -39,9 +46,7 @@
         .student-code { font-size: 10px; color: #38bdf8; font-weight: bold; }
         
         .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
-        .video-container video { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; 
-        }
+        .video-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
 
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.94); justify-content: center; align-items: center; flex-direction: column; }
         .modal-video { max-width: 96vw; max-height: 90vh; border: 2px solid #38bdf8; border-radius: 8px; object-fit: contain; }
@@ -53,8 +58,8 @@
     <!-- Login Học Sinh -->
     <div id="student-login" class="login-wrapper">
         <div class="card">
-            <h2>Vào Lớp Học (WebRTC)</h2>
-            <p>Chia sẻ màn hình trực tiếp mượt như Google Meet</p>
+            <h2>Vào Lớp Học (Học Sinh)</h2>
+            <p>Tham gia lớp học và chia sẻ màn hình làm bài</p>
             <div class="form-group">
                 <label>Mã Học Sinh</label>
                 <input type="text" id="st-code" class="form-control" placeholder="Ví dụ: FBN12345">
@@ -63,7 +68,7 @@
                 <label>Họ và Tên Học Sinh</label>
                 <input type="text" id="st-name" class="form-control" placeholder="Nhập đầy đủ Họ và Tên">
             </div>
-            <button class="btn btn-primary" onclick="startStudent()">Đăng Nhập & Chia Sẻ</button>
+            <button class="btn btn-primary" onclick="startStudent()">Vào Lớp & Phát Màn Hình</button>
             <div class="role-switch">
                 <a onclick="switchToTeacherLogin()">Cổng dành cho Giáo viên</a>
             </div>
@@ -74,7 +79,7 @@
     <div id="teacher-login" class="login-wrapper" style="display: none;">
         <div class="card">
             <h2>Bảng Điều Khiển Giáo Viên</h2>
-            <p>Giám sát Video Real-time 60fps</p>
+            <p>Giám sát lớp học & Giảng bài trực tuyến</p>
             <div class="form-group">
                 <label>Email Cán Bộ / Giáo Viên</label>
                 <input type="email" id="tc-email" class="form-control" placeholder="example@fe.edu.vn">
@@ -83,7 +88,7 @@
                 <label>Mật Khẩu Quản Trị</label>
                 <input type="password" id="tc-pass" class="form-control" placeholder="Nhập mật khẩu">
             </div>
-            <button class="btn btn-primary" onclick="startTeacher()">Bắt Đầu Giám Sát</button>
+            <button class="btn btn-primary" onclick="startTeacher()">Vào Bảng Điều Khiển</button>
             <div class="role-switch">
                 <a onclick="switchToStudentLogin()">Cổng dành cho Học sinh</a>
             </div>
@@ -93,16 +98,30 @@
     <!-- Dashboard Giáo Viên -->
     <div id="teacher-ui" class="dashboard">
         <div class="dash-header">
-            <div class="dash-title">Giám Sát Màn Hình WebRTC (Google Meet Standard)</div>
-            <div class="badge">Đang kết nối: <span id="count-online">0</span> HS</div>
+            <div>
+                <div class="dash-title">Bảng Giám Sát Real-time</div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Giám sát tất cả màn hình HS & Share bài giảng</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-toggle-share" class="btn btn-success" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="toggleTeacherShare()">
+                    📺 Chia Sẻ Bài Giảng Cho Lớp
+                </button>
+                <div class="badge">Đang kết nối: <span id="count-online">0</span> HS</div>
+            </div>
         </div>
         <div id="students-grid" class="students-grid"></div>
     </div>
 
     <!-- Dashboard Học Sinh -->
     <div id="student-ui" class="dashboard">
+        <!-- Khung xem bài giảng Giáo viên -->
+        <div id="teacher-screen-box" class="teacher-screen-box">
+            <div class="screen-label">📺 MÀN HÌNH BÀI GIẢNG CỦA GIÁO VIÊN</div>
+            <video id="teacher-video" autoplay playsinline></video>
+        </div>
+
         <div style="background: #065f46; color: #ecfdf5; padding: 16px; text-align: center; font-size: 15px; font-weight: 600; border-radius: 8px;">
-            ✅ Màn hình của bạn đang được phát trực tiếp qua luồng WebRTC tới Giáo viên.
+            ✅ Màn hình của bạn đang được phát trực tiếp tới Giáo viên.
         </div>
     </div>
 
@@ -116,9 +135,10 @@
         const socket = io();
         let myRole = '';
         let localStream = null;
-        const peerConnections = {}; // Lưu giữ các kết nối WebRTC với từng học sinh
+        let teacherStream = null;
+        let isTeacherSharing = false;
+        const peerConnections = {}; 
 
-        // Cấu hình STUN Server miễn phí của Google
         const rtcConfig = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -138,7 +158,7 @@
             document.getElementById('student-login').style.display = 'flex';
         }
 
-        // --- HỌC SINH ĐĂNG NHẬP & PHÁT STREAM ---
+        // --- HỌC SINH ĐĂNG NHẬP ---
         async function startStudent() {
             const code = document.getElementById('st-code').value.trim();
             const name = document.getElementById('st-name').value.trim();
@@ -149,7 +169,6 @@
                 if (!res.success) return alert(res.message);
 
                 try {
-                    // Lấy luồng chia sẻ màn hình mượt (FPS: 30)
                     localStream = await navigator.mediaDevices.getDisplayMedia({
                         video: { frameRate: { ideal: 30, max: 60 } },
                         audio: false
@@ -185,7 +204,53 @@
             });
         }
 
-        // --- TẠO KẾT NỐI WEBRTC KHI CÓ HỌC SINH MỚI (GIÁO VIÊN) ---
+        // --- GIÁO VIÊN BẬT/TẮT CHIA SẺ MÀN HÌNH BÀI GIẢNG ---
+        async function toggleTeacherShare() {
+            const btn = document.getElementById('btn-toggle-share');
+            if (!isTeacherSharing) {
+                try {
+                    teacherStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { frameRate: { ideal: 30, max: 60 } },
+                        audio: false
+                    });
+
+                    isTeacherSharing = true;
+                    btn.innerText = "🛑 Dừng Chia Sẻ Bài Giảng";
+                    btn.className = "btn btn-danger";
+
+                    // Gửi bài giảng cho từng học sinh đang online
+                    Object.keys(peerConnections).forEach(socketId => {
+                        const pc = peerConnections[socketId];
+                        teacherStream.getTracks().forEach(track => pc.addTrack(track, teacherStream));
+                        pc.createOffer().then(offer => {
+                            pc.setLocalDescription(offer);
+                            socket.emit('webrtc-offer', { targetSocketId: socketId, offer, type: 'teacher-stream' });
+                        });
+                    });
+
+                    teacherStream.getVideoTracks()[0].onended = () => stopTeacherShare();
+
+                } catch (err) {
+                    alert('Đã hủy chia sẻ bài giảng!');
+                }
+            } else {
+                stopTeacherShare();
+            }
+        }
+
+        function stopTeacherShare() {
+            if (teacherStream) {
+                teacherStream.getTracks().forEach(track => track.stop());
+                teacherStream = null;
+            }
+            isTeacherSharing = false;
+            const btn = document.getElementById('btn-toggle-share');
+            btn.innerText = "📺 Chia Sẻ Bài Giảng Cho Lớp";
+            btn.className = "btn btn-success";
+            socket.emit('teacher-screen-state', { isSharing: false });
+        }
+
+        // --- KẾT NỐI WEBRTC ---
         socket.on('student-joined-webrtc', ({ socketId, studentCode, name }) => {
             if (myRole === 'teacher') {
                 createPeerConnection(socketId, studentCode, name, true);
@@ -198,25 +263,18 @@
             }
         });
 
-        // HÀM TẠO WEBRTC PEER CONNECTION
         function createPeerConnection(targetSocketId, studentCode, name, isTeacher) {
             const pc = new RTCPeerConnection(rtcConfig);
             peerConnections[targetSocketId] = pc;
 
-            if (!isTeacher && localStream) {
-                // Học sinh đẩy các luồng track video màn hình sang cho Giáo viên
-                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            }
-
-            // Gửi các ứng viên ICE Candidate
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
                     socket.emit('webrtc-ice-candidate', { targetSocketId, candidate: event.candidate });
                 }
             };
 
-            // Nếu là Giáo viên: Nhận luồng Video trực tiếp từ Học sinh
             if (isTeacher) {
+                // Nhận stream màn hình từ Học sinh
                 pc.ontrack = (event) => {
                     let card = document.getElementById(`st-card-${studentCode}`);
                     if (!card) {
@@ -241,29 +299,43 @@
                     updateStats();
                 };
 
-                // Giáo viên khởi tạo Offer
+                // Nếu GV đang share bài giảng thì add track luôn
+                if (isTeacherSharing && teacherStream) {
+                    teacherStream.getTracks().forEach(track => pc.addTrack(track, teacherStream));
+                }
+
                 pc.createOffer().then(offer => {
                     pc.setLocalDescription(offer);
-                    socket.emit('webrtc-offer', { targetSocketId, offer, studentCode, name });
+                    socket.emit('webrtc-offer', { targetSocketId, offer, studentCode, name, type: 'student-stream' });
                 });
             }
         }
 
-        // --- XỬ LÝ SIGNALING WEBRTC CHUNG ---
-        socket.on('webrtc-offer', async ({ senderSocketId, offer, studentCode, name }) => {
+        socket.on('webrtc-offer', async ({ senderSocketId, offer, type }) => {
             if (myRole === 'student') {
-                const pc = new RTCPeerConnection(rtcConfig);
-                peerConnections[senderSocketId] = pc;
+                let pc = peerConnections[senderSocketId];
+                if (!pc) {
+                    pc = new RTCPeerConnection(rtcConfig);
+                    peerConnections[senderSocketId] = pc;
 
-                if (localStream) {
-                    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-                }
-
-                pc.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        socket.emit('webrtc-ice-candidate', { targetSocketId: senderSocketId, candidate: event.candidate });
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
                     }
-                };
+
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            socket.emit('webrtc-ice-candidate', { targetSocketId: senderSocketId, candidate: event.candidate });
+                        }
+                    };
+
+                    pc.ontrack = (event) => {
+                        // Hiển thị màn hình Bài giảng của Giáo viên
+                        const box = document.getElementById('teacher-screen-box');
+                        const video = document.getElementById('teacher-video');
+                        box.style.display = 'block';
+                        video.srcObject = event.streams[0];
+                    };
+                }
 
                 await pc.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await pc.createAnswer();
@@ -275,15 +347,17 @@
 
         socket.on('webrtc-answer', async ({ senderSocketId, answer }) => {
             const pc = peerConnections[senderSocketId];
-            if (pc) {
-                await pc.setRemoteDescription(new RTCSessionDescription(answer));
-            }
+            if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
         });
 
         socket.on('webrtc-ice-candidate', async ({ senderSocketId, candidate }) => {
             const pc = peerConnections[senderSocketId];
-            if (pc) {
-                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        });
+
+        socket.on('teacher-screen-state', ({ isSharing }) => {
+            if (!isSharing) {
+                document.getElementById('teacher-screen-box').style.display = 'none';
             }
         });
 
