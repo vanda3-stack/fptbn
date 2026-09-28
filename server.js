@@ -18,7 +18,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// XÁC THỰC TÀI KHOẢN
 const TEACHER_PASS = "123456";
 
 function isValidTeacherEmail(email) {
@@ -34,7 +33,6 @@ let currentTeacherSocketId = null;
 
 io.on('connection', (socket) => {
 
-  // 1. Xác thực tài khoản
   socket.on('auth-user', ({ role, teacherEmail, teacherPass, studentCode, className, studentName }, callback) => {
     if (role === 'teacher') {
       if (!isValidTeacherEmail(teacherEmail)) {
@@ -65,7 +63,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 2. Vào phòng học
   socket.on('join-room', ({ role, name, className, studentCode }) => {
     socket.role = role;
     socket.userName = name || socket.userName;
@@ -82,7 +79,6 @@ io.on('connection', (socket) => {
         code: socket.studentCode
       };
 
-      // Báo cho Giáo viên biết có Học sinh mới tham gia để khởi tạo WebRTC Connection
       if (currentTeacherSocketId) {
         io.to(currentTeacherSocketId).emit('student-joined-webrtc', {
           socketId: socket.id,
@@ -93,19 +89,18 @@ io.on('connection', (socket) => {
       }
     } else if (role === 'teacher') {
       currentTeacherSocketId = socket.id;
-      // Gửi danh sách toàn bộ HS đang online cho Giáo viên kết nối
       socket.emit('all-online-students', Object.values(connectedStudents));
     }
   });
 
-  // 3. Xử lý Signaling WebRTC (Trao đổi Offer / Answer / ICE Candidate)
-  socket.on('webrtc-offer', ({ targetSocketId, offer, studentCode, name, className }) => {
+  // Signaling WebRTC 2 chiều
+  socket.on('webrtc-offer', ({ targetSocketId, offer, studentCode, name, type }) => {
     io.to(targetSocketId).emit('webrtc-offer', {
       senderSocketId: socket.id,
       offer,
       studentCode,
       name,
-      className
+      type // 'student-stream' hoặc 'teacher-stream'
     });
   });
 
@@ -123,7 +118,11 @@ io.on('connection', (socket) => {
     });
   });
 
-  // 4. Ngắt kết nối
+  // Thông báo Giáo viên bắt đầu/dừng chia sẻ màn hình bài giảng
+  socket.on('teacher-screen-state', ({ isSharing }) => {
+    socket.to('classroom').emit('teacher-screen-state', { isSharing });
+  });
+
   socket.on('disconnect', () => {
     if (socket.role === 'student' && socket.studentCode) {
       delete connectedStudents[socket.studentCode];
@@ -133,9 +132,10 @@ io.on('connection', (socket) => {
       });
     } else if (socket.role === 'teacher') {
       if (currentTeacherSocketId === socket.id) currentTeacherSocketId = null;
+      io.to('classroom').emit('teacher-disconnected');
     }
   });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 WebRTC Server đang vận hành tại cổng ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 WebRTC Server 2 Chiều đang vận hành tại cổng ${PORT}`));
