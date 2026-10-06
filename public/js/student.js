@@ -214,10 +214,6 @@ socket.on(
             );
 
 
-            socket.emit(
-                "screen-ready"
-            );
-
         }
 
     }
@@ -537,7 +533,11 @@ button.addEventListener(
 
 
             // =========================================
-            // ĐĂNG KÝ HS
+            // ĐĂNG KÝ HS VÀO ROOM THEO LỚP
+            //
+            // Server sẽ tra lại studentId trong DB và
+            // tự quyết định room. classCode phía client
+            // chỉ dùng để hiển thị, không quyết định room.
             // =========================================
 
             socket.emit(
@@ -568,15 +568,6 @@ button.addEventListener(
 
 
             // =========================================
-            // SCREEN READY
-            // =========================================
-
-            socket.emit(
-                "screen-ready"
-            );
-
-
-            // =========================================
             // CHUYỂN GIAO DIỆN
             // =========================================
 
@@ -597,7 +588,9 @@ button.addEventListener(
                 studentBadge.textContent =
                     studentCode +
                     " - " +
-                    studentName;
+                    studentName +
+                    " - " +
+                    studentClassCode;
 
                 studentBadge.title =
                     studentClassCode
@@ -1899,6 +1892,159 @@ socket.on(
 
         waitingTeacher.style.display =
             "block";
+
+    }
+);
+
+
+// =====================================================
+// SERVER XÁC NHẬN ROOM LỚP
+// =====================================================
+
+socket.on(
+    "class-info",
+    info => {
+
+        if (!joinedClass) {
+            return;
+        }
+
+
+        if (info?.classCode) {
+
+            studentClassCode =
+                info.classCode;
+
+        }
+
+
+        if (info?.className) {
+
+            studentClassName =
+                info.className;
+
+        }
+
+
+        if (info?.schoolYear) {
+
+            studentSchoolYear =
+                info.schoolYear;
+
+        }
+
+
+        if (studentBadge) {
+
+            studentBadge.textContent =
+                studentCode +
+                " - " +
+                studentName +
+                " - " +
+                studentClassCode;
+
+        }
+
+
+        // Chỉ báo screen-ready sau khi server đã xác nhận
+        // HS thực sự được join vào đúng room lớp.
+
+        if (
+            screenStream &&
+            screenStream.active
+        ) {
+
+            socket.emit(
+                "screen-ready"
+            );
+
+        }
+
+
+        if (info?.teacherOnline) {
+
+            studentStatus.textContent =
+                "🟢 Đã vào lớp " +
+                studentClassCode +
+                " • GV đang trực tuyến";
+
+        } else {
+
+            studentStatus.textContent =
+                "🟡 Đã vào lớp " +
+                studentClassCode +
+                " • Đang chờ giáo viên";
+
+        }
+
+
+        console.log(
+            "JOINED CLASS ROOM:",
+            studentClassCode,
+            "teacherOnline:",
+            !!info?.teacherOnline
+        );
+
+    }
+);
+
+
+socket.on(
+    "student-join-error",
+    info => {
+
+        console.error(
+            "STUDENT JOIN ERROR:",
+            info
+        );
+
+
+        joinedClass =
+            false;
+
+
+        if (screenStream) {
+
+            screenStream
+                .getTracks()
+                .forEach(
+                    track => track.stop()
+                );
+
+
+            screenStream =
+                null;
+
+        }
+
+
+        closeStudentPeer();
+
+        closeTeacherPeer();
+
+
+        classroom.style.display =
+            "none";
+
+
+        joinPage.style.display =
+            "block";
+
+
+        statusBox.textContent =
+            "🔴 " +
+            (
+                info?.message ||
+                "Không thể vào phòng lớp."
+            );
+
+
+        button.disabled =
+            false;
+
+
+        button.textContent =
+            "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
 
     }
 );
