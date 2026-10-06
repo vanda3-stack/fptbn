@@ -443,8 +443,18 @@ button.addEventListener(
                 displaySurface: "monitor",
 
                 frameRate: {
-                    ideal: 5,
-                    max: 6
+                    ideal: 3,
+                    max: 3
+                },
+
+                width: {
+                    ideal: 854,
+                    max: 960
+                },
+
+                height: {
+                    ideal: 480,
+                    max: 540
                 }
 
             },
@@ -2045,6 +2055,108 @@ socket.on(
 
         button.textContent =
             "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
+
+    }
+);
+
+
+// =====================================================
+// CHẤT LƯỢNG MÀN HÌNH HS
+//
+// Grid: ưu tiên nhẹ cho 30 màn hình.
+// Focus: tăng chất lượng khi GV phóng to một HS.
+// =====================================================
+
+async function applyStudentQuality(
+    mode
+) {
+
+    if (!screenStream) {
+        return;
+    }
+
+
+    const track =
+        screenStream.getVideoTracks()[0];
+
+
+    if (!track) {
+        return;
+    }
+
+
+    const constraints =
+        mode === "focus"
+            ? {
+                frameRate: {
+                    ideal: 10,
+                    max: 12
+                },
+
+                width: {
+                    ideal: 1280,
+                    max: 1920
+                },
+
+                height: {
+                    ideal: 720,
+                    max: 1080
+                }
+            }
+            : {
+                frameRate: {
+                    ideal: 3,
+                    max: 3
+                },
+
+                width: {
+                    ideal: 854,
+                    max: 960
+                },
+
+                height: {
+                    ideal: 480,
+                    max: 540
+                }
+            };
+
+
+    try {
+
+        await track.applyConstraints(
+            constraints
+        );
+
+
+        console.log(
+            "STUDENT QUALITY:",
+            mode,
+            track.getSettings()
+        );
+
+
+    } catch (error) {
+
+        console.warn(
+            "APPLY QUALITY FAILED:",
+            mode,
+            error
+        );
+
+    }
+
+}
+
+
+socket.on(
+    "student-quality",
+    data => {
+
+        applyStudentQuality(
+            data?.mode === "focus"
+                ? "focus"
+                : "grid"
+        );
 
     }
 );
