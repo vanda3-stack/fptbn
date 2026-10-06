@@ -4,6 +4,7 @@ const db = require("./config/database");
 const express = require("express");
 const http = require("http");
 const path = require("path");
+const crypto = require("crypto");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { Server } = require("socket.io");
@@ -4178,6 +4179,175 @@ app.patch(
     }
 );
 // =====================================================
+// TEACHER LOGIN + CURRENT CLASSES
+// =====================================================
+
+const teacherLoginTokens = new Map();
+
+
+app.post("/api/teacher/login", async (req, res) => {
+
+    try {
+
+        const email =
+            String(req.body.email || "")
+                .trim()
+                .toLowerCase();
+
+
+        if (!email) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng nhập email giáo viên"
+            });
+
+        }
+
+
+        const [rows] = await db.query(
+            `
+            SELECT
+                id,
+                email,
+                full_name
+            FROM teachers
+            WHERE
+                email = ?
+                AND is_active = 1
+            LIMIT 1
+            `,
+            [email]
+        );
+
+
+        if (rows.length === 0) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Email giáo viên không tồn tại hoặc đã bị khóa"
+            });
+
+        }
+
+
+        const teacher = rows[0];
+
+        const token =
+            crypto.randomBytes(32)
+                .toString("hex");
+
+
+        teacherLoginTokens.set(
+            token,
+            {
+                teacherId: teacher.id,
+                email: teacher.email,
+                fullName: teacher.full_name,
+                createdAt: Date.now()
+            }
+        );
+
+
+        res.json({
+            success: true,
+            token,
+            teacher: {
+                id: teacher.id,
+                email: teacher.email,
+                full_name: teacher.full_name
+            }
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "TEACHER LOGIN ERROR:",
+            error
+        );
+
+
+        res.status(500).json({
+            success: false,
+            message: "Không thể đăng nhập giáo viên"
+        });
+
+    }
+
+});
+
+
+app.get("/api/teacher/classes", async (req, res) => {
+
+    try {
+
+        const token =
+            String(
+                req.headers["x-teacher-token"] ||
+                ""
+            ).trim();
+
+
+        if (
+            !token ||
+            !teacherLoginTokens.has(token)
+        ) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Phiên đăng nhập giáo viên không hợp lệ"
+            });
+
+        }
+
+
+        const [rows] = await db.query(
+            `
+            SELECT
+                c.id,
+                c.class_code,
+                c.class_name,
+                c.grade_level,
+                sy.name AS school_year
+            FROM classes c
+            INNER JOIN school_years sy
+                ON sy.id = c.school_year_id
+            WHERE
+                c.is_active = 1
+                AND sy.is_current = 1
+            ORDER BY
+                c.grade_level ASC,
+                c.class_code ASC
+            `
+        );
+
+
+        res.json({
+            success: true,
+            classes: rows
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "GET TEACHER CLASSES ERROR:",
+            error
+        );
+
+
+        res.status(500).json({
+            success: false,
+            message: "Không thể lấy danh sách lớp"
+        });
+
+    }
+
+});
+
+
+// =====================================================
 // STUDENT LOGIN / LOOKUP
 // =====================================================
 
@@ -4406,27 +4576,109 @@ io.on(
 
         socket.on(
             "teacher-join",
-            data => {
+            async data => {
 
-                const classCode =
-                    normalizeClassCode(
-                        data?.classCode
-                    );
+                try {
 
-
-                socket.data.role =
-                    "teacher";
-
-                socket.data.classCode =
-                    classCode;
+                    const token =
+                        String(
+                            data?.token ||
+                            ""
+                        ).trim();
 
 
-                if (classCode) {
+                    const classCode =
+                        normalizeClassCode(
+                            data?.classCode
+                        );
+
+
+                    const login =
+                        teacherLoginTokens.get(
+                            token
+                        );
+
+
+                    if (
+                        !login ||
+                        !classCode
+                    ) {
+
+                        socket.emit(
+                            "teacher-join-error",
+                            {
+                                message:
+                                    "Phiên đăng nhập hoặc lớp học không hợp lệ."
+                            }
+                        );
+
+                        return;
+
+                    }
+
+
+                    const [classRows] =
+                        await db.query(
+                            `
+                            SELECT
+                                c.id,
+                                c.class_code,
+                                c.class_name,
+                                sy.name AS school_year
+                            FROM classes c
+                            INNER JOIN school_years sy
+                                ON sy.id = c.school_year_id
+                            WHERE
+                                UPPER(c.class_code) = ?
+                                AND c.is_active = 1
+                                AND sy.is_current = 1
+                            LIMIT 1
+                            `,
+                            [classCode]
+                        );
+
+
+                    if (
+                        classRows.length === 0
+                    ) {
+
+                        socket.emit(
+                            "teacher-join-error",
+                            {
+                                message:
+                                    "Không tìm thấy lớp học đang hoạt động."
+                            }
+                        );
+
+                        return;
+
+                    }
+
+
+                    const selectedClass =
+                        classRows[0];
 
                     const room =
                         getClassRoom(
                             classCode
                         );
+
+
+                    socket.data.role =
+                        "teacher";
+
+                    socket.data.teacherId =
+                        login.teacherId;
+
+                    socket.data.teacherName =
+                        login.fullName;
+
+                    socket.data.teacherEmail =
+                        login.email;
+
+                    socket.data.classCode =
+                        classCode;
+
 
                     socket.join(
                         room
@@ -4441,36 +4693,68 @@ io.on(
 
                     console.log(
                         "Teacher joined class:",
+                        login.fullName,
                         classCode,
                         socket.id
                     );
 
-                } else {
 
-                    console.log(
-                        "Teacher connected without class:",
-                        socket.id
+                    socket.emit(
+                        "teacher-ready",
+                        {
+                            teacher: {
+                                id:
+                                    login.teacherId,
+
+                                email:
+                                    login.email,
+
+                                full_name:
+                                    login.fullName
+                            },
+
+                            class: {
+                                id:
+                                    selectedClass.id,
+
+                                class_code:
+                                    selectedClass.class_code,
+
+                                class_name:
+                                    selectedClass.class_name,
+
+                                school_year:
+                                    selectedClass.school_year
+                            }
+                        }
+                    );
+
+
+                    socket.emit(
+                        "student-list",
+                        getStudentList(
+                            classCode
+                        )
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "TEACHER JOIN ERROR:",
+                        error
+                    );
+
+
+                    socket.emit(
+                        "teacher-join-error",
+                        {
+                            message:
+                                "Không thể vào phòng lớp."
+                        }
                     );
 
                 }
-
-
-                socket.emit(
-                    "teacher-ready",
-                    {
-                        classCode
-                    }
-                );
-
-
-                socket.emit(
-                    "student-list",
-                    classCode
-                        ? getStudentList(
-                            classCode
-                        )
-                        : []
-                );
 
             }
         );
