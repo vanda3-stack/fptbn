@@ -293,21 +293,22 @@
 
             display: none;
 
-            width: 100%;
+            position: fixed;
 
-            max-width: 420px;
+            right: 12px;
 
-            margin:
-                0
-                0
-                12px
-                0;
+            bottom: 12px;
 
-            padding:
-                8px;
+            z-index: 900;
+
+            width: 240px;
+
+            margin: 0;
+
+            padding: 6px;
 
             background:
-                #111827;
+                rgba(17, 24, 39, 0.96);
 
             border:
                 1px solid
@@ -315,6 +316,10 @@
 
             border-radius:
                 10px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(0, 0, 0, 0.35);
         }
 
 
@@ -346,7 +351,7 @@
 
             width: 100%;
 
-            max-height: 190px;
+            max-height: 120px;
 
             object-fit:
                 contain;
@@ -861,8 +866,11 @@
 
             #teacherShareBox {
 
+                width:
+                    180px;
+
                 max-width:
-                    100%;
+                    45vw;
             }
 
 
