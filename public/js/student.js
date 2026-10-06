@@ -28,6 +28,9 @@ const statusBox =
 const studentStatus =
     document.getElementById("studentStatus");
 
+const studentBadge =
+    document.getElementById("studentBadge");
+
 const teacherVideo =
     document.getElementById("teacherVideo");
 
@@ -586,12 +589,22 @@ button.addEventListener(
 
 
             studentStatus.textContent =
-                "🟢 " +
-                studentName +
-                " • " +
-                studentClassCode +
-                " • Mã HS: " +
-                studentCode;
+                "🟢 GV đang nhận màn hình";
+
+
+            if (studentBadge) {
+
+                studentBadge.textContent =
+                    studentCode +
+                    " - " +
+                    studentName;
+
+                studentBadge.title =
+                    studentClassCode
+                        ? "Lớp " + studentClassCode
+                        : "";
+
+            }
 
 
             // =========================================
