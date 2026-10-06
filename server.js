@@ -5291,6 +5291,56 @@ io.on(
 
 
         // =============================================
+        // TEACHER REQUESTS STUDENT STREAM QUALITY
+        // =============================================
+
+        socket.on(
+            "student-quality",
+            data => {
+
+                if (
+                    socket.data.role !==
+                    "teacher" ||
+                    !data?.target
+                ) {
+                    return;
+                }
+
+
+                const targetSocket =
+                    io.sockets.sockets.get(
+                        data.target
+                    );
+
+
+                if (
+                    !targetSocket ||
+                    !canSignalTarget(
+                        targetSocket
+                    )
+                ) {
+                    return;
+                }
+
+
+                const mode =
+                    data.mode === "focus"
+                        ? "focus"
+                        : "grid";
+
+
+                targetSocket.emit(
+                    "student-quality",
+                    {
+                        mode
+                    }
+                );
+
+            }
+        );
+
+
+        // =============================================
         // TEACHER START / STOP SHARE
         // =============================================
 
