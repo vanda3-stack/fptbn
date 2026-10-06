@@ -4307,31 +4307,76 @@ app.post("/api/student/login", async (req, res) => {
 
 });
 // =====================================================
-// CLASS STATE
+// CLASS / ROOM STATE
 // =====================================================
 
-let teacherId = null;
+// Mỗi lớp là một Socket.IO room riêng.
+// Ví dụ class_code = 9A3 -> room = class:9A3
 
 const students = new Map();
+const teachersByClass = new Map();
 
 
-function getStudentList() {
+function normalizeClassCode(value) {
+
+    return String(value || "")
+        .trim()
+        .toUpperCase();
+
+}
+
+
+function getClassRoom(classCode) {
+
+    return "class:" + normalizeClassCode(classCode);
+
+}
+
+
+function getStudentList(classCode) {
+
+    const normalizedClassCode =
+        normalizeClassCode(classCode);
 
     return Array.from(
         students.entries()
-    ).map(
-        ([id, student]) => ({
+    )
+        .filter(
+            ([, student]) =>
+                student.classCode ===
+                normalizedClassCode
+        )
+        .map(
+            ([id, student]) => ({
 
-            id,
+                id,
 
-            name:
-                student.name,
+                studentId:
+                    student.studentId,
 
-            screenReady:
-                student.screenReady
+                studentCode:
+                    student.studentCode,
 
-        })
-    );
+                name:
+                    student.name,
+
+                classId:
+                    student.classId,
+
+                classCode:
+                    student.classCode,
+
+                className:
+                    student.className,
+
+                schoolYear:
+                    student.schoolYear,
+
+                screenReady:
+                    student.screenReady
+
+            })
+        );
 
 }
 
@@ -4353,39 +4398,78 @@ io.on(
         // =============================================
         // TEACHER JOIN
         // =============================================
+        //
+        // Bước 1 vẫn giữ tương thích teacher.js cũ.
+        // Khi teacher.js gửi classCode, GV chỉ nhận HS của lớp đó.
+        // Nếu chưa gửi classCode, GV chưa vào room lớp nào.
+        // =============================================
 
         socket.on(
             "teacher-join",
-            () => {
+            data => {
+
+                const classCode =
+                    normalizeClassCode(
+                        data?.classCode
+                    );
+
 
                 socket.data.role =
                     "teacher";
 
-                teacherId =
-                    socket.id;
-
-                socket.join(
-                    "teacher"
-                );
+                socket.data.classCode =
+                    classCode;
 
 
-                console.log(
-                    "Teacher joined:",
-                    socket.id
-                );
+                if (classCode) {
+
+                    const room =
+                        getClassRoom(
+                            classCode
+                        );
+
+                    socket.join(
+                        room
+                    );
+
+
+                    teachersByClass.set(
+                        classCode,
+                        socket.id
+                    );
+
+
+                    console.log(
+                        "Teacher joined class:",
+                        classCode,
+                        socket.id
+                    );
+
+                } else {
+
+                    console.log(
+                        "Teacher connected without class:",
+                        socket.id
+                    );
+
+                }
 
 
                 socket.emit(
-                    "teacher-ready"
+                    "teacher-ready",
+                    {
+                        classCode
+                    }
                 );
 
-
-                // GV refresh/reconnect:
-                // gửi lại toàn bộ HS đang có.
 
                 socket.emit(
                     "student-list",
-                    getStudentList()
+                    classCode
+                        ? getStudentList(
+                            classCode
+                        )
+                        : []
                 );
 
             }
@@ -4398,54 +4482,232 @@ io.on(
 
         socket.on(
             "student-join",
-            data => {
+            async data => {
 
-                const name =
-                    data?.name?.trim() ||
-                    "Học sinh";
+                try {
 
-
-                socket.data.role =
-                    "student";
-
-                socket.data.name =
-                    name;
+                    const studentId =
+                        Number(
+                            data?.studentId
+                        );
 
 
-                students.set(
-                    socket.id,
-                    {
-                        name,
-                        screenReady: false
+                    if (
+                        !Number.isInteger(
+                            studentId
+                        ) ||
+                        studentId <= 0
+                    ) {
+
+                        socket.emit(
+                            "student-join-error",
+                            {
+                                message:
+                                    "Thông tin học sinh không hợp lệ."
+                            }
+                        );
+
+                        return;
+
                     }
-                );
 
 
-                console.log(
-                    "Student joined:",
-                    name,
-                    socket.id
-                );
+                    // Không tin classCode từ trình duyệt.
+                    // Tra lại DB theo studentId và năm học hiện tại.
+
+                    const [rows] =
+                        await db.execute(
+                            `
+                            SELECT
+                                s.id AS student_id,
+                                s.student_code,
+                                s.full_name,
+                                c.id AS class_id,
+                                c.class_code,
+                                c.class_name,
+                                sy.name AS school_year
+                            FROM students s
+                            INNER JOIN student_enrollments se
+                                ON se.student_id = s.id
+                            INNER JOIN classes c
+                                ON c.id = se.class_id
+                            INNER JOIN school_years sy
+                                ON sy.id = c.school_year_id
+                            WHERE
+                                s.id = ?
+                                AND s.is_active = 1
+                                AND c.is_active = 1
+                                AND sy.is_current = 1
+                            LIMIT 1
+                            `,
+                            [
+                                studentId
+                            ]
+                        );
 
 
-                io.to("teacher").emit(
-                    "student-joined",
-                    {
-                        id:
-                            socket.id,
+                    if (
+                        !rows ||
+                        rows.length === 0
+                    ) {
 
-                        name
+                        socket.emit(
+                            "student-join-error",
+                            {
+                                message:
+                                    "Không tìm thấy lớp hiện tại của học sinh."
+                            }
+                        );
+
+                        return;
+
                     }
-                );
 
 
-                socket.emit(
-                    "class-info",
-                    {
-                        teacherOnline:
-                            !!teacherId
-                    }
-                );
+                    const dbStudent =
+                        rows[0];
+
+
+                    const classCode =
+                        normalizeClassCode(
+                            dbStudent.class_code
+                        );
+
+
+                    const room =
+                        getClassRoom(
+                            classCode
+                        );
+
+
+                    socket.data.role =
+                        "student";
+
+                    socket.data.name =
+                        dbStudent.full_name;
+
+                    socket.data.studentId =
+                        dbStudent.student_id;
+
+                    socket.data.studentCode =
+                        dbStudent.student_code;
+
+                    socket.data.classId =
+                        dbStudent.class_id;
+
+                    socket.data.classCode =
+                        classCode;
+
+
+                    socket.join(
+                        room
+                    );
+
+
+                    students.set(
+                        socket.id,
+                        {
+                            studentId:
+                                dbStudent.student_id,
+
+                            studentCode:
+                                dbStudent.student_code,
+
+                            name:
+                                dbStudent.full_name,
+
+                            classId:
+                                dbStudent.class_id,
+
+                            classCode,
+
+                            className:
+                                dbStudent.class_name,
+
+                            schoolYear:
+                                dbStudent.school_year,
+
+                            screenReady:
+                                false
+                        }
+                    );
+
+
+                    console.log(
+                        "Student joined class:",
+                        dbStudent.full_name,
+                        classCode,
+                        socket.id
+                    );
+
+
+                    socket.to(
+                        room
+                    ).emit(
+                        "student-joined",
+                        {
+                            id:
+                                socket.id,
+
+                            studentId:
+                                dbStudent.student_id,
+
+                            studentCode:
+                                dbStudent.student_code,
+
+                            name:
+                                dbStudent.full_name,
+
+                            classId:
+                                dbStudent.class_id,
+
+                            classCode,
+
+                            className:
+                                dbStudent.class_name,
+
+                            schoolYear:
+                                dbStudent.school_year
+                        }
+                    );
+
+
+                    socket.emit(
+                        "class-info",
+                        {
+                            classCode,
+
+                            className:
+                                dbStudent.class_name,
+
+                            schoolYear:
+                                dbStudent.school_year,
+
+                            teacherOnline:
+                                teachersByClass.has(
+                                    classCode
+                                )
+                        }
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "STUDENT JOIN ERROR:",
+                        error
+                    );
+
+
+                    socket.emit(
+                        "student-join-error",
+                        {
+                            message:
+                                "Không thể đưa học sinh vào phòng lớp."
+                        }
+                    );
+
+                }
 
             }
         );
@@ -4465,30 +4727,48 @@ io.on(
                     );
 
 
-                if (student) {
-
-                    student.screenReady =
-                        true;
-
+                if (!student) {
+                    return;
                 }
+
+
+                student.screenReady =
+                    true;
+
+
+                const room =
+                    getClassRoom(
+                        student.classCode
+                    );
 
 
                 console.log(
                     "Student screen ready:",
-                    socket.data.name,
+                    student.name,
+                    student.classCode,
                     socket.id
                 );
 
 
-                io.to("teacher").emit(
+                socket.to(
+                    room
+                ).emit(
                     "student-screen-ready",
                     {
                         id:
                             socket.id,
 
+                        studentId:
+                            student.studentId,
+
+                        studentCode:
+                            student.studentCode,
+
                         name:
-                            socket.data.name ||
-                            "Học sinh"
+                            student.name,
+
+                        classCode:
+                            student.classCode
                     }
                 );
 
@@ -4510,23 +4790,36 @@ io.on(
                     );
 
 
-                if (student) {
-
-                    student.screenReady =
-                        false;
-
+                if (!student) {
+                    return;
                 }
 
 
-                io.to("teacher").emit(
+                student.screenReady =
+                    false;
+
+
+                socket.to(
+                    getClassRoom(
+                        student.classCode
+                    )
+                ).emit(
                     "student-screen-stopped",
                     {
                         id:
                             socket.id,
 
+                        studentId:
+                            student.studentId,
+
+                        studentCode:
+                            student.studentCode,
+
                         name:
-                            socket.data.name ||
-                            "Học sinh"
+                            student.name,
+
+                        classCode:
+                            student.classCode
                     }
                 );
 
@@ -4535,8 +4828,38 @@ io.on(
 
 
         // =============================================
-        // WEBRTC OFFER
+        // WEBRTC SIGNALING
         // =============================================
+
+        function canSignalTarget(
+            targetSocket
+        ) {
+
+            if (!targetSocket) {
+                return false;
+            }
+
+
+            const sourceClass =
+                normalizeClassCode(
+                    socket.data.classCode
+                );
+
+
+            const targetClass =
+                normalizeClassCode(
+                    targetSocket.data.classCode
+                );
+
+
+            return (
+                sourceClass &&
+                targetClass &&
+                sourceClass === targetClass
+            );
+
+        }
+
 
         socket.on(
             "webrtc-offer",
@@ -4550,18 +4873,31 @@ io.on(
                 }
 
 
-                console.log(
-                    "WEBRTC OFFER:",
-                    data.type,
-                    socket.id,
-                    "->",
-                    data.target
-                );
+                const targetSocket =
+                    io.sockets.sockets.get(
+                        data.target
+                    );
 
 
-                io.to(
-                    data.target
-                ).emit(
+                if (
+                    !canSignalTarget(
+                        targetSocket
+                    )
+                ) {
+
+                    console.warn(
+                        "Blocked cross-class WebRTC offer:",
+                        socket.id,
+                        "->",
+                        data.target
+                    );
+
+                    return;
+
+                }
+
+
+                targetSocket.emit(
                     "webrtc-offer",
                     {
                         from:
@@ -4579,10 +4915,6 @@ io.on(
         );
 
 
-        // =============================================
-        // WEBRTC ANSWER
-        // =============================================
-
         socket.on(
             "webrtc-answer",
             data => {
@@ -4595,18 +4927,22 @@ io.on(
                 }
 
 
-                console.log(
-                    "WEBRTC ANSWER:",
-                    data.type,
-                    socket.id,
-                    "->",
-                    data.target
-                );
+                const targetSocket =
+                    io.sockets.sockets.get(
+                        data.target
+                    );
 
 
-                io.to(
-                    data.target
-                ).emit(
+                if (
+                    !canSignalTarget(
+                        targetSocket
+                    )
+                ) {
+                    return;
+                }
+
+
+                targetSocket.emit(
                     "webrtc-answer",
                     {
                         from:
@@ -4624,10 +4960,6 @@ io.on(
         );
 
 
-        // =============================================
-        // WEBRTC ICE
-        // =============================================
-
         socket.on(
             "webrtc-ice",
             data => {
@@ -4641,9 +4973,22 @@ io.on(
                 }
 
 
-                io.to(
-                    data.target
-                ).emit(
+                const targetSocket =
+                    io.sockets.sockets.get(
+                        data.target
+                    );
+
+
+                if (
+                    !canSignalTarget(
+                        targetSocket
+                    )
+                ) {
+                    return;
+                }
+
+
+                targetSocket.emit(
                     "webrtc-ice",
                     {
                         from:
@@ -4662,7 +5007,7 @@ io.on(
 
 
         // =============================================
-        // TEACHER START SHARE
+        // TEACHER START / STOP SHARE
         // =============================================
 
         socket.on(
@@ -4670,14 +5015,29 @@ io.on(
             () => {
 
                 if (
-                    socket.id !==
-                    teacherId
+                    socket.data.role !==
+                    "teacher"
                 ) {
                     return;
                 }
 
 
-                io.emit(
+                const classCode =
+                    normalizeClassCode(
+                        socket.data.classCode
+                    );
+
+
+                if (!classCode) {
+                    return;
+                }
+
+
+                socket.to(
+                    getClassRoom(
+                        classCode
+                    )
+                ).emit(
                     "teacher-share-started"
                 );
 
@@ -4685,23 +5045,34 @@ io.on(
         );
 
 
-        // =============================================
-        // TEACHER STOP SHARE
-        // =============================================
-
         socket.on(
             "teacher-share-stopped",
             () => {
 
                 if (
-                    socket.id !==
-                    teacherId
+                    socket.data.role !==
+                    "teacher"
                 ) {
                     return;
                 }
 
 
-                io.emit(
+                const classCode =
+                    normalizeClassCode(
+                        socket.data.classCode
+                    );
+
+
+                if (!classCode) {
+                    return;
+                }
+
+
+                socket.to(
+                    getClassRoom(
+                        classCode
+                    )
+                ).emit(
                     "teacher-share-stopped"
                 );
 
@@ -4718,24 +5089,65 @@ io.on(
             () => {
 
                 if (
-                    socket.id !==
-                    teacherId
+                    socket.data.role !==
+                    "teacher"
                 ) {
                     return;
                 }
 
 
+                const classCode =
+                    normalizeClassCode(
+                        socket.data.classCode
+                    );
+
+
+                if (!classCode) {
+                    return;
+                }
+
+
+                const room =
+                    getClassRoom(
+                        classCode
+                    );
+
+
                 console.log(
-                    "Teacher ended class"
+                    "Teacher ended class:",
+                    classCode
                 );
 
 
-                io.emit(
+                socket.to(
+                    room
+                ).emit(
                     "class-ended"
                 );
 
 
-                students.clear();
+                for (
+                    const [id, student]
+                    of students.entries()
+                ) {
+
+                    if (
+                        student.classCode ===
+                        classCode
+                    ) {
+
+                        students.delete(
+                            id
+                        );
+
+                    }
+
+                }
+
+
+                teachersByClass.delete(
+                    classCode
+                );
 
             }
         );
@@ -4756,10 +5168,6 @@ io.on(
                 );
 
 
-                // -------------------------------------
-                // STUDENT
-                // -------------------------------------
-
                 if (
                     socket.data.role ===
                     "student"
@@ -4771,64 +5179,90 @@ io.on(
                         );
 
 
-                    const studentName =
-                        student?.name ||
-                        socket.data.name ||
-                        "Học sinh";
+                    if (student) {
+
+                        students.delete(
+                            socket.id
+                        );
 
 
-                    students.delete(
-                        socket.id
-                    );
+                        socket.to(
+                            getClassRoom(
+                                student.classCode
+                            )
+                        ).emit(
+                            "student-left",
+                            {
+                                id:
+                                    socket.id,
+
+                                studentId:
+                                    student.studentId,
+
+                                studentCode:
+                                    student.studentCode,
+
+                                name:
+                                    student.name,
+
+                                classCode:
+                                    student.classCode,
+
+                                reason
+                            }
+                        );
 
 
-                    // Gửi cả tên HS về GV
-                    // để hiển thị cảnh báo.
+                        console.log(
+                            "Student left:",
+                            student.name,
+                            student.classCode,
+                            socket.id
+                        );
 
-                    io.to("teacher").emit(
-                        "student-left",
-                        {
-                            id:
-                                socket.id,
-
-                            name:
-                                studentName,
-
-                            reason
-                        }
-                    );
-
-
-                    console.log(
-                        "Student left:",
-                        studentName,
-                        socket.id
-                    );
+                    }
 
                 }
 
 
-                // -------------------------------------
-                // TEACHER
-                // -------------------------------------
-
                 if (
-                    socket.id ===
-                    teacherId
+                    socket.data.role ===
+                    "teacher"
                 ) {
 
-                    teacherId =
-                        null;
+                    const classCode =
+                        normalizeClassCode(
+                            socket.data.classCode
+                        );
 
 
-                    io.emit(
-                        "teacher-offline"
-                    );
+                    if (
+                        classCode &&
+                        teachersByClass.get(
+                            classCode
+                        ) === socket.id
+                    ) {
+
+                        teachersByClass.delete(
+                            classCode
+                        );
 
 
-                    console.log(
-                        "Teacher offline"
-                    );
+                        socket.to(
+                            getClassRoom(
+                                classCode
+                            )
+                        ).emit(
+                            "teacher-offline"
+                        );
+
+
+                        console.log(
+                            "Teacher offline:",
+                            classCode
+                        );
+
+                    }
 
                 }
 
