@@ -187,8 +187,26 @@ socket.on(
             socket.emit(
                 "student-join",
                 {
+                    studentId:
+                        studentId,
+
+                    studentCode:
+                        studentCode,
+
                     name:
-                        studentName
+                        studentName,
+
+                    classId:
+                        studentClassId,
+
+                    classCode:
+                        studentClassCode,
+
+                    className:
+                        studentClassName,
+
+                    schoolYear:
+                        studentSchoolYear
                 }
             );
 
@@ -414,9 +432,97 @@ button.addEventListener(
         "Đang yêu cầu chia sẻ màn hình...";
 
 
-                return;
+    // =========================================
+    // YÊU CẦU CHIA SẺ TOÀN BỘ MÀN HÌNH
+    // =========================================
 
-            }
+    screenStream =
+        await navigator.mediaDevices.getDisplayMedia({
+
+            video: {
+
+                displaySurface: "monitor",
+
+                frameRate: {
+                    ideal: 5,
+                    max: 6
+                }
+
+            },
+
+            audio: false,
+
+            preferCurrentTab: false,
+
+            selfBrowserSurface: "exclude",
+
+            surfaceSwitching: "exclude"
+
+        });
+
+
+    const selectedTrack =
+        screenStream.getVideoTracks()[0];
+
+
+    if (!selectedTrack) {
+
+        screenStream
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        screenStream = null;
+
+        throw new Error(
+            "Không lấy được màn hình để chia sẻ."
+        );
+
+    }
+
+
+    const displaySettings =
+        selectedTrack.getSettings();
+
+
+    console.log(
+        "DISPLAY SETTINGS:",
+        displaySettings
+    );
+
+
+    if (
+        displaySettings.displaySurface &&
+        displaySettings.displaySurface !== "monitor"
+    ) {
+
+        screenStream
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        screenStream = null;
+
+        alert(
+            "⚠️ BẠN CHƯA CHỌN TOÀN BỘ MÀN HÌNH!\n\n" +
+            "Hãy chọn TOÀN BỘ MÀN HÌNH (Entire Screen).\n" +
+            "Không chọn Tab hoặc Cửa sổ."
+        );
+
+        statusBox.textContent =
+            "🔴 Hãy chia sẻ TOÀN BỘ MÀN HÌNH";
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
+
+        return;
+
+    }
 
 
             // =========================================
@@ -878,25 +984,6 @@ button.addEventListener(
                             "RESHARE ERROR:",
                             error
                         );
-                        if (
-                            !screenStream &&
-                            error.message
-                        ) {
-
-                            statusBox.textContent =
-                                "🔴 " + error.message;
-
-                            button.disabled =
-                                false;
-
-                            button.textContent =
-                                "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
-
-                            studentCodeInput.focus();
-
-                            return;
-                        }
-
 
                         studentStatus.textContent =
                             "🔴 Chưa chia sẻ lại màn hình";
@@ -928,7 +1015,11 @@ button.addEventListener(
             } else {
 
                 statusBox.textContent =
-                    "🔴 Không thể chia sẻ màn hình";
+                    "🔴 " +
+                    (
+                        error.message ||
+                        "Không thể chia sẻ màn hình"
+                    );
 
             }
 
