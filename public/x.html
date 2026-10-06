@@ -883,12 +883,144 @@
 
         }
 
+
+        /* ==========================================
+           TEACHER LOGIN / CLASS SELECT
+        ========================================== */
+
+        #teacherLoginPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #0f172a;
+        }
+
+        .teacher-login-card {
+            width: 100%;
+            max-width: 460px;
+            padding: 28px;
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.35);
+        }
+
+        .teacher-login-card h1 {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .teacher-login-note {
+            margin-bottom: 22px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .teacher-login-card label {
+            display: block;
+            margin: 12px 0 7px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+
+        .teacher-login-card input,
+        .teacher-login-card select {
+            width: 100%;
+            height: 46px;
+            padding: 0 12px;
+            color: #fff;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 9px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        #teacherClassRow {
+            display: none;
+        }
+
+        #teacherLoginButton,
+        #teacherEnterClassButton {
+            width: 100%;
+            min-height: 48px;
+            margin-top: 16px;
+            border: 0;
+            border-radius: 9px;
+            color: #fff;
+            background: #2563eb;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #teacherLoginStatus {
+            min-height: 20px;
+            margin-top: 13px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        #teacherApp {
+            display: none;
+        }
+
+        #teacherIdentity {
+            padding: 9px 12px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #dbeafe;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
     </style>
 
 </head>
 
 
 <body>
+
+    <section id="teacherLoginPage">
+        <div class="teacher-login-card">
+            <h1>👨‍🏫 Giáo viên</h1>
+            <div class="teacher-login-note">
+                Đăng nhập bằng email giáo viên, sau đó chọn lớp đang giảng dạy.
+            </div>
+
+            <label for="teacherEmail">Email giáo viên</label>
+            <input
+                id="teacherEmail"
+                type="email"
+                placeholder="Ví dụ: vanda3@fe.edu.vn"
+                autocomplete="email"
+            >
+
+            <button id="teacherLoginButton" type="button">
+                Tiếp tục
+            </button>
+
+            <div id="teacherClassRow">
+                <label for="teacherClassSelect">Lớp đang giảng dạy</label>
+                <select id="teacherClassSelect"></select>
+
+                <button id="teacherEnterClassButton" type="button">
+                    🎓 Vào lớp
+                </button>
+            </div>
+
+            <div id="teacherLoginStatus"></div>
+        </div>
+    </section>
+
+    <div id="teacherApp">
 
 
     <!-- ==========================================
@@ -913,6 +1045,7 @@
 
         <div class="header-actions">
 
+            <div id="teacherIdentity">Chưa vào lớp</div>
 
             <!-- SỐ HS -->
 
@@ -1026,6 +1159,8 @@
         id="studentAlerts"
     ></div>
 
+
+    </div>
 
     <!-- ==========================================
          SOCKET.IO
