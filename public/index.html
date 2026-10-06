@@ -828,11 +828,21 @@
             <input
                 id="studentCode"
                 type="text"
-                placeholder="Nhập Mã HS"
+                placeholder="FBN12345"
                 autocomplete="off"
                 autocapitalize="characters"
                 spellcheck="false"
+                maxlength="8"
+                inputmode="text"
+                aria-describedby="studentCodeHint"
             >
+
+            <div
+                id="studentCodeHint"
+                style="margin-top:7px;font-size:12px;color:#94a3b8;"
+            >
+                Mã HS có dạng <strong>FBN12345</strong>. Có thể nhập fbn12345, hệ thống sẽ tự viết hoa.
+            </div>
 
 
             <!-- ==================================
