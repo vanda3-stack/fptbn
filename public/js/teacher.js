@@ -2988,7 +2988,27 @@ endClassButton.addEventListener(
 
 window.addEventListener(
     "beforeunload",
-    () => {
+    event => {
+
+        // =============================================
+        // CẢNH BÁO GV REFRESH / ĐÓNG TAB NHẦM
+        // Chỉ cảnh báo khi GV đang ở trong lớp.
+        // Trình duyệt sẽ hiển thị hộp thoại xác nhận
+        // chuẩn của Chrome/Safari/Edge.
+        // =============================================
+
+        if (
+            typeof teacherClassJoined !== "undefined" &&
+            teacherClassJoined
+        ) {
+
+            event.preventDefault();
+
+            event.returnValue =
+                "";
+
+        }
+
 
         // =============================================
         // CLEAR RETRY
