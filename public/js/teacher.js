@@ -564,7 +564,7 @@ async function connectToStudent(
 
             setStudentStatus(
                 studentId,
-                "🟢 Đang xem",
+                "🟢 Đang xem • 3 FPS",
                 true
             );
 
@@ -2236,10 +2236,80 @@ function createStudentBox(
         "click",
         () => {
 
-            div.classList
-                .toggle(
+            const willExpand =
+                !div.classList.contains(
                     "expanded"
                 );
+
+
+            // Chỉ cho phép một HS ở chế độ Focus.
+            document
+                .querySelectorAll(
+                    ".student.expanded"
+                )
+                .forEach(
+                    card => {
+
+                        if (
+                            card !== div
+                        ) {
+
+                            card.classList.remove(
+                                "expanded"
+                            );
+
+
+                            const otherId =
+                                card.id.replace(
+                                    "student-",
+                                    ""
+                                );
+
+
+                            socket.emit(
+                                "student-quality",
+                                {
+                                    target:
+                                        otherId,
+
+                                    mode:
+                                        "grid"
+                                }
+                            );
+
+                        }
+
+                    }
+                );
+
+
+            div.classList.toggle(
+                "expanded",
+                willExpand
+            );
+
+
+            socket.emit(
+                "student-quality",
+                {
+                    target:
+                        id,
+
+                    mode:
+                        willExpand
+                            ? "focus"
+                            : "grid"
+                }
+            );
+
+
+            setStudentStatus(
+                id,
+                willExpand
+                    ? "🔎 Focus • HD"
+                    : "🟢 Đang xem • 3 FPS",
+                true
+            );
 
         }
     );
