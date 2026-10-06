@@ -39,6 +39,71 @@ const waitingTeacher =
 
 
 // =====================================================
+// CHUẨN HÓA MÃ HỌC SINH
+// FBN + đúng 5 chữ số
+// =====================================================
+
+studentCodeInput.addEventListener(
+    "input",
+    () => {
+
+        let value =
+            studentCodeInput.value
+                .toUpperCase()
+                .replace(/\s+/g, "")
+                .replace(/[^A-Z0-9]/g, "");
+
+
+        // Nếu HS chỉ gõ số, tự thêm FBN.
+        if (/^\d+$/.test(value)) {
+
+            value =
+                "FBN" +
+                value.slice(0, 5);
+
+        } else {
+
+            // Cho phép gõ dần F -> FB -> FBN,
+            // sau FBN chỉ giữ tối đa 5 số.
+            const digits =
+                value
+                    .replace(/^F?B?N?/i, "")
+                    .replace(/\D/g, "")
+                    .slice(0, 5);
+
+
+            const prefixLength =
+                value.startsWith("FBN")
+                    ? 3
+                    : value.startsWith("FB")
+                        ? 2
+                        : value.startsWith("F")
+                            ? 1
+                            : 0;
+
+
+            const prefix =
+                "FBN".slice(
+                    0,
+                    prefixLength
+                );
+
+
+            value =
+                prefix +
+                digits;
+
+        }
+
+
+        studentCodeInput.value =
+            value;
+
+    }
+);
+
+
+// =====================================================
 // STATE
 // =====================================================
 
@@ -309,6 +374,29 @@ button.addEventListener(
             return;
 
         }
+
+
+        if (
+            !/^FBN\d{5}$/.test(
+                code
+            )
+        ) {
+
+            alert(
+                "Mã học sinh chưa đúng.\n\n" +
+                "Mã cần có dạng FBN + 5 số.\n" +
+                "Ví dụ: FBN12345"
+            );
+
+            studentCodeInput.focus();
+
+            return;
+
+        }
+
+
+        studentCodeInput.value =
+            code;
 
 
         // =============================================
