@@ -1,6 +1,7 @@
 const teacherLoginPage = document.getElementById("teacherLoginPage");
 const teacherApp = document.getElementById("teacherApp");
 const teacherEmailInput = document.getElementById("teacherEmail");
+const teacherPasswordInput = document.getElementById("teacherPassword");
 const teacherLoginButton = document.getElementById("teacherLoginButton");
 const teacherClassRow = document.getElementById("teacherClassRow");
 const teacherClassSelect = document.getElementById("teacherClassSelect");
@@ -15,9 +16,10 @@ let teacherClassJoined = false;
 
 async function loginTeacherByEmail() {
     const email = teacherEmailInput.value.trim().toLowerCase();
+    const password = teacherPasswordInput.value;
 
-    if (!email) {
-        teacherLoginStatus.textContent = "🔴 Vui lòng nhập email giáo viên";
+    if (!email || !password) {
+        teacherLoginStatus.textContent = "🔴 Vui lòng nhập email và mật khẩu giáo viên";
         teacherEmailInput.focus();
         return;
     }
@@ -29,7 +31,7 @@ async function loginTeacherByEmail() {
         const response = await fetch("/api/teacher/login", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({email})
+            body: JSON.stringify({email, password})
         });
 
         const data = await response.json();
@@ -68,6 +70,7 @@ async function loginTeacherByEmail() {
         }
 
         teacherEmailInput.disabled = true;
+        teacherPasswordInput.disabled = true;
         teacherLoginButton.style.display = "none";
         teacherClassRow.style.display = "block";
         teacherLoginStatus.textContent =
