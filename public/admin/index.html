@@ -1610,6 +1610,44 @@ tbody tr:hover {
     .quick-actions { grid-template-columns:1fr; }
 }
 
+
+/* ==================================================
+   ADMIN V4 - GIAI ĐOẠN 2: HỌC SINH
+================================================== */
+.student-management-summary {
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-bottom:16px;
+}
+.student-mini-card {
+    background:#fff; border:1px solid var(--border); border-radius:13px; padding:15px 17px;
+}
+.student-mini-card span { color:var(--muted); font-size:12px; font-weight:700; }
+.student-mini-card strong { display:block; font-size:22px; margin-top:5px; }
+.student-toolbar { align-items:center; }
+.student-toolbar .toolbar-left { flex:1; }
+.student-toolbar .search-box { width:min(440px,100%); }
+.student-filter-select {
+    min-width:170px; height:42px; padding:0 34px 0 12px; border:1px solid var(--border);
+    border-radius:9px; background:#fff; color:var(--text); font-weight:600; outline:none;
+}
+.student-filter-select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+.student-pagination {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 20px; border-top:1px solid var(--border); color:var(--muted); font-size:13px;
+}
+.student-pagination-actions { display:flex; gap:7px; }
+.student-pagination-actions button {
+    min-width:38px; height:36px; border:1px solid var(--border); background:#fff;
+    border-radius:8px; font-weight:700; color:var(--text);
+}
+.student-pagination-actions button:disabled { opacity:.4; cursor:not-allowed; }
+.student-code-hint { margin-top:6px; color:var(--muted); font-size:12px; line-height:1.45; }
+@media (max-width:760px) {
+    .student-management-summary { grid-template-columns:1fr; }
+    .student-toolbar .toolbar-left { width:100%; }
+    .student-filter-select { width:100%; }
+    .student-pagination { align-items:flex-start; flex-direction:column; }
+}
+
 </style>
 
 </head>
@@ -2019,151 +2057,113 @@ tbody tr:hover {
                 class="page"
             >
 
-
                 <div class="page-header">
-
-
                     <div>
-
-                        <h2>
-                            Quản lý học sinh
-                        </h2>
-
-                        <p>
-                            Thêm, sửa, khóa tài khoản
-                            và đặt lại mật khẩu học sinh.
-                        </p>
-
+                        <div class="admin-kicker">Dữ liệu học sinh</div>
+                        <h2>Quản lý học sinh</h2>
+                        <p>Tìm kiếm, lọc theo lớp, cập nhật thông tin và trạng thái tài khoản học sinh.</p>
                     </div>
 
-
-                    <button
-                        class="btn btn-primary"
-                        onclick="openAddStudent()"
-                    >
+                    <button class="btn btn-primary" onclick="openAddStudent()">
                         + Thêm học sinh
                     </button>
-
-
                 </div>
 
-
+                <div class="student-management-summary">
+                    <div class="student-mini-card">
+                        <span>TỔNG HỌC SINH</span>
+                        <strong id="studentPageTotal">--</strong>
+                    </div>
+                    <div class="student-mini-card">
+                        <span>ĐANG HOẠT ĐỘNG</span>
+                        <strong id="studentPageActive">--</strong>
+                    </div>
+                    <div class="student-mini-card">
+                        <span>ĐANG KHÓA</span>
+                        <strong id="studentPageLocked">--</strong>
+                    </div>
+                </div>
 
                 <div class="card">
 
-
-                    <div class="toolbar">
-
-
+                    <div class="toolbar student-toolbar">
                         <div class="toolbar-left">
 
-
                             <div class="search-box">
-
-                                <span>
-                                    ⌕
-                                </span>
-
+                                <span>⌕</span>
                                 <input
                                     id="studentSearch"
                                     type="text"
-                                    placeholder="Tìm mã HS hoặc họ tên..."
+                                    placeholder="Tìm theo mã HS hoặc họ tên..."
+                                    autocomplete="off"
                                 >
-                                <select
-                                    id="studentClassFilter"
-                                    class="filter-select"
-                                >
-                                    <option value="">
-                                        Tất cả lớp
-                                    </option>
-                                </select>
-
                             </div>
 
+                            <select
+                                id="studentClassFilter"
+                                class="student-filter-select"
+                            >
+                                <option value="">Tất cả lớp</option>
+                            </select>
+
+                            <select
+                                id="studentStatusFilter"
+                                class="student-filter-select"
+                            >
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="locked">Đã khóa</option>
+                            </select>
 
                         </div>
 
-
-                        <button
-                            class="btn btn-light"
-                            onclick="loadStudents()"
-                        >
+                        <button class="btn btn-light" onclick="loadStudents()">
                             ↻ Làm mới
                         </button>
-
-
                     </div>
 
+                    <div id="studentError" class="api-error"></div>
 
-
-                    <div
-                        id="studentError"
-                        class="api-error"
-                    ></div>
                     <div
                         id="studentFilterSummary"
-                        style="
-                            padding: 10px 20px;
-                            font-size: 14px;
-                            font-weight: 600;
-                            color: #64748b;
-                        "
+                        style="padding:10px 20px;font-size:14px;font-weight:600;color:#64748b;"
                     >
                         Đang tải dữ liệu học sinh...
                     </div>
 
-
-
                     <div class="table-wrapper">
-
-
                         <table>
-
-
                             <thead>
-
                                 <tr>
                                     <th>STT</th>
                                     <th>Mã học sinh</th>
                                     <th>Họ và tên</th>
-
                                     <th>Lớp</th>
-
                                     <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th>Thao tác</th>
                                 </tr>
-
                             </thead>
-
-
                             <tbody id="studentTableBody">
-
                                 <tr>
-
-                                    <td
-                                        colspan="6"
-                                        class="table-message"
-                                    >
-                                        Đang tải dữ liệu...
-                                    </td>
-
+                                    <td colspan="7" class="table-message">Đang tải dữ liệu...</td>
                                 </tr>
-
                             </tbody>
-
-
                         </table>
-
-
                     </div>
 
+                    <div class="student-pagination">
+                        <span id="studentPaginationInfo">--</span>
+                        <div class="student-pagination-actions">
+                            <button id="studentPrevPage" type="button" onclick="changeStudentPage(-1)">‹</button>
+                            <button id="studentPageNumber" type="button" disabled>1</button>
+                            <button id="studentNextPage" type="button" onclick="changeStudentPage(1)">›</button>
+                        </div>
+                    </div>
 
                 </div>
 
-
             </section>
-
 
 
             <!-- ==========================================
@@ -3030,9 +3030,15 @@ tbody tr:hover {
                 <input
                     id="modalStudentCode"
                     type="text"
-                    placeholder="Ví dụ: FBN0003"
-                    maxlength="50"
+                    placeholder="Ví dụ: FBN12345"
+                    maxlength="8"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
                 >
+                <div class="student-code-hint">
+                    Định dạng bắt buộc: <strong>FBN + 5 số</strong>. Ví dụ: FBN12345.
+                </div>
 
             </div>
             <div class="form-group">
@@ -3526,6 +3532,12 @@ const loginMessage =
 
 let students = [];
 
+let studentFilteredList = [];
+
+let studentCurrentPage = 1;
+
+const STUDENTS_PER_PAGE = 50;
+
 let confirmAction = null;
 
 
@@ -4014,9 +4026,7 @@ async function loadStudents() {
                 "● Hoạt động";
 
 
-        renderStudents(
-            students
-        );
+        applyStudentFilters();
 
 
     } catch (error) {
@@ -4316,229 +4326,170 @@ function renderStudents(list) {
             "studentTableBody"
         );
 
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                list.length /
+                STUDENTS_PER_PAGE
+            )
+        );
 
-    if (!list.length) {
+
+    if (studentCurrentPage > totalPages) {
+        studentCurrentPage = totalPages;
+    }
+
+
+    const start =
+        (studentCurrentPage - 1) *
+        STUDENTS_PER_PAGE;
+
+    const pageList =
+        list.slice(
+            start,
+            start + STUDENTS_PER_PAGE
+        );
+
+
+    if (!pageList.length) {
 
         table.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="6"
-                    class="table-message"
-                >
-                    Không tìm thấy học sinh.
+                <td colspan="7" class="table-message">
+                    Không tìm thấy học sinh phù hợp.
                 </td>
-
             </tr>
-
         `;
 
-        return;
+    } else {
+
+        table.innerHTML =
+            pageList.map(
+                (student, pageIndex) => {
+
+                    const active =
+                        Number(student.is_active) === 1;
+
+                    const status =
+                        active
+                            ? `<span class="badge badge-active"><span class="badge-dot"></span>Hoạt động</span>`
+                            : `<span class="badge badge-locked"><span class="badge-dot"></span>Đã khóa</span>`;
+
+                    return `
+                        <tr>
+                            <td>${start + pageIndex + 1}</td>
+                            <td class="student-code">${escapeHtml(student.student_code)}</td>
+                            <td><strong>${escapeHtml(student.full_name)}</strong></td>
+                            <td>
+                                ${
+                                    student.class_code
+                                        ? `<strong>${escapeHtml(student.class_code)}</strong>`
+                                        : `<span class="text-muted">Chưa xếp lớp</span>`
+                                }
+                            </td>
+                            <td>${status}</td>
+                            <td>${formatDate(student.created_at)}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-button edit" onclick="openEditStudent(${student.id})" title="Sửa học sinh">✏️</button>
+                                    <button
+                                        class="action-button ${active ? "lock" : "unlock"}"
+                                        onclick="confirmStudentStatus(${student.id})"
+                                        title="${active ? "Khóa tài khoản" : "Mở khóa tài khoản"}"
+                                    >${active ? "🔒" : "🔓"}</button>
+                                    <button class="action-button reset" onclick="confirmResetPassword(${student.id})" title="Reset mật khẩu">🔑</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
 
     }
 
 
-    table.innerHTML =
-        list.map(
-            (student, index) => {
+    const info =
+        document.getElementById(
+            "studentPaginationInfo"
+        );
 
-                const active =
-                    Number(
-                        student.is_active
-                    ) === 1;
+    const pageNumber =
+        document.getElementById(
+            "studentPageNumber"
+        );
 
+    const prev =
+        document.getElementById(
+            "studentPrevPage"
+        );
 
-                const status =
-                    active
-
-                    ? `
-
-                    <span
-                        class="
-                            badge
-                            badge-active
-                        "
-                    >
-
-                        <span
-                            class="badge-dot"
-                        ></span>
-
-                        Hoạt động
-
-                    </span>
-
-                    `
-
-                    : `
-
-                    <span
-                        class="
-                            badge
-                            badge-locked
-                        "
-                    >
-
-                        <span
-                            class="badge-dot"
-                        ></span>
-
-                        Đã khóa
-
-                    </span>
-
-                    `;
+    const next =
+        document.getElementById(
+            "studentNextPage"
+        );
 
 
-                return `
+    if (info) {
 
-                    <tr>
+        if (list.length) {
 
+            info.textContent =
+                `Hiển thị ${start + 1}–${Math.min(start + STUDENTS_PER_PAGE, list.length)} / ${list.length} học sinh`;
 
-                        <td>
-                            ${index + 1}
-                        </td>
+        } else {
 
+            info.textContent =
+                "0 học sinh";
 
-                        <td
-                            class="student-code"
-                        >
-                            ${escapeHtml(
-                                student.student_code
-                            )}
-                        </td>
+        }
+
+    }
 
 
-                        <td>
+    if (pageNumber) {
+        pageNumber.textContent =
+            `${studentCurrentPage} / ${totalPages}`;
+    }
 
-                            <strong>
-                                ${escapeHtml(
-                                    student.full_name
-                                )}
-                            </strong>
+    if (prev) {
+        prev.disabled =
+            studentCurrentPage <= 1;
+    }
 
-                        </td>
-                        <td>
+    if (next) {
+        next.disabled =
+            studentCurrentPage >= totalPages;
+    }
 
-                            ${
-                                student.class_code
-
-                                    ? `
-                                        <strong>
-                                            ${escapeHtml(
-                                                student.class_code
-                                            )}
-                                        </strong>
-                                    `
-
-                                    : `
-                                        <span class="text-muted">
-                                            Chưa xếp lớp
-                                        </span>
-                                    `
-                            }
-
-                        </td>
+}
 
 
-                        <td>
-                            ${status}
-                        </td>
+function changeStudentPage(direction) {
 
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                studentFilteredList.length /
+                STUDENTS_PER_PAGE
+            )
+        );
 
-                        <td>
-                            ${formatDate(
-                                student.created_at
-                            )}
-                        </td>
+    studentCurrentPage =
+        Math.min(
+            totalPages,
+            Math.max(
+                1,
+                studentCurrentPage + direction
+            )
+        );
 
-
-                        <td>
-
-
-                            <div
-                                class="action-buttons"
-                            >
-
-
-                                <button
-                                    class="
-                                        action-button
-                                        edit
-                                    "
-                                    onclick="
-                                        openEditStudent(
-                                            ${student.id}
-                                        )
-                                    "
-                                    title="Sửa học sinh"
-                                >
-                                    ✏️
-                                </button>
-
-
-                                <button
-                                    class="
-                                        action-button
-                                        ${
-                                            active
-                                            ? "lock"
-                                            : "unlock"
-                                        }
-                                    "
-                                    onclick="
-                                        confirmStudentStatus(
-                                            ${student.id}
-                                        )
-                                    "
-                                    title="
-                                        ${
-                                            active
-                                            ? "Khóa tài khoản"
-                                            : "Mở khóa tài khoản"
-                                        }
-                                    "
-                                >
-
-                                    ${
-                                        active
-                                        ? "🔒"
-                                        : "🔓"
-                                    }
-
-                                </button>
-
-
-                                <button
-                                    class="
-                                        action-button
-                                        reset
-                                    "
-                                    onclick="
-                                        confirmResetPassword(
-                                            ${student.id}
-                                        )
-                                    "
-                                    title="Reset mật khẩu"
-                                >
-                                    🔑
-                                </button>
-
-
-                            </div>
-
-
-                        </td>
-
-
-                    </tr>
-
-                `;
-
-            }
-        )
-        .join("");
+    renderStudents(
+        studentFilteredList
+    );
 
 }
 
@@ -4547,75 +4498,40 @@ function renderStudents(list) {
    SEARCH
 ================================================== */
 
-document
-    .getElementById(
-        "studentSearch"
-    )
-    .addEventListener(
+const modalStudentCodeInput =
+    document.getElementById(
+        "modalStudentCode"
+    );
+
+if (modalStudentCodeInput) {
+
+    modalStudentCodeInput.addEventListener(
         "input",
-        function() {
+        function () {
 
-            const keyword =
+            let value =
                 this.value
-                    .trim()
-                    .toLowerCase();
+                    .toUpperCase()
+                    .replace(/\s+/g, "")
+                    .replace(/[^A-Z0-9]/g, "");
 
 
-            if (!keyword) {
+            if (/^\d+$/.test(value)) {
 
-                renderStudents(
-                    students
-                );
-
-                return;
+                value =
+                    "FBN" +
+                    value.slice(0, 5);
 
             }
 
 
-            const result =
-                students.filter(
-                    student => {
-
-                        const code =
-                            String(
-                                student.student_code ||
-                                ""
-                            )
-                            .toLowerCase();
-
-
-                        const name =
-                            String(
-                                student.full_name ||
-                                ""
-                            )
-                            .toLowerCase();
-
-
-                        return (
-
-                            code.includes(
-                                keyword
-                            )
-
-                            ||
-
-                            name.includes(
-                                keyword
-                            )
-
-                        );
-
-                    }
-                );
-
-
-            renderStudents(
-                result
-            );
+            this.value =
+                value.slice(0, 8);
 
         }
     );
+
+}
 
 
 /* ==================================================
@@ -4856,6 +4772,22 @@ async function saveStudent() {
 
         message.textContent =
             "Vui lòng nhập mã học sinh.";
+
+        return;
+    }
+
+
+    if (
+        !/^FBN\d{5}$/.test(
+            studentCode
+        )
+    ) {
+
+        message.className =
+            "modal-message error";
+
+        message.textContent =
+            "Mã học sinh phải có dạng FBN + 5 số, ví dụ FBN12345.";
 
         return;
     }
@@ -7436,6 +7368,9 @@ function applyStudentFilters() {
     const classFilter =
         document.getElementById("studentClassFilter");
 
+    const statusFilter =
+        document.getElementById("studentStatusFilter");
+
     const summary =
         document.getElementById("studentFilterSummary");
 
@@ -7450,19 +7385,23 @@ function applyStudentFilters() {
             ? classFilter.value
             : "";
 
+    const statusValue =
+        statusFilter
+            ? statusFilter.value
+            : "";
 
-    const filtered =
+
+    studentFilteredList =
         students.filter(student => {
 
             const studentCode =
-                String(
-                    student.student_code || ""
-                ).toLowerCase();
+                String(student.student_code || "").toLowerCase();
 
             const fullName =
-                String(
-                    student.full_name || ""
-                ).toLowerCase();
+                String(student.full_name || "").toLowerCase();
+
+            const active =
+                Number(student.is_active) === 1;
 
             const matchesSearch =
                 !keyword ||
@@ -7471,58 +7410,90 @@ function applyStudentFilters() {
 
             const matchesClass =
                 !classId ||
-                String(student.class_id) ===
-                String(classId);
+                String(student.class_id) === String(classId);
+
+            const matchesStatus =
+                !statusValue ||
+                (statusValue === "active" && active) ||
+                (statusValue === "locked" && !active);
 
             return (
                 matchesSearch &&
-                matchesClass
+                matchesClass &&
+                matchesStatus
             );
 
         });
 
 
-    renderStudents(filtered);
+    studentCurrentPage = 1;
+
+    renderStudents(
+        studentFilteredList
+    );
 
 
-    // ==========================================
-    // UPDATE SUMMARY
-    // ==========================================
+    const total =
+        students.length;
+
+    const activeCount =
+        students.filter(
+            item =>
+                Number(item.is_active) === 1
+        ).length;
+
+
+    const totalBox =
+        document.getElementById("studentPageTotal");
+
+    const activeBox =
+        document.getElementById("studentPageActive");
+
+    const lockedBox =
+        document.getElementById("studentPageLocked");
+
+
+    if (totalBox) totalBox.textContent = total;
+
+    if (activeBox) activeBox.textContent = activeCount;
+
+    if (lockedBox) lockedBox.textContent = total - activeCount;
+
 
     if (summary) {
 
-        let className =
-            "Tất cả lớp";
-
-
-        if (
+        const className =
             classFilter &&
             classFilter.selectedIndex >= 0
-        ) {
-
-            className =
-                classFilter.options[
+                ? classFilter.options[
                     classFilter.selectedIndex
-                ].textContent.trim();
+                ].textContent.trim()
+                : "Tất cả lớp";
 
-        }
 
-
-        if (classId) {
-
-            summary.textContent =
-                `Lớp ${className} • ${filtered.length} học sinh`;
-
-        } else {
-
-            summary.textContent =
-                `Tất cả lớp • ${filtered.length} học sinh`;
-
-        }
+        summary.textContent =
+            `${className} • ${studentFilteredList.length} học sinh phù hợp`;
 
     }
 
 }
+
+
+const studentStatusFilter =
+    document.getElementById(
+        "studentStatusFilter"
+    );
+
+if (studentStatusFilter) {
+
+    studentStatusFilter.addEventListener(
+        "change",
+        applyStudentFilters
+    );
+
+}
+
+
 const studentSearchForFilter =
     document.getElementById("studentSearch");
 
