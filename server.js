@@ -2787,6 +2787,346 @@ app.get(
     }
 );
 // =====================================================
+// ADMIN - IMPORT / SYNC TEACHERS FROM EXCEL
+// File chuẩn: MSNV | Họ và tên | Email
+// Email FE là định danh đăng nhập giáo viên.
+// =====================================================
+
+app.post(
+    "/api/admin/teachers/import",
+    excelUpload.single("file"),
+    async (req, res) => {
+
+        let connection;
+
+        try {
+
+            if (!req.file) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng chọn file Excel giáo viên"
+                });
+
+            }
+
+
+            const workbook =
+                XLSX.read(
+                    req.file.buffer,
+                    { type: "buffer" }
+                );
+
+
+            const sheetName =
+                workbook.SheetNames?.[0];
+
+
+            if (!sheetName) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "File Excel không có sheet dữ liệu"
+                });
+
+            }
+
+
+            const rows =
+                XLSX.utils.sheet_to_json(
+                    workbook.Sheets[sheetName],
+                    {
+                        defval: "",
+                        raw: false
+                    }
+                );
+
+
+            if (!rows.length) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: "File Excel không có dữ liệu giáo viên"
+                });
+
+            }
+
+
+            const normalizeHeader =
+                value =>
+                    String(value || "")
+                        .trim()
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/đ/g, "d")
+                        .replace(/\s+/g, " ");
+
+
+            const headers =
+                Object.keys(rows[0] || {});
+
+
+            const nameHeader =
+                headers.find(
+                    header => {
+                        const h =
+                            normalizeHeader(header);
+
+                        return (
+                            h === "ho va ten" ||
+                            h.includes("ho va ten")
+                        );
+                    }
+                );
+
+
+            const emailHeader =
+                headers.find(
+                    header =>
+                        normalizeHeader(header) ===
+                        "email"
+                );
+
+
+            if (!nameHeader || !emailHeader) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "File cần có cột Họ và tên và Email"
+                });
+
+            }
+
+
+            const teachers = [];
+
+            const errors = [];
+
+            const seenEmails =
+                new Set();
+
+
+            rows.forEach(
+                (row, index) => {
+
+                    const fullName =
+                        String(
+                            row[nameHeader] || ""
+                        ).trim();
+
+
+                    const email =
+                        String(
+                            row[emailHeader] || ""
+                        )
+                        .trim()
+                        .toLowerCase();
+
+
+                    if (!fullName && !email) {
+                        return;
+                    }
+
+
+                    if (
+                        !/^[^\s@]+@fe\.edu\.vn$/i.test(
+                            email
+                        )
+                    ) {
+
+                        errors.push({
+                            row: index + 2,
+                            message:
+                                "Email FE không hợp lệ: " +
+                                email
+                        });
+
+                        return;
+
+                    }
+
+
+                    if (seenEmails.has(email)) {
+
+                        errors.push({
+                            row: index + 2,
+                            message:
+                                "Email bị trùng trong file: " +
+                                email
+                        });
+
+                        return;
+
+                    }
+
+
+                    if (!fullName) {
+
+                        errors.push({
+                            row: index + 2,
+                            message:
+                                "Thiếu họ và tên giáo viên"
+                        });
+
+                        return;
+
+                    }
+
+
+                    seenEmails.add(email);
+
+
+                    teachers.push({
+                        email,
+                        full_name: fullName
+                    });
+
+                }
+            );
+
+
+            if (!teachers.length) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Không có giáo viên hợp lệ để import",
+                    errors
+                });
+
+            }
+
+
+            connection =
+                await db.getConnection();
+
+
+            await connection.beginTransaction();
+
+
+            let added = 0;
+
+            let updated = 0;
+
+
+            for (const teacher of teachers) {
+
+                const [existing] =
+                    await connection.query(
+                        `
+                        SELECT id
+                        FROM teachers
+                        WHERE LOWER(email) = ?
+                        LIMIT 1
+                        `,
+                        [teacher.email]
+                    );
+
+
+                if (existing.length) {
+
+                    await connection.query(
+                        `
+                        UPDATE teachers
+                        SET
+                            full_name = ?,
+                            email = ?,
+                            is_active = 1
+                        WHERE id = ?
+                        `,
+                        [
+                            teacher.full_name,
+                            teacher.email,
+                            existing[0].id
+                        ]
+                    );
+
+
+                    updated += 1;
+
+                } else {
+
+                    await connection.query(
+                        `
+                        INSERT INTO teachers
+                        (
+                            email,
+                            full_name,
+                            password_hash,
+                            is_active
+                        )
+                        VALUES (?, ?, ?, 1)
+                        `,
+                        [
+                            teacher.email,
+                            teacher.full_name,
+                            "123456"
+                        ]
+                    );
+
+
+                    added += 1;
+
+                }
+
+            }
+
+
+            await connection.commit();
+
+
+            res.json({
+                success: true,
+                message:
+                    "Đồng bộ danh sách giáo viên thành công",
+                total_valid: teachers.length,
+                added,
+                updated,
+                skipped: errors.length,
+                errors: errors.slice(0, 50)
+            });
+
+
+        } catch (error) {
+
+            if (connection) {
+
+                try {
+                    await connection.rollback();
+                } catch (_) {}
+
+            }
+
+
+            console.error(
+                "IMPORT TEACHERS ERROR:",
+                error
+            );
+
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Không thể import danh sách giáo viên",
+                error: error.message
+            });
+
+
+        } finally {
+
+            if (connection) {
+                connection.release();
+            }
+
+        }
+
+    }
+);
+
+
+// =====================================================
 // ADMIN - GET TEACHERS
 // =====================================================
 
@@ -2864,6 +3204,21 @@ app.post("/api/admin/teachers", async (req, res) => {
         const cleanName =
             String(full_name)
                 .trim();
+
+
+        if (
+            !/^[^\\s@]+@fe\\.edu\\.vn$/i.test(
+                cleanEmail
+            )
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Giáo viên phải sử dụng email @fe.edu.vn"
+            });
+
+        }
 
 
         const [existing] = await db.query(
