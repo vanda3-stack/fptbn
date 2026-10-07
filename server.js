@@ -4515,11 +4515,15 @@ app.post("/api/teacher/login", async (req, res) => {
                 .toLowerCase();
 
 
-        if (!email) {
+        const password =
+            String(req.body.password || "");
+
+
+        if (!email || !password) {
 
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng nhập email giáo viên"
+                message: "Vui lòng nhập email và mật khẩu giáo viên"
             });
 
         }
@@ -4530,7 +4534,8 @@ app.post("/api/teacher/login", async (req, res) => {
             SELECT
                 id,
                 email,
-                full_name
+                full_name,
+                password_hash
             FROM teachers
             WHERE
                 email = ?
@@ -4552,6 +4557,24 @@ app.post("/api/teacher/login", async (req, res) => {
 
 
         const teacher = rows[0];
+
+
+        if (
+            password !==
+            String(
+                teacher.password_hash ||
+                "123456"
+            )
+        ) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Mật khẩu giáo viên không đúng"
+            });
+
+        }
+
 
         const token =
             crypto.randomBytes(32)
@@ -4869,143 +4892,6 @@ function getStudentList(classCode) {
         );
 
 }
-
-
-// =====================================================
-// ADMIN - REALTIME SYSTEM MONITOR
-// Chỉ trả trạng thái kết nối, KHÔNG trả nội dung màn hình.
-// =====================================================
-
-app.get(
-    "/api/admin/system-monitor",
-    async (req, res) => {
-
-        try {
-
-            const onlineStudents =
-                Array.from(
-                    students.values()
-                );
-
-
-            const classMap =
-                new Map();
-
-
-            for (
-                const student
-                of onlineStudents
-            ) {
-
-                const code =
-                    normalizeClassCode(
-                        student.classCode
-                    ) || "UNKNOWN";
-
-
-                if (!classMap.has(code)) {
-
-                    classMap.set(
-                        code,
-                        {
-                            class_code: code,
-                            students_online: 0,
-                            students_sharing: 0,
-                            teacher_online:
-                                teachersByClass.has(code)
-                        }
-                    );
-
-                }
-
-
-                const item =
-                    classMap.get(code);
-
-
-                item.students_online += 1;
-
-
-                if (student.screenReady) {
-                    item.students_sharing += 1;
-                }
-
-            }
-
-
-            for (
-                const classCode
-                of teachersByClass.keys()
-            ) {
-
-                if (!classMap.has(classCode)) {
-
-                    classMap.set(
-                        classCode,
-                        {
-                            class_code: classCode,
-                            students_online: 0,
-                            students_sharing: 0,
-                            teacher_online: true
-                        }
-                    );
-
-                }
-
-            }
-
-
-            const classes =
-                Array.from(
-                    classMap.values()
-                )
-                .sort(
-                    (a, b) =>
-                        a.class_code.localeCompare(
-                            b.class_code,
-                            "vi",
-                            { numeric: true }
-                        )
-                );
-
-
-            res.json({
-                success: true,
-                summary: {
-                    active_classes:
-                        classes.length,
-                    teachers_online:
-                        teachersByClass.size,
-                    students_online:
-                        onlineStudents.length,
-                    students_sharing:
-                        onlineStudents.filter(
-                            item =>
-                                item.screenReady
-                        ).length
-                },
-                classes
-            });
-
-
-        } catch (error) {
-
-            console.error(
-                "SYSTEM MONITOR ERROR:",
-                error
-            );
-
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Không thể tải trạng thái hệ thống"
-            });
-
-        }
-
-    }
-);
 
 
 // =====================================================
