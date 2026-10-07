@@ -520,6 +520,19 @@ app.post(
                         message: "Thiếu Mã HS"
                     });
 
+                } else if (
+                    !/^FBN\d{5}$/.test(
+                        studentCode
+                    )
+                ) {
+
+                    errors.push({
+                        row: excelRow,
+                        type: "invalid_student_code",
+                        message:
+                            "Mã HS phải có dạng FBN + 5 số (ví dụ FBN12345)"
+                    });
+
                 }
 
 
@@ -614,6 +627,14 @@ app.post(
                 ).length;
 
 
+            const invalidStudentCode =
+                errors.filter(
+                    item =>
+                        item.type ===
+                        "invalid_student_code"
+                ).length;
+
+
             const missingFullName =
                 errors.filter(
                     item =>
@@ -677,6 +698,9 @@ app.post(
 
                     missing_student_code:
                         missingStudentCode,
+
+                    invalid_student_code:
+                        invalidStudentCode,
 
                     missing_full_name:
                         missingFullName,
@@ -949,6 +973,21 @@ app.post(
                         success: false,
                         message:
                             `Dòng ${excelRow}: thiếu Mã học sinh`
+                    });
+
+                }
+
+
+                if (
+                    !/^FBN\d{5}$/.test(
+                        studentCode
+                    )
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            `Dòng ${excelRow}: Mã HS phải có dạng FBN + 5 số`
                     });
 
                 }
@@ -5043,6 +5082,143 @@ function getStudentList(classCode) {
         );
 
 }
+
+
+// =====================================================
+// ADMIN - REALTIME SYSTEM MONITOR
+// Chỉ trả trạng thái kết nối, KHÔNG trả nội dung màn hình.
+// =====================================================
+
+app.get(
+    "/api/admin/system-monitor",
+    async (req, res) => {
+
+        try {
+
+            const onlineStudents =
+                Array.from(
+                    students.values()
+                );
+
+
+            const classMap =
+                new Map();
+
+
+            for (
+                const student
+                of onlineStudents
+            ) {
+
+                const code =
+                    normalizeClassCode(
+                        student.classCode
+                    ) || "UNKNOWN";
+
+
+                if (!classMap.has(code)) {
+
+                    classMap.set(
+                        code,
+                        {
+                            class_code: code,
+                            students_online: 0,
+                            students_sharing: 0,
+                            teacher_online:
+                                teachersByClass.has(code)
+                        }
+                    );
+
+                }
+
+
+                const item =
+                    classMap.get(code);
+
+
+                item.students_online += 1;
+
+
+                if (student.screenReady) {
+                    item.students_sharing += 1;
+                }
+
+            }
+
+
+            for (
+                const classCode
+                of teachersByClass.keys()
+            ) {
+
+                if (!classMap.has(classCode)) {
+
+                    classMap.set(
+                        classCode,
+                        {
+                            class_code: classCode,
+                            students_online: 0,
+                            students_sharing: 0,
+                            teacher_online: true
+                        }
+                    );
+
+                }
+
+            }
+
+
+            const classes =
+                Array.from(
+                    classMap.values()
+                )
+                .sort(
+                    (a, b) =>
+                        a.class_code.localeCompare(
+                            b.class_code,
+                            "vi",
+                            { numeric: true }
+                        )
+                );
+
+
+            res.json({
+                success: true,
+                summary: {
+                    active_classes:
+                        classes.length,
+                    teachers_online:
+                        teachersByClass.size,
+                    students_online:
+                        onlineStudents.length,
+                    students_sharing:
+                        onlineStudents.filter(
+                            item =>
+                                item.screenReady
+                        ).length
+                },
+                classes
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "SYSTEM MONITOR ERROR:",
+                error
+            );
+
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Không thể tải trạng thái hệ thống"
+            });
+
+        }
+
+    }
+);
 
 
 // =====================================================
