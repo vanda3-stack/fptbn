@@ -1880,20 +1880,6 @@ tbody tr:hover {
 
             <div
                 class="menu-item"
-                data-page="assignments"
-            >
-
-                <span>🔗</span>
-
-                <span class="menu-label">
-                    Phân công
-                </span>
-
-            </div>
-
-
-            <div
-                class="menu-item"
                 data-page="monitor"
             >
 
@@ -3064,21 +3050,6 @@ tbody tr:hover {
             </div>
 
 
-            <div
-                id="defaultPasswordInfo"
-                style="
-                    background:#eff6ff;
-                    color:#1e40af;
-                    padding:12px 14px;
-                    border-radius:9px;
-                    font-size:13px;
-                    line-height:1.6;
-                "
-            >
-                Khi tạo tài khoản mới,
-                mật khẩu mặc định sẽ là
-                <strong>Mã học sinh</strong>.
-            </div>
 
 
         </div>
@@ -3185,21 +3156,7 @@ tbody tr:hover {
             </div>
 
 
-            <div
-                id="teacherPasswordInfo"
-                style="
-                    background:#eff6ff;
-                    color:#1e40af;
-                    padding:12px 14px;
-                    border-radius:9px;
-                    font-size:13px;
-                    line-height:1.6;
-                "
-            >
-                Khi tạo giáo viên mới,
-                mật khẩu mặc định là
-                <strong>123456</strong>.
-            </div>
+
 
         </div>
 
@@ -4381,7 +4338,6 @@ function renderStudents(list) {
                                         onclick="confirmStudentStatus(${student.id})"
                                         title="${active ? "Khóa tài khoản" : "Mở khóa tài khoản"}"
                                     >${active ? "🔒" : "🔓"}</button>
-                                    <button class="action-button reset" onclick="confirmResetPassword(${student.id})" title="Reset mật khẩu">🔑</button>
                                 </div>
                             </td>
                         </tr>
@@ -4556,14 +4512,6 @@ function openAddStudent() {
             "";
 
 
-    document
-        .getElementById(
-            "defaultPasswordInfo"
-        )
-        .style.display =
-            "block";
-
-
     clearStudentModalMessage();
 
 
@@ -4663,14 +4611,6 @@ function openEditStudent(id) {
             student.class_id
                 ? String(student.class_id)
                 : "";
-
-
-    document
-        .getElementById(
-            "defaultPasswordInfo"
-        )
-        .style.display =
-            "none";
 
 
     clearStudentModalMessage();
@@ -5092,108 +5032,6 @@ async function changeStudentStatus(
 
 
         await loadStudents();
-
-
-    } catch (error) {
-
-        closeConfirm();
-
-
-        showToast(
-            "error",
-            "Có lỗi",
-            error.message
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   RESET PASSWORD
-================================================== */
-
-function confirmResetPassword(id) {
-
-    const student =
-        students.find(
-            item =>
-                Number(item.id) ===
-                Number(id)
-        );
-
-
-    if (!student) {
-        return;
-    }
-
-
-    openConfirm(
-
-        "Đặt lại mật khẩu",
-
-        `Mật khẩu của
-        <strong>${escapeHtml(student.full_name)}</strong>
-        sẽ được đặt lại thành
-        <strong>${escapeHtml(student.student_code)}</strong>.
-        <br><br>
-        Bạn có muốn tiếp tục không?`,
-
-        async () => {
-
-            await resetStudentPassword(
-                student.id
-            );
-
-        }
-
-    );
-
-}
-
-
-async function resetStudentPassword(id) {
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/admin/students/${id}/reset-password`,
-                {
-
-                    method:
-                        "POST"
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.message ||
-                "Không thể đặt lại mật khẩu"
-            );
-
-        }
-
-
-        closeConfirm();
-
-
-        showToast(
-            "success",
-            "Đã đặt lại mật khẩu",
-            `Mật khẩu mới: ${data.student_code}`
-        );
 
 
     } catch (error) {
@@ -6954,20 +6792,7 @@ function renderTeachers(list) {
                                 </button>
 
 
-                                <button
-                                    class="
-                                        action-button
-                                        reset
-                                    "
-                                    onclick="
-                                        confirmResetTeacherPassword(
-                                            ${teacher.id}
-                                        )
-                                    "
-                                    title="Reset mật khẩu"
-                                >
-                                    🔑
-                                </button>
+                                
 
                             </div>
 
@@ -7011,12 +6836,6 @@ function openAddTeacher() {
         "modalTeacherName"
     ).value =
         "";
-
-
-    document.getElementById(
-        "teacherPasswordInfo"
-    ).style.display =
-        "block";
 
 
     clearTeacherMessage();
@@ -7080,12 +6899,6 @@ function openEditTeacher(id) {
         "modalTeacherName"
     ).value =
         teacher.full_name;
-
-
-    document.getElementById(
-        "teacherPasswordInfo"
-    ).style.display =
-        "none";
 
 
     clearTeacherMessage();
@@ -7424,169 +7237,6 @@ async function changeTeacherStatus(
 
 
 /* ==================================================
-   RESET TEACHER PASSWORD
-================================================== */
-
-function confirmResetTeacherPassword(id) {
-
-    const teacher =
-        teachers.find(
-            item =>
-                Number(item.id) ===
-                Number(id)
-        );
-
-
-    if (!teacher) {
-        return;
-    }
-
-
-    openConfirm(
-
-        "Đặt lại mật khẩu",
-
-        `Mật khẩu của
-        <strong>
-            ${escapeHtml(teacher.full_name)}
-        </strong>
-        sẽ được đặt lại thành
-        <strong>123456</strong>.
-        <br><br>
-        Bạn có muốn tiếp tục không?`,
-
-        async () => {
-
-            await resetTeacherPassword(
-                teacher.id
-            );
-
-        }
-
-    );
-
-}
-
-
-async function resetTeacherPassword(id) {
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/admin/teachers/${id}/reset-password`,
-                {
-                    method:
-                        "POST"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.message ||
-                "Không thể đặt lại mật khẩu"
-            );
-
-        }
-
-
-        closeConfirm();
-
-
-        showToast(
-            "success",
-            "Đã đặt lại mật khẩu",
-            "Mật khẩu mới: 123456"
-        );
-
-
-    } catch (error) {
-
-        closeConfirm();
-
-
-        showToast(
-            "error",
-            "Có lỗi",
-            error.message
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   SEARCH TEACHERS
-================================================== */
-
-document.getElementById(
-    "teacherSearch"
-).addEventListener(
-    "input",
-    function() {
-
-        const keyword =
-            this.value
-                .trim()
-                .toLowerCase();
-
-
-        if (!keyword) {
-
-            renderTeachers(
-                teachers
-            );
-
-            return;
-
-        }
-
-
-        const result =
-            teachers.filter(
-                teacher => {
-
-                    const email =
-                        String(
-                            teacher.email || ""
-                        ).toLowerCase();
-
-
-                    const name =
-                        String(
-                            teacher.full_name || ""
-                        ).toLowerCase();
-
-
-                    return (
-                        email.includes(keyword)
-                        ||
-                        name.includes(keyword)
-                    );
-
-                }
-            );
-
-
-        renderTeachers(
-            result
-        );
-
-    }
-);
-
-
-/* ==================================================
    TEACHER MESSAGE
 ================================================== */
 
@@ -7647,72 +7297,6 @@ function clearTeacherMessage() {
     }
 
 })();
-// =====================================================
-// SEARCH CLASSES
-// =====================================================
-
-const classSearchInput =
-    document.getElementById("classSearch");
-
-if (classSearchInput) {
-
-    classSearchInput.addEventListener(
-        "input",
-        function () {
-
-            const keyword =
-                this.value
-                    .trim()
-                    .toLowerCase();
-
-            // Nếu ô tìm kiếm trống
-            // thì hiện lại toàn bộ lớp
-            if (!keyword) {
-
-                renderClasses(classes);
-
-                return;
-            }
-
-            // Lọc danh sách lớp
-            const filtered =
-                classes.filter(item => {
-
-                    const code =
-                        String(
-                            item.class_code || ""
-                        ).toLowerCase();
-
-                    const name =
-                        String(
-                            item.class_name || ""
-                        ).toLowerCase();
-
-                    const grade =
-                        String(
-                            item.grade_level || ""
-                        );
-
-                    const year =
-                        String(
-                            item.school_year_name || ""
-                        ).toLowerCase();
-
-                    return (
-                        code.includes(keyword) ||
-                        name.includes(keyword) ||
-                        grade.includes(keyword) ||
-                        year.includes(keyword)
-                    );
-
-                });
-
-            renderClasses(filtered);
-
-        }
-    );
-
-}
 // =====================================================
 // FILTER STUDENTS BY CLASS
 // =====================================================
