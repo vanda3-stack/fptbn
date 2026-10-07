@@ -3316,6 +3316,145 @@ app.post("/api/admin/teachers", async (req, res) => {
 
 
 // =====================================================
+// ADMIN - UPDATE TEACHER (POST)
+// LiteSpeed hosting chặn PUT ở một số cấu hình.
+// =====================================================
+
+app.post(
+    "/api/admin/teachers/:id/update",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                Number(req.params.id);
+
+
+            const cleanEmail =
+                String(req.body.email || "")
+                    .trim()
+                    .toLowerCase();
+
+
+            const cleanName =
+                String(req.body.full_name || "")
+                    .trim();
+
+
+            if (
+                !Number.isInteger(id) ||
+                id <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "ID giáo viên không hợp lệ"
+                });
+
+            }
+
+
+            if (
+                !cleanName ||
+                !/^[^\s@]+@fe\.edu\.vn$/i.test(
+                    cleanEmail
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Vui lòng nhập họ tên và email @fe.edu.vn hợp lệ"
+                });
+
+            }
+
+
+            const [duplicate] =
+                await db.query(
+                    `
+                    SELECT id
+                    FROM teachers
+                    WHERE
+                        LOWER(email) = ?
+                        AND id <> ?
+                    LIMIT 1
+                    `,
+                    [
+                        cleanEmail,
+                        id
+                    ]
+                );
+
+
+            if (duplicate.length) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Email giáo viên đã được sử dụng"
+                });
+
+            }
+
+
+            const [result] =
+                await db.query(
+                    `
+                    UPDATE teachers
+                    SET
+                        email = ?,
+                        full_name = ?
+                    WHERE id = ?
+                    `,
+                    [
+                        cleanEmail,
+                        cleanName,
+                        id
+                    ]
+                );
+
+
+            if (!result.affectedRows) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Không tìm thấy giáo viên"
+                });
+
+            }
+
+
+            res.json({
+                success: true,
+                message:
+                    "Cập nhật giáo viên thành công"
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE TEACHER POST ERROR:",
+                error
+            );
+
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Không thể cập nhật giáo viên"
+            });
+
+        }
+
+    }
+);
+
+
+// =====================================================
 // ADMIN - UPDATE TEACHER
 // =====================================================
 
