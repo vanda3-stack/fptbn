@@ -1648,6 +1648,29 @@ tbody tr:hover {
     .student-pagination { align-items:flex-start; flex-direction:column; }
 }
 
+
+/* ==================================================
+   ADMIN V4 - GIAI ĐOẠN 3: GIÁO VIÊN
+================================================== */
+.teacher-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.teacher-mini-card { background:#fff; border:1px solid var(--border); border-radius:13px; padding:15px 17px; }
+.teacher-mini-card span { color:var(--muted); font-size:12px; font-weight:700; }
+.teacher-mini-card strong { display:block; margin-top:5px; font-size:22px; }
+.teacher-import-box {
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:16px 18px; margin-bottom:16px; border:1px dashed #93c5fd;
+    border-radius:13px; background:#eff6ff;
+}
+.teacher-import-box strong { display:block; color:#1e3a8a; margin-bottom:4px; }
+.teacher-import-box p { color:#64748b; font-size:13px; line-height:1.5; }
+.teacher-import-result { margin:0 0 16px; display:none; padding:12px 14px; border-radius:10px; font-size:13px; line-height:1.55; }
+.teacher-import-result.success { display:block; background:#ecfdf5; color:#166534; border:1px solid #bbf7d0; }
+.teacher-import-result.error { display:block; background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+@media (max-width:760px) {
+    .teacher-summary { grid-template-columns:1fr; }
+    .teacher-import-box { align-items:flex-start; flex-direction:column; }
+}
+
 </style>
 
 </head>
@@ -2180,115 +2203,99 @@ tbody tr:hover {
             >
 
                 <div class="page-header">
-
                     <div>
-                        <h2>
-                            Quản lý giáo viên
-                        </h2>
-
-                        <p>
-                            Quản lý tài khoản giáo viên
-                            sử dụng FPTBN Monitor.
-                        </p>
+                        <div class="admin-kicker">Tài khoản giáo viên</div>
+                        <h2>Quản lý giáo viên</h2>
+                        <p>Email FE là tài khoản đăng nhập FPTBN Monitor. Giáo viên tự chọn lớp đang giảng dạy sau khi đăng nhập.</p>
                     </div>
 
-                    <button
-                        class="btn btn-primary"
-                        onclick="openAddTeacher()"
-                    >
+                    <button class="btn btn-primary" onclick="openAddTeacher()">
                         + Thêm giáo viên
                     </button>
-
                 </div>
 
+                <div class="teacher-summary">
+                    <div class="teacher-mini-card">
+                        <span>TỔNG GIÁO VIÊN</span>
+                        <strong id="teacherPageTotal">--</strong>
+                    </div>
+                    <div class="teacher-mini-card">
+                        <span>ĐANG HOẠT ĐỘNG</span>
+                        <strong id="teacherPageActive">--</strong>
+                    </div>
+                    <div class="teacher-mini-card">
+                        <span>ĐÃ KHÓA</span>
+                        <strong id="teacherPageLocked">--</strong>
+                    </div>
+                </div>
+
+                <div class="teacher-import-box">
+                    <div>
+                        <strong>📥 Đồng bộ danh sách giáo viên từ Excel</strong>
+                        <p>
+                            File cần có cột <b>Họ và tên</b> và <b>Email</b>.
+                            Chỉ chấp nhận email <b>@fe.edu.vn</b>. Email đã tồn tại sẽ được cập nhật tên và kích hoạt lại.
+                        </p>
+                    </div>
+                    <div>
+                        <input id="teacherExcelFile" type="file" accept=".xlsx,.xls" hidden>
+                        <button class="btn btn-primary" type="button" onclick="document.getElementById('teacherExcelFile').click()">
+                            Chọn Excel & đồng bộ
+                        </button>
+                    </div>
+                </div>
+
+                <div id="teacherImportResult" class="teacher-import-result"></div>
 
                 <div class="card">
-
                     <div class="toolbar">
-
                         <div class="toolbar-left">
-
                             <div class="search-box">
-
                                 <span>⌕</span>
-
                                 <input
                                     id="teacherSearch"
                                     type="text"
-                                    placeholder="Tìm email hoặc họ tên..."
+                                    placeholder="Tìm email FE hoặc họ tên..."
+                                    autocomplete="off"
                                 >
-
                             </div>
 
+                            <select id="teacherStatusFilter" class="student-filter-select">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="locked">Đã khóa</option>
+                            </select>
                         </div>
 
-
-                        <button
-                            class="btn btn-light"
-                            onclick="loadTeachers()"
-                        >
+                        <button class="btn btn-light" onclick="loadTeachers()">
                             ↻ Làm mới
                         </button>
-
                     </div>
 
-
-                    <div
-                        id="teacherError"
-                        class="api-error"
-                    ></div>
-
+                    <div id="teacherError" class="api-error"></div>
 
                     <div class="table-wrapper">
-
                         <table>
-
                             <thead>
-
                                 <tr>
-
                                     <th>STT</th>
-
-                                    <th>Email</th>
-
+                                    <th>Email FE</th>
                                     <th>Họ và tên</th>
-
                                     <th>Trạng thái</th>
-
                                     <th>Ngày tạo</th>
-
                                     <th>Thao tác</th>
-
                                 </tr>
-
                             </thead>
-
-
                             <tbody id="teacherTableBody">
-
                                 <tr>
-
-                                    <td
-                                        colspan="6"
-                                        class="table-message"
-                                    >
-                                        Chọn mục Giáo viên để tải dữ liệu.
-                                    </td>
-
+                                    <td colspan="6" class="table-message">Chọn mục Giáo viên để tải dữ liệu.</td>
                                 </tr>
-
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
 
             </section>
-
-            </section>
-
 
 
             <!-- ==========================================
@@ -3183,7 +3190,7 @@ tbody tr:hover {
                 <input
                     id="modalTeacherEmail"
                     type="email"
-                    placeholder="Ví dụ: van.da@fpt.edu.vn"
+                    placeholder="Ví dụ: vanda3@fe.edu.vn"
                     maxlength="255"
                 >
 
@@ -6398,9 +6405,34 @@ async function loadTeachers() {
             data.teachers || [];
 
 
-        renderTeachers(
-            teachers
-        );
+        applyTeacherFilters();
+
+
+        const total =
+            teachers.length;
+
+        const active =
+            teachers.filter(
+                item =>
+                    Number(item.is_active) === 1
+            ).length;
+
+
+        const totalBox =
+            document.getElementById("teacherPageTotal");
+
+        const activeBox =
+            document.getElementById("teacherPageActive");
+
+        const lockedBox =
+            document.getElementById("teacherPageLocked");
+
+
+        if (totalBox) totalBox.textContent = total;
+
+        if (activeBox) activeBox.textContent = active;
+
+        if (lockedBox) lockedBox.textContent = total - active;
 
 
     } catch (error) {
@@ -6432,6 +6464,184 @@ async function loadTeachers() {
             "block";
 
     }
+
+}
+
+
+function applyTeacherFilters() {
+
+    const search =
+        document.getElementById("teacherSearch");
+
+    const status =
+        document.getElementById("teacherStatusFilter");
+
+
+    const keyword =
+        search
+            ? search.value.trim().toLowerCase()
+            : "";
+
+    const statusValue =
+        status
+            ? status.value
+            : "";
+
+
+    const filtered =
+        teachers.filter(
+            teacher => {
+
+                const active =
+                    Number(teacher.is_active) === 1;
+
+                const matchesText =
+                    !keyword ||
+                    String(teacher.email || "")
+                        .toLowerCase()
+                        .includes(keyword) ||
+                    String(teacher.full_name || "")
+                        .toLowerCase()
+                        .includes(keyword);
+
+                const matchesStatus =
+                    !statusValue ||
+                    (statusValue === "active" && active) ||
+                    (statusValue === "locked" && !active);
+
+
+                return (
+                    matchesText &&
+                    matchesStatus
+                );
+
+            }
+        );
+
+
+    renderTeachers(filtered);
+
+}
+
+
+const teacherSearchInput =
+    document.getElementById("teacherSearch");
+
+if (teacherSearchInput) {
+    teacherSearchInput.addEventListener(
+        "input",
+        applyTeacherFilters
+    );
+}
+
+
+const teacherStatusFilter =
+    document.getElementById("teacherStatusFilter");
+
+if (teacherStatusFilter) {
+    teacherStatusFilter.addEventListener(
+        "change",
+        applyTeacherFilters
+    );
+}
+
+
+const teacherExcelFile =
+    document.getElementById("teacherExcelFile");
+
+if (teacherExcelFile) {
+
+    teacherExcelFile.addEventListener(
+        "change",
+        async function () {
+
+            const file =
+                this.files?.[0];
+
+            if (!file) return;
+
+
+            const resultBox =
+                document.getElementById(
+                    "teacherImportResult"
+                );
+
+
+            resultBox.className =
+                "teacher-import-result";
+
+            resultBox.style.display =
+                "block";
+
+            resultBox.textContent =
+                "Đang kiểm tra và đồng bộ danh sách giáo viên...";
+
+
+            try {
+
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    "file",
+                    file
+                );
+
+
+                const response =
+                    await fetch(
+                        "/api/admin/teachers/import",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Không thể import giáo viên"
+                    );
+
+                }
+
+
+                resultBox.className =
+                    "teacher-import-result success";
+
+                resultBox.textContent =
+                    `Đồng bộ thành công: ${data.total_valid} GV hợp lệ • thêm mới ${data.added} • cập nhật ${data.updated} • bỏ qua ${data.skipped}.`;
+
+
+                await loadTeachers();
+
+
+            } catch (error) {
+
+                resultBox.className =
+                    "teacher-import-result error";
+
+                resultBox.textContent =
+                    "Lỗi: " +
+                    error.message;
+
+            } finally {
+
+                this.value = "";
+
+            }
+
+        }
+    );
 
 }
 
@@ -6812,6 +7022,23 @@ async function saveTeacher() {
     }
 
 
+    if (
+        !/^[^\s@]+@fe\.edu\.vn$/i.test(
+            email
+        )
+    ) {
+
+        message.className =
+            "modal-message error";
+
+        message.textContent =
+            "Email giáo viên phải sử dụng tên miền @fe.edu.vn.";
+
+        return;
+
+    }
+
+
     button.disabled =
         true;
 
@@ -6829,15 +7056,12 @@ async function saveTeacher() {
             await fetch(
 
                 editing
-                    ? `/api/admin/teachers/${id}`
+                    ? `/api/admin/teachers/${id}/update`
                     : "/api/admin/teachers",
 
                 {
 
-                    method:
-                        editing
-                            ? "PUT"
-                            : "POST",
+                    method: "POST",
 
                     headers: {
 
