@@ -1880,20 +1880,6 @@ tbody tr:hover {
 
             <div
                 class="menu-item"
-                data-page="monitor"
-            >
-
-                <span>📡</span>
-
-                <span class="menu-label">
-                    Giám sát hệ thống
-                </span>
-
-            </div>
-
-
-            <div
-                class="menu-item"
                 data-page="years"
             >
 
@@ -2396,50 +2382,6 @@ tbody tr:hover {
                     </div>
                 </div>
 
-            </section>
-
-
-            <!-- ==========================================
-                 SYSTEM MONITOR
-            =========================================== -->
-
-            <section
-                id="page-monitor"
-                class="page"
-            >
-                <div class="page-header">
-                    <div>
-                        <div class="admin-kicker">Realtime</div>
-                        <h2>Giám sát hệ thống</h2>
-                        <p>Theo dõi trạng thái lớp, giáo viên và học sinh đang kết nối. Trang này không hiển thị nội dung màn hình học sinh.</p>
-                    </div>
-                    <span class="monitor-live">Cập nhật mỗi 10 giây</span>
-                </div>
-
-                <div class="monitor-summary">
-                    <div class="monitor-card"><span>LỚP ĐANG HOẠT ĐỘNG</span><strong id="monitorClasses">0</strong></div>
-                    <div class="monitor-card"><span>GIÁO VIÊN ONLINE</span><strong id="monitorTeachers">0</strong></div>
-                    <div class="monitor-card"><span>HỌC SINH ONLINE</span><strong id="monitorStudents">0</strong></div>
-                    <div class="monitor-card"><span>ĐANG CHIA SẺ</span><strong id="monitorSharing">0</strong></div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Trạng thái theo lớp</h3>
-                        <button class="btn btn-light" onclick="loadSystemMonitor()">↻ Làm mới</button>
-                    </div>
-                    <div id="monitorError" class="api-error"></div>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>Lớp</th><th>Giáo viên</th><th>HS online</th><th>Đang chia sẻ</th><th>Trạng thái</th></tr>
-                            </thead>
-                            <tbody id="monitorTableBody">
-                                <tr><td colspan="5" class="table-message">Chưa có dữ liệu realtime.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </section>
 
 
@@ -3797,11 +3739,6 @@ document
                     loadSchoolYears()
                         .then(loadClasses);
                 }
-                if (page === "monitor")
-                {
-                    loadSystemMonitor();
-                }
-
                 if (page === "years")
                 {
                     loadCurrentSchoolYear();
@@ -7960,127 +7897,6 @@ async function createAndActivateSchoolYear() {
     }
 
 }
-let monitorRefreshTimer = null;
-
-
-async function loadSystemMonitor() {
-
-    const body =
-        document.getElementById(
-            "monitorTableBody"
-        );
-
-    const errorBox =
-        document.getElementById(
-            "monitorError"
-        );
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/admin/system-monitor",
-                { cache: "no-store" }
-            );
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.message ||
-                "Không thể tải trạng thái"
-            );
-        }
-
-
-        const summary =
-            data.summary || {};
-
-
-        document.getElementById("monitorClasses").textContent =
-            Number(summary.active_classes || 0);
-
-        document.getElementById("monitorTeachers").textContent =
-            Number(summary.teachers_online || 0);
-
-        document.getElementById("monitorStudents").textContent =
-            Number(summary.students_online || 0);
-
-        document.getElementById("monitorSharing").textContent =
-            Number(summary.students_sharing || 0);
-
-
-        const rows =
-            Array.isArray(data.classes)
-                ? data.classes
-                : [];
-
-
-        body.innerHTML =
-            rows.length
-                ? rows.map(
-                    item => `
-                        <tr>
-                            <td><strong>${escapeHtml(item.class_code || "")}</strong></td>
-                            <td>${item.teacher_online ? "🟢 Online" : "—"}</td>
-                            <td>${Number(item.students_online || 0)}</td>
-                            <td>${Number(item.students_sharing || 0)}</td>
-                            <td>${item.teacher_online ? '<span class="badge badge-active">Đang hoạt động</span>' : '<span class="text-muted">Chờ GV</span>'}</td>
-                        </tr>
-                    `
-                ).join("")
-                : '<tr><td colspan="5" class="table-message">Hiện chưa có lớp nào đang kết nối.</td></tr>';
-
-
-        if (errorBox) {
-            errorBox.style.display = "none";
-        }
-
-
-    } catch (error) {
-
-        if (errorBox) {
-            errorBox.textContent =
-                error.message;
-            errorBox.style.display =
-                "block";
-        }
-
-    }
-
-
-    clearTimeout(
-        monitorRefreshTimer
-    );
-
-
-    const monitorPage =
-        document.getElementById(
-            "page-monitor"
-        );
-
-
-    if (
-        monitorPage &&
-        monitorPage.classList.contains(
-            "active"
-        )
-    ) {
-
-        monitorRefreshTimer =
-            setTimeout(
-                loadSystemMonitor,
-                10000
-            );
-
-    }
-
-}
-
-
 // =====================================================
 // PREVIEW SCHOOL EXCEL
 // =====================================================
