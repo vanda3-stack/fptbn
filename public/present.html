@@ -50,10 +50,32 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;background:#07111feF;backdrop
 .solutionVisual{border:1px solid #304663;border-radius:20px;overflow:hidden;background:#091525;box-shadow:0 30px 80px #0008;padding-bottom:12px}.svHead{height:42px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;background:#132238;border-bottom:1px solid #2c405a;font-size:10px;color:#a9bad0}.svHead b{color:#7ce7c8}.svTeacher{margin:15px 15px 8px;padding:12px 15px;border:1px solid #2563eb66;border-radius:13px;background:#101f34;display:flex;gap:11px;align-items:center}.svAvatar{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:#2563eb33;font-size:22px}.svTeacher strong,.svTeacher small{display:block}.svTeacher strong{font-size:11px}.svTeacher small{font-size:9px;color:#91a5bd;margin-top:2px}.svArrow{text-align:center;color:#7ce7c8;font-size:9px;font-weight:800;padding:3px}.svGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:9px 15px}.svStudent{height:62px;border:1.5px solid #27d7a1;border-radius:8px;background:linear-gradient(135deg,#172a40,#0b1523);padding:5px;font-size:7px;color:#cbd5e1}.svStudent>div{height:38px;display:grid;place-items:center;font-size:17px}.svStudent.warn{border-color:#fb923c;background:#271b16}.svBottom{margin:2px 15px 0;display:flex;justify-content:space-between;gap:10px;color:#91a5bd;font-size:8px}
 
 .remoteShare{display:grid;grid-template-columns:.95fr 1.05fr;gap:30px;align-items:center}.shareDiagram{border:1px solid #304663;border-radius:20px;background:#091525;padding:18px;box-shadow:0 30px 80px #0008}.teacherDeck{border:1px solid #2563eb77;border-radius:14px;background:#101f34;padding:13px}.deckScreen{height:145px;border-radius:10px;background:linear-gradient(135deg,#dcecff,#8fc4ef);color:#17324b;display:grid;place-items:center;text-align:center;font-weight:900;font-size:18px}.deckScreen small{display:block;font-size:9px;font-weight:600;margin-top:4px}.broadcast{text-align:center;padding:12px;color:#7ce7c8;font-size:10px;font-weight:900}.studentDevices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.device{padding:7px;border:1px solid #27d7a166;border-radius:10px;background:#0e1c2e}.deviceScreen{height:67px;border-radius:6px;background:linear-gradient(135deg,#dcecff,#8fc4ef);color:#17324b;display:grid;place-items:center;text-align:center;font-size:8px;font-weight:900}.device span{display:block;text-align:center;color:#9fb0c6;font-size:7px;margin-top:5px}.shareBenefits{display:grid;gap:10px;margin-top:18px}.shareBenefit{padding:13px 15px;border:1px solid #2d4562;border-radius:14px;background:#0d1b2e}.shareBenefit b{display:block;font-size:12px}.shareBenefit span{display:block;color:var(--muted);font-size:10px;margin-top:3px}@media(max-width:900px){.remoteShare{grid-template-columns:1fr}}
+
+/* MOTION & PRESENTATION EFFECTS */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.visible{opacity:1;transform:none}
+.slide h1,.slide h2{transition:transform .35s ease,text-shadow .35s ease}
+.slide.is-active h1,.slide.is-active h2{text-shadow:0 10px 35px rgba(37,99,235,.13)}
+.card,.feature,.pc,.challenge,.mile,.shareBenefit,.teacherAlert,.stat,.step,.shot{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.card:hover,.feature:hover,.pc:hover,.challenge:hover,.mile:hover,.shareBenefit:hover,.teacherAlert:hover,.stat:hover,.step:hover,.shot:hover{transform:translateY(-5px);border-color:#4b6d93;box-shadow:0 16px 36px #0005}
+.shot img{transition:transform .45s ease}.shot:hover img{transform:scale(1.018)}
+.svStudent,.tmStudent,.device{transition:transform .2s ease,box-shadow .2s ease}.svStudent:hover,.tmStudent:hover,.device:hover{transform:scale(1.04);box-shadow:0 8px 20px #0006}
+.svStudent:not(.warn),.tmStudent:not(.bad):not(.off){animation:screenPulse 3.2s ease-in-out infinite}
+.broadcast,.svArrow{animation:flowPulse 1.8s ease-in-out infinite}
+.toastDemo{animation:toastFloat 3s ease-in-out infinite}.toastDemo:nth-child(2){animation-delay:.5s}
+.warningCard{animation:warningGlow 2.2s ease-in-out infinite}
+.navProgress{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:linear-gradient(90deg,var(--green),#60a5fa);transition:width .1s linear}
+.scrollHint{position:fixed;right:22px;bottom:18px;z-index:45;color:#7890aa;font-size:10px;display:flex;align-items:center;gap:6px;opacity:.75}.scrollHint i{font-style:normal;animation:downBounce 1.5s infinite}
+@keyframes screenPulse{0%,100%{border-color:#27d7a166}50%{border-color:#27d7a1;box-shadow:0 0 12px #27d7a122}}
+@keyframes flowPulse{0%,100%{opacity:.55}50%{opacity:1;text-shadow:0 0 16px #27d7a177}}
+@keyframes toastFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes warningGlow{0%,100%{box-shadow:0 20px 60px #0009}50%{box-shadow:0 20px 60px #0009,0 0 25px #ff536b33}}
+@keyframes downBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<nav><div class="wrap nav"><a class="brand" href="#problem"><i>F</i>FPTBN Monitor</a><div class="links"><a href="#problem">Bài toán</a><a href="#solution">Giải pháp</a><a href="#interfaces">Giao diện</a><a href="#features">Tính năng</a><a href="#architecture">Công nghệ</a><a href="#challenges">Thách thức</a></div><a class="btn" href="/">Trải nghiệm</a></div></nav>
+<nav><div class="wrap nav"><a class="brand" href="#problem"><i>F</i>FPTBN Monitor</a><div class="links"><a href="#problem">Bài toán</a><a href="#solution">Giải pháp</a><a href="#interfaces">Giao diện</a><a href="#features">Tính năng</a><a href="#architecture">Công nghệ</a><a href="#challenges">Thách thức</a></div><a class="btn" href="/">Trải nghiệm</a></div><div class="navProgress" id="navProgress"></div></nav>
 
 <section class="slide" id="problem"><div class="wrap heroGrid"><div><div class="eyebrow">01 · Bài toán thực tế</div><h1>30 máy tính.<br>1 giáo viên.<br><span style="color:#7ce7c8">Cả lớp đang làm gì?</span></h1><p class="lead">Khi mỗi học sinh có một thiết bị riêng, giáo viên cần vừa giảng bài, vừa đảm bảo học sinh đang theo dõi đúng nội dung mà không phải liên tục đi từng bàn.</p><div class="problemCards"><div class="pc"><b>👀 Góc nhìn bị giới hạn</b><span>Phần lớn màn hình học sinh nằm ngoài tầm quan sát trực tiếp.</span></div><div class="pc"><b>🎮 Mất tập trung chỉ trong vài giây</b><span>Một tab mới, trò chơi hay website khác có thể xuất hiện ngay trong giờ học.</span></div><div class="pc"><b>🚶 Đi từng bàn không phải giải pháp</b><span>Mất thời gian và làm gián đoạn nhịp giảng dạy.</span></div></div></div><div class="mystery"><div class="monitor m1">?</div><div class="monitor m2">?</div><div class="monitor m3">?</div><div class="monitor m4">?</div><div class="monitor m5">?</div><div class="q">?</div><div class="person"><div class="head"></div><div class="body"></div></div></div></div></section>
 
@@ -80,4 +102,50 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;background:#07111feF;backdrop
 <section class="slide alt" id="admin"><div class="wrap adminGrid"><div><div class="eyebrow">12 · Quản trị dữ liệu</div><h2>Không còn nhập tên và chọn lớp thủ công.</h2><p class="lead">Hệ thống quản lý học sinh, giáo viên, lớp và năm học trong cơ sở dữ liệu. Danh sách lớn có thể đồng bộ bằng Excel.</p><div class="stats"><div class="stat"><strong>Mã HS</strong><span>Định danh học sinh duy nhất</span></div><div class="stat"><strong>Email FE</strong><span>Định danh giáo viên</span></div><div class="stat"><strong>Class Room</strong><span>Tách kết nối theo lớp</span></div><div class="stat"><strong>Excel Sync</strong><span>Cập nhật dữ liệu hàng loạt</span></div></div></div><div class="browser"><div class="browserbar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><div class="address">FPTBN Monitor / Admin</div></div><iframe src="/admin/" title="Giao diện quản trị"></iframe><div class="caption">Giao diện Admin thật — đăng nhập, học sinh, giáo viên, lớp và năm học.</div></div></div></section>
 
 <section class="slide" id="journey"><div class="wrap"><div class="eyebrow">13 · Quá trình phát triển</div><h2>Từ một máy thử nghiệm đến lớp học thực tế.</h2><div class="timeline"><div class="mile"><small>V1</small><h3>Ý tưởng ban đầu</h3><p>1 GV + 1 HS, thử chia sẻ màn hình qua WebRTC.</p></div><div class="mile"><small>V2</small><h3>Nhiều học sinh</h3><p>Lưới theo dõi, signaling và hai chiều GV ↔ HS.</p></div><div class="mile"><small>V3</small><h3>Khác mạng</h3><p>Triển khai TURN, kiểm thử Wi‑Fi khác nhau và 5G.</p></div><div class="mile"><small>HIỆN TẠI</small><h3>Hệ thống lớp học</h3><p>Database, Mã HS, tài khoản GV, room theo lớp và quản trị dữ liệu.</p></div></div><div class="cta" style="margin-top:28px"><h2>Một công cụ được xây từ nhu cầu thật của lớp học.</h2><p class="lead" style="margin:0 auto">FPTBN Monitor hướng tới việc giúp giáo viên quan sát lớp học số thuận tiện hơn và giảm khoảng cách giữa quản lý lớp truyền thống với môi trường mỗi học sinh một thiết bị.</p><a class="btn" href="/" style="margin-right:8px">Trải nghiệm vai trò HS →</a><a class="btn" href="/x.html" style="background:#2563eb;color:white">Mở vai trò GV →</a></div></div></section>
-</body></html>
+<div class="scrollHint"><span>Cuộn để khám phá</span><i>↓</i></div>
+<script>
+(() => {
+  const sections=[...document.querySelectorAll(".slide")];
+  const revealTargets=document.querySelectorAll(".slide h1,.slide h2,.slide .lead,.card,.pc,.feature,.challenge,.mile,.step,.stat,.shareBenefit,.teacherAlert,.shot,.browser,.solutionVisual,.shareDiagram,.warningMock,.teacherMock,.arch");
+  revealTargets.forEach(el=>el.classList.add("reveal"));
+
+  const revealObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.classList.add("visible");
+    });
+  },{threshold:.12});
+  revealTargets.forEach(el=>revealObserver.observe(el));
+
+  const sectionObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        sections.forEach(s=>s.classList.remove("is-active"));
+        entry.target.classList.add("is-active");
+      }
+    });
+  },{threshold:.55});
+  sections.forEach(s=>sectionObserver.observe(s));
+
+  const progress=document.getElementById("navProgress");
+  const hint=document.querySelector(".scrollHint");
+  const updateScroll=()=>{
+    const max=document.documentElement.scrollHeight-innerHeight;
+    const pct=max>0?(scrollY/max)*100:0;
+    if(progress) progress.style.width=pct+"%";
+    if(hint) hint.style.opacity=scrollY>innerHeight*.7?".2":".75";
+  };
+  addEventListener("scroll",updateScroll,{passive:true});
+  updateScroll();
+
+  document.querySelectorAll(".card,.feature,.challenge,.shot,.shareBenefit,.teacherAlert").forEach(el=>{
+    el.addEventListener("mousemove",e=>{
+      if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const r=el.getBoundingClientRect();
+      const rx=((e.clientY-r.top)/r.height-.5)*-3;
+      const ry=((e.clientX-r.left)/r.width-.5)*3;
+      el.style.transform="translateY(-5px) rotateX("+rx+"deg) rotateY("+ry+"deg)";
+    });
+    el.addEventListener("mouseleave",()=>el.style.transform="");
+  });
+})();
+</script></body></html>
