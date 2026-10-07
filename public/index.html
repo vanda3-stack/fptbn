@@ -746,6 +746,128 @@
 
         }
 
+    
+        /* STUDENT JOIN - FRIENDLIER LOGIN */
+        #joinPage {
+            background:
+                radial-gradient(circle at 50% 0%, rgba(37,99,235,.20), transparent 38%),
+                #0f172a;
+        }
+
+        .join-card {
+            max-width: 520px;
+            padding: 34px;
+            border: 1px solid #334155;
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(0,0,0,.34);
+        }
+
+        .join-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 14px;
+            display: grid;
+            place-items: center;
+            border-radius: 20px;
+            background: #1e3a8a;
+            font-size: 34px;
+        }
+
+        .join-title {
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .join-description {
+            max-width: 390px;
+            margin: 0 auto 26px;
+            text-align: center;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        #studentCode {
+            width: 100%;
+            height: 58px;
+            padding: 0 17px;
+            border: 2px solid #334155;
+            border-radius: 13px;
+            outline: none;
+            background: #0f172a;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        #studentCode:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,.14);
+        }
+
+        #studentCodeHint {
+            line-height: 1.5;
+        }
+
+        #shareButton {
+            width: 100%;
+            min-height: 58px;
+            margin-top: 22px;
+            border: 0;
+            border-radius: 13px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(37,99,235,.25);
+        }
+
+        #shareButton:hover { background: #1d4ed8; }
+        #shareButton:disabled { opacity: .58; cursor: not-allowed; }
+
+        #status {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .instruction {
+            margin-top: 20px;
+            padding: 15px 16px;
+            border: 1px solid #334155;
+            border-radius: 13px;
+            background: rgba(15,23,42,.72);
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .instruction-title {
+            margin-bottom: 5px;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        @media (max-width: 600px) {
+            .header { height: 58px; padding: 0 14px; }
+            .brand-subtitle { display: none; }
+            #joinPage { min-height: calc(100vh - 58px); padding: 14px; }
+            .join-card { padding: 25px 20px; border-radius: 18px; }
+            .join-title { font-size: 25px; }
+            .student-badge { padding: 6px 9px; }
+        }
+
     </style>
 
 </head>
@@ -807,9 +929,7 @@
 
             <div class="join-description">
 
-                Nhập <strong>Mã học sinh</strong> và chia sẻ
-                <strong>toàn bộ màn hình</strong>
-                để vào lớp học.
+                Nhập <strong>Mã học sinh</strong> để bắt đầu buổi học.
 
             </div>
 
@@ -841,7 +961,7 @@
                 id="studentCodeHint"
                 style="margin-top:7px;font-size:12px;color:#94a3b8;"
             >
-                Mã HS có dạng <strong>FBN12345</strong>. Có thể nhập fbn12345, hệ thống sẽ tự viết hoa.
+                Ví dụ: <strong>FBN12345</strong> • Không cần nhập tên hoặc chọn lớp.
             </div>
 
 
@@ -853,7 +973,7 @@
                 id="shareButton"
                 type="button"
             >
-                🖥 Vào lớp & chia sẻ toàn bộ màn hình
+                Vào lớp học →
             </button>
 
 
@@ -873,18 +993,12 @@
             <div class="instruction">
 
                 <div class="instruction-title">
-                    ⚠️ Khi trình duyệt hỏi chia sẻ màn hình:
+                    🖥 Bước tiếp theo
                 </div>
 
-                Hãy chọn
-                <strong>Toàn bộ màn hình / Entire Screen</strong>.
-
-                <br>
-
-                Không chọn
-                <strong>Tab</strong>
-                hoặc
-                <strong>Cửa sổ / Window</strong>.
+                Khi trình duyệt hỏi, hãy chọn
+                <strong>Toàn bộ màn hình / Entire Screen</strong>
+                rồi nhấn <strong>Chia sẻ</strong>.
 
             </div>
 
