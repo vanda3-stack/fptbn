@@ -1671,6 +1671,18 @@ tbody tr:hover {
     .teacher-import-box { align-items:flex-start; flex-direction:column; }
 }
 
+
+/* ==================================================
+   ADMIN V4 - GIAI ĐOẠN 3B: LỚP + NĂM HỌC
+================================================== */
+.class-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.class-mini-card { background:#fff; border:1px solid var(--border); border-radius:13px; padding:15px 17px; }
+.class-mini-card span { color:var(--muted); font-size:12px; font-weight:700; }
+.class-mini-card strong { display:block; margin-top:5px; font-size:22px; }
+.class-filter-select { min-width:180px; height:42px; padding:0 34px 0 12px; border:1px solid var(--border); border-radius:9px; background:#fff; font-weight:600; }
+.year-warning { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:11px; padding:13px 15px; margin:0 0 18px; font-size:13px; line-height:1.55; }
+@media(max-width:760px){.class-summary{grid-template-columns:1fr}.class-filter-select{width:100%}}
+
 </style>
 
 </head>
@@ -2312,200 +2324,60 @@ tbody tr:hover {
             >
 
                 <div class="page-header">
-
                     <div>
+                        <div class="admin-kicker">Cấu trúc lớp học</div>
                         <h2>Quản lý lớp học</h2>
-
-                        <p>
-                            Quản lý các lớp học theo năm học.
-                        </p>
+                        <p>Lớp được quản lý theo năm học. Giáo viên không cần phân công cố định và có thể chọn lớp đang giảng dạy khi đăng nhập.</p>
                     </div>
 
-                    <button
-                        class="btn btn-primary"
-                        onclick="openAddClass()"
-                    >
+                    <button class="btn btn-primary" onclick="openAddClass()">
                         + Thêm lớp học
                     </button>
-
                 </div>
 
+                <div class="class-summary">
+                    <div class="class-mini-card"><span>TỔNG LỚP</span><strong id="classPageTotal">--</strong></div>
+                    <div class="class-mini-card"><span>ĐANG HOẠT ĐỘNG</span><strong id="classPageActive">--</strong></div>
+                    <div class="class-mini-card"><span>NĂM HỌC HIỆN TẠI</span><strong id="classPageCurrentYear" style="font-size:18px;">--</strong></div>
+                </div>
 
                 <div class="card">
-
                     <div class="toolbar">
-
                         <div class="toolbar-left">
-
                             <div class="search-box">
-
                                 <span>⌕</span>
-
-                                <input
-                                    id="classSearch"
-                                    type="text"
-                                    placeholder="Tìm mã lớp hoặc tên lớp..."
-                                >
-
+                                <input id="classSearch" type="text" placeholder="Tìm mã lớp hoặc tên lớp..." autocomplete="off">
                             </div>
-
+                            <select id="classYearFilter" class="class-filter-select">
+                                <option value="">Tất cả năm học</option>
+                            </select>
+                            <select id="classStatusFilter" class="class-filter-select">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="locked">Đã khóa</option>
+                            </select>
                         </div>
-
-
-                        <button
-                            class="btn btn-light"
-                            onclick="loadClasses()"
-                        >
-                            ↻ Làm mới
-                        </button>
-
+                        <button class="btn btn-light" onclick="loadClasses()">↻ Làm mới</button>
                     </div>
 
-
-                    <div
-                        id="classError"
-                        class="api-error"
-                    ></div>
-
+                    <div id="classError" class="api-error"></div>
 
                     <div class="table-wrapper">
-
                         <table>
-
                             <thead>
-
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Mã lớp</th>
-                                    <th>Tên lớp</th>
-                                    <th>Khối</th>
-                                    <th>Năm học</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th>STT</th><th>Mã lớp</th><th>Tên lớp</th><th>Khối</th>
+                                    <th>Năm học</th><th>Trạng thái</th><th>Thao tác</th>
                                 </tr>
-
                             </thead>
-
-
                             <tbody id="classTableBody">
-
-                                <tr>
-
-                                    <td
-                                        colspan="7"
-                                        class="table-message"
-                                    >
-                                        Chọn mục Lớp học để tải dữ liệu.
-                                    </td>
-
-                                </tr>
-
+                                <tr><td colspan="7" class="table-message">Chọn mục Lớp học để tải dữ liệu.</td></tr>
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
 
             </section>
-
-
-                <div class="page-header">
-
-                    <div>
-
-                        <h2>
-                            Quản lý lớp học
-                        </h2>
-
-                        <p>
-                            Quản lý lớp theo năm học.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card">
-
-                    <div class="placeholder">
-
-                        <div class="placeholder-icon">
-                            🏫
-                        </div>
-
-                        <h3>
-                            Lớp học
-                        </h3>
-
-                        <p>
-                            Ví dụ:
-                            6A1, 7A2, 8A3, 9A3...
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-            </section>
-
-
-
-            <!-- ==========================================
-                 ASSIGNMENTS
-            =========================================== -->
-
-            <section
-                id="page-assignments"
-                class="page"
-            >
-
-
-                <div class="page-header">
-
-                    <div>
-
-                        <h2>
-                            Phân công
-                        </h2>
-
-                        <p>
-                            Phân quyền giáo viên
-                            theo lớp học.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card">
-
-                    <div class="placeholder">
-
-                        <div class="placeholder-icon">
-                            🔗
-                        </div>
-
-                        <h3>
-                            Giáo viên → Lớp
-                        </h3>
-
-                        <p>
-                            Sử dụng bảng
-                            teacher_assignments.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-            </section>
-
 
 
             <!-- ==========================================
@@ -2524,13 +2396,11 @@ tbody tr:hover {
                 <div class="page-header">
 
                     <div>
-                        <h2>
-                            Cập nhật danh sách toàn trường
-                        </h2>
+                        <div class="admin-kicker">Chu kỳ dữ liệu</div>
+                        <h2>Quản lý năm học & dữ liệu toàn trường</h2>
 
                         <p>
-                            Cập nhật học sinh và lớp học từ
-                            danh sách Excel của nhà trường.
+                            Tạo năm học mới và đồng bộ danh sách học sinh, lớp học từ Excel mà không xóa lịch sử năm học cũ.
                         </p>
                     </div>
 
@@ -2668,6 +2538,12 @@ tbody tr:hover {
 
                             </div>
 
+
+                            <div class="year-warning">
+                                <strong>⚠️ Lưu ý:</strong>
+                                Chỉ chuyển năm học khi nhà trường thực sự bắt đầu chu kỳ mới.
+                                Thao tác này đổi năm học hiện tại nhưng vẫn giữ dữ liệu lịch sử.
+                            </div>
 
                             <div
                                 id="schoolYearError"
@@ -3764,8 +3640,6 @@ const pageTitles = {
     classes:
         "Lớp học",
 
-    assignments:
-        "Phân công",
 
     years:
         "Năm học"
@@ -3865,9 +3739,10 @@ document
                     loadTeachers();
 
                 }
-                if (page === "classes") 
+                if (page === "classes")
                 {
-                    loadClasses();
+                    loadSchoolYears()
+                        .then(loadClasses);
                 }
                 if (page === "years")
                 {
@@ -5658,7 +5533,9 @@ async function loadClasses() {
                 ? data.classes
                 : [];
 
-        renderClasses(classes);
+        populateClassYearFilter();
+        applyClassFilters();
+        updateClassSummary();
 
     } catch (error) {
 
@@ -5684,6 +5561,178 @@ async function loadClasses() {
 
     }
 }
+
+
+function populateClassYearFilter() {
+
+    const select =
+        document.getElementById(
+            "classYearFilter"
+        );
+
+    if (!select) return;
+
+
+    const selected =
+        select.value;
+
+
+    const years =
+        [...new Set(
+            classes
+                .map(item => item.school_year_name)
+                .filter(Boolean)
+        )];
+
+
+    select.innerHTML =
+        '<option value="">Tất cả năm học</option>' +
+        years.map(
+            year =>
+                '<option value="' +
+                escapeHtml(year) +
+                '">' +
+                escapeHtml(year) +
+                '</option>'
+        ).join("");
+
+
+    if (
+        years.includes(selected)
+    ) {
+        select.value = selected;
+    }
+
+}
+
+
+function updateClassSummary() {
+
+    const total =
+        classes.length;
+
+    const active =
+        classes.filter(
+            item =>
+                Number(item.is_active) === 1
+        ).length;
+
+    const current =
+        schoolYears.find(
+            item =>
+                Number(item.is_current) === 1
+        );
+
+
+    const totalBox =
+        document.getElementById("classPageTotal");
+
+    const activeBox =
+        document.getElementById("classPageActive");
+
+    const yearBox =
+        document.getElementById("classPageCurrentYear");
+
+
+    if (totalBox) totalBox.textContent = total;
+
+    if (activeBox) activeBox.textContent = active;
+
+    if (yearBox) {
+        yearBox.textContent =
+            current
+                ? current.name
+                : "--";
+    }
+
+}
+
+
+function applyClassFilters() {
+
+    const search =
+        document.getElementById("classSearch");
+
+    const year =
+        document.getElementById("classYearFilter");
+
+    const status =
+        document.getElementById("classStatusFilter");
+
+
+    const keyword =
+        search
+            ? search.value.trim().toLowerCase()
+            : "";
+
+    const yearValue =
+        year ? year.value : "";
+
+    const statusValue =
+        status ? status.value : "";
+
+
+    const filtered =
+        classes.filter(
+            item => {
+
+                const active =
+                    Number(item.is_active) === 1;
+
+                const matchesText =
+                    !keyword ||
+                    String(item.class_code || "")
+                        .toLowerCase()
+                        .includes(keyword) ||
+                    String(item.class_name || "")
+                        .toLowerCase()
+                        .includes(keyword);
+
+                const matchesYear =
+                    !yearValue ||
+                    String(item.school_year_name || "") ===
+                        yearValue;
+
+                const matchesStatus =
+                    !statusValue ||
+                    (statusValue === "active" && active) ||
+                    (statusValue === "locked" && !active);
+
+
+                return (
+                    matchesText &&
+                    matchesYear &&
+                    matchesStatus
+                );
+
+            }
+        );
+
+
+    renderClasses(filtered);
+
+}
+
+
+["classSearch", "classYearFilter", "classStatusFilter"]
+    .forEach(
+        id => {
+
+            const element =
+                document.getElementById(id);
+
+            if (!element) return;
+
+
+            element.addEventListener(
+                id === "classSearch"
+                    ? "input"
+                    : "change",
+                applyClassFilters
+            );
+
+        }
+    );
 
 
 // =====================================================
