@@ -1558,6 +1558,58 @@ tbody tr:hover {
 
 }
 
+
+/* ==================================================
+   ADMIN V4 - GIAI ĐOẠN 1
+================================================== */
+.admin-kicker {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+.dashboard-welcome {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: #fff;
+    border-radius: 18px;
+    padding: 24px 26px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: center;
+}
+.dashboard-welcome h2 { font-size: 25px; margin-bottom: 7px; }
+.dashboard-welcome p { color: #cbd5e1; line-height: 1.6; font-size: 14px; }
+.dashboard-year {
+    min-width: 150px;
+    text-align: center;
+    padding: 14px 18px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08);
+    border-radius: 14px;
+}
+.dashboard-year span { display:block; color:#bfdbfe; font-size:11px; font-weight:700; margin-bottom:5px; }
+.dashboard-year strong { font-size:20px; }
+.stat-card { box-shadow: 0 5px 18px rgba(15,23,42,.04); transition: transform .18s ease, box-shadow .18s ease; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,.08); }
+.stat-number.small-number { font-size: 25px; }
+.quick-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.quick-action {
+    border:1px solid var(--border); background:#fff; border-radius:12px; padding:14px;
+    text-align:left; font-weight:700; color:var(--text);
+}
+.quick-action small { display:block; color:var(--muted); font-weight:500; margin-top:5px; line-height:1.4; }
+.quick-action:hover { border-color:#93c5fd; background:#eff6ff; }
+.system-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); margin-right:7px; }
+@media (max-width: 900px) {
+    .dashboard-welcome { align-items:flex-start; flex-direction:column; }
+    .dashboard-year { width:100%; text-align:left; }
+    .quick-actions { grid-template-columns:1fr; }
+}
+
 </style>
 
 </head>
@@ -1848,272 +1900,114 @@ tbody tr:hover {
                 class="page active"
             >
 
+                <div class="admin-kicker">Bảng điều khiển</div>
 
-                <div class="page-header">
-
-
+                <div class="dashboard-welcome">
                     <div>
-
-                        <h2>
-                            Tổng quan hệ thống
-                        </h2>
-
+                        <h2>Chào mừng trở lại, <span id="dashboardAdminName">Quản trị viên</span></h2>
                         <p>
-                            Quản lý dữ liệu
-                            FPTBN Monitor V3.
+                            Theo dõi nhanh dữ liệu FPTBN Monitor và truy cập các khu vực quản trị thường dùng.
+                            Student và Teacher hoạt động độc lập với trang quản trị này.
                         </p>
-
                     </div>
 
-
+                    <div class="dashboard-year">
+                        <span>NĂM HỌC HIỆN TẠI</span>
+                        <strong id="dashboardSchoolYear">Đang tải...</strong>
+                    </div>
                 </div>
-
-
 
                 <div class="stats">
 
-
                     <div class="stat-card">
-
-
                         <div class="stat-top">
-
-                            <span class="stat-label">
-                                Học sinh
-                            </span>
-
-                            <span class="stat-icon">
-                                🎓
-                            </span>
-
+                            <span class="stat-label">Học sinh</span>
+                            <span class="stat-icon">🎓</span>
                         </div>
-
-
-                        <div
-                            id="studentCount"
-                            class="stat-number"
-                        >
-                            --
-                        </div>
-
-
-                        <div class="stat-note">
-                            Tổng tài khoản học sinh
-                        </div>
-
-
+                        <div id="studentCount" class="stat-number">--</div>
+                        <div class="stat-note">Tổng tài khoản học sinh</div>
                     </div>
 
-
-
                     <div class="stat-card">
-
-
                         <div class="stat-top">
-
-                            <span class="stat-label">
-                                Đang hoạt động
-                            </span>
-
-                            <span class="stat-icon">
-                                ✅
-                            </span>
-
+                            <span class="stat-label">Đang hoạt động</span>
+                            <span class="stat-icon">✅</span>
                         </div>
-
-
-                        <div
-                            id="activeStudentCount"
-                            class="stat-number"
-                        >
-                            --
-                        </div>
-
-
-                        <div class="stat-note">
-                            Tài khoản chưa bị khóa
-                        </div>
-
-
+                        <div id="activeStudentCount" class="stat-number">--</div>
+                        <div class="stat-note">Tài khoản học sinh đang mở</div>
                     </div>
 
-
-
                     <div class="stat-card">
-
-
                         <div class="stat-top">
-
-                            <span class="stat-label">
-                                Đã khóa
-                            </span>
-
-                            <span class="stat-icon">
-                                🔒
-                            </span>
-
+                            <span class="stat-label">Giáo viên</span>
+                            <span class="stat-icon">👨‍🏫</span>
                         </div>
-
-
-                        <div
-                            id="lockedStudentCount"
-                            class="stat-number"
-                        >
-                            --
-                        </div>
-
-
-                        <div class="stat-note">
-                            Tài khoản đang khóa
-                        </div>
-
-
+                        <div id="dashboardTeacherCount" class="stat-number">--</div>
+                        <div class="stat-note">Tài khoản giáo viên</div>
                     </div>
 
-
-
                     <div class="stat-card">
-
-
                         <div class="stat-top">
-
-                            <span class="stat-label">
-                                Năm học
-                            </span>
-
-                            <span class="stat-icon">
-                                📅
-                            </span>
-
+                            <span class="stat-label">Lớp học</span>
+                            <span class="stat-icon">🏫</span>
                         </div>
-
-
-                        <div
-                            class="stat-number"
-                            style="font-size:23px;"
-                        >
-                            2026-2027
-                        </div>
-
-
-                        <div class="stat-note">
-                            Năm học hiện tại
-                        </div>
-
-
+                        <div id="dashboardClassCount" class="stat-number">--</div>
+                        <div class="stat-note">Lớp trong hệ thống</div>
                     </div>
-
 
                 </div>
-
-
 
                 <div class="dashboard-grid">
 
-
                     <div class="card">
-
-
                         <div class="card-header">
-
-                            <h3>
-                                Hệ thống quản lý
-                            </h3>
-
+                            <h3>Truy cập nhanh</h3>
                         </div>
-
-
                         <div class="card-body">
-
-                            <p
-                                style="
-                                    color:#475569;
-                                    line-height:1.8;
-                                "
-                            >
-                                FPTBN Monitor V3 quản lý
-                                tài khoản học sinh,
-                                giáo viên, lớp học,
-                                năm học và phân công
-                                giảng dạy trên một
-                                hệ thống tập trung.
-                            </p>
-
+                            <div class="quick-actions">
+                                <button class="quick-action" type="button" onclick="openAdminPage('students')">
+                                    🎓 Học sinh
+                                    <small>Tìm kiếm, thêm và quản lý tài khoản HS</small>
+                                </button>
+                                <button class="quick-action" type="button" onclick="openAdminPage('teachers')">
+                                    👨‍🏫 Giáo viên
+                                    <small>Quản lý email và trạng thái GV</small>
+                                </button>
+                                <button class="quick-action" type="button" onclick="openAdminPage('classes')">
+                                    🏫 Lớp học
+                                    <small>Xem và quản lý các lớp hiện tại</small>
+                                </button>
+                            </div>
                         </div>
-
-
                     </div>
 
-
-
                     <div class="card">
-
-
                         <div class="card-header">
-
-                            <h3>
-                                Trạng thái
-                            </h3>
-
+                            <h3>Trạng thái hệ thống</h3>
                         </div>
-
-
                         <div class="card-body">
-
-
                             <div class="system-row">
-
-                                <span>
-                                    Node.js
-                                </span>
-
-                                <span class="system-ok">
-                                    ● Hoạt động
-                                </span>
-
+                                <span>Máy chủ</span>
+                                <span class="system-ok"><span class="system-dot"></span>Hoạt động</span>
                             </div>
-
-
                             <div class="system-row">
-
-                                <span>
-                                    MariaDB
-                                </span>
-
-                                <span class="system-ok">
-                                    ● Kết nối
-                                </span>
-
+                                <span>Cơ sở dữ liệu</span>
+                                <span class="system-ok"><span class="system-dot"></span>Kết nối</span>
                             </div>
-
-
                             <div class="system-row">
-
-                                <span>
-                                    API học sinh
-                                </span>
-
-                                <span
-                                    id="studentApiStatus"
-                                    class="system-ok"
-                                >
-                                    ● Đang kiểm tra
-                                </span>
-
+                                <span>API học sinh</span>
+                                <span id="studentApiStatus" class="system-ok">● Đang kiểm tra</span>
                             </div>
-
-
+                            <div class="system-row">
+                                <span>HS bị khóa</span>
+                                <strong id="lockedStudentCount">--</strong>
+                            </div>
                         </div>
-
-
                     </div>
-
 
                 </div>
 
-
             </section>
-
 
 
             <!-- ==========================================
@@ -3785,8 +3679,19 @@ function showAdmin(admin) {
         .textContent =
             name;
 
+    const dashboardAdminName =
+        document.getElementById(
+            "dashboardAdminName"
+        );
+
+    if (dashboardAdminName) {
+        dashboardAdminName.textContent =
+            name;
+    }
+
 
     loadStudents();
+    loadDashboardSummary();
     loadCurrentSchoolYear();
 
 }
@@ -3954,6 +3859,80 @@ document
         );
 
     });
+
+
+function openAdminPage(page) {
+
+    const item =
+        document.querySelector(
+            '.menu-item[data-page="' +
+            page +
+            '"]'
+        );
+
+    if (item) {
+        item.click();
+    }
+
+}
+
+
+async function loadDashboardSummary() {
+
+    try {
+
+        const [teacherResponse, classResponse] =
+            await Promise.all([
+                fetch("/api/admin/teachers"),
+                fetch("/api/admin/classes")
+            ]);
+
+
+        const teacherData =
+            await teacherResponse.json();
+
+        const classData =
+            await classResponse.json();
+
+
+        const teacherCount =
+            teacherResponse.ok &&
+            teacherData.success &&
+            Array.isArray(teacherData.teachers)
+                ? teacherData.teachers.length
+                : "--";
+
+
+        const classCount =
+            classResponse.ok &&
+            classData.success &&
+            Array.isArray(classData.classes)
+                ? classData.classes.length
+                : "--";
+
+
+        document.getElementById(
+            "dashboardTeacherCount"
+        ).textContent =
+            teacherCount;
+
+
+        document.getElementById(
+            "dashboardClassCount"
+        ).textContent =
+            classCount;
+
+
+    } catch (error) {
+
+        console.warn(
+            "DASHBOARD SUMMARY:",
+            error
+        );
+
+    }
+
+}
 
 
 /* ==================================================
@@ -7673,6 +7652,17 @@ async function loadCurrentSchoolYear() {
 
         nameBox.textContent =
             currentYear.name;
+
+
+        const dashboardSchoolYear =
+            document.getElementById(
+                "dashboardSchoolYear"
+            );
+
+        if (dashboardSchoolYear) {
+            dashboardSchoolYear.textContent =
+                currentYear.name;
+        }
 
 
         badge.textContent =
