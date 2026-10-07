@@ -1683,6 +1683,25 @@ tbody tr:hover {
 .year-warning { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:11px; padding:13px 15px; margin:0 0 18px; font-size:13px; line-height:1.55; }
 @media(max-width:760px){.class-summary{grid-template-columns:1fr}.class-filter-select{width:100%}}
 
+
+/* ==================================================
+   ADMIN V4 - GIAI ĐOẠN 4 + HOÀN THIỆN
+================================================== */
+.import-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+.import-step { border:1px solid var(--border); border-radius:11px; padding:12px 14px; background:#fff; }
+.import-step strong { display:block; font-size:13px; margin-bottom:4px; }
+.import-step span { color:var(--muted); font-size:12px; line-height:1.45; }
+.preview-table { margin-top:18px; border-top:1px solid var(--border); padding-top:18px; }
+.import-success-panel { display:none; margin-top:16px; padding:15px; border:1px solid #bbf7d0; background:#ecfdf5; color:#166534; border-radius:11px; line-height:1.6; }
+.monitor-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.monitor-card { background:#fff; border:1px solid var(--border); border-radius:13px; padding:15px 17px; }
+.monitor-card span { color:var(--muted); font-size:12px; font-weight:700; }
+.monitor-card strong { display:block; margin-top:5px; font-size:22px; }
+.monitor-live { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700; color:#15803d; }
+.monitor-live::before { content:""; width:8px; height:8px; border-radius:50%; background:#22c55e; }
+@media(max-width:800px){.import-steps,.monitor-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.import-steps,.monitor-summary{grid-template-columns:1fr}}
+
 </style>
 
 </head>
@@ -1868,6 +1887,20 @@ tbody tr:hover {
 
                 <span class="menu-label">
                     Phân công
+                </span>
+
+            </div>
+
+
+            <div
+                class="menu-item"
+                data-page="monitor"
+            >
+
+                <span>📡</span>
+
+                <span class="menu-label">
+                    Giám sát hệ thống
                 </span>
 
             </div>
@@ -2381,6 +2414,50 @@ tbody tr:hover {
 
 
             <!-- ==========================================
+                 SYSTEM MONITOR
+            =========================================== -->
+
+            <section
+                id="page-monitor"
+                class="page"
+            >
+                <div class="page-header">
+                    <div>
+                        <div class="admin-kicker">Realtime</div>
+                        <h2>Giám sát hệ thống</h2>
+                        <p>Theo dõi trạng thái lớp, giáo viên và học sinh đang kết nối. Trang này không hiển thị nội dung màn hình học sinh.</p>
+                    </div>
+                    <span class="monitor-live">Cập nhật mỗi 10 giây</span>
+                </div>
+
+                <div class="monitor-summary">
+                    <div class="monitor-card"><span>LỚP ĐANG HOẠT ĐỘNG</span><strong id="monitorClasses">0</strong></div>
+                    <div class="monitor-card"><span>GIÁO VIÊN ONLINE</span><strong id="monitorTeachers">0</strong></div>
+                    <div class="monitor-card"><span>HỌC SINH ONLINE</span><strong id="monitorStudents">0</strong></div>
+                    <div class="monitor-card"><span>ĐANG CHIA SẺ</span><strong id="monitorSharing">0</strong></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Trạng thái theo lớp</h3>
+                        <button class="btn btn-light" onclick="loadSystemMonitor()">↻ Làm mới</button>
+                    </div>
+                    <div id="monitorError" class="api-error"></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Lớp</th><th>Giáo viên</th><th>HS online</th><th>Đang chia sẻ</th><th>Trạng thái</th></tr>
+                            </thead>
+                            <tbody id="monitorTableBody">
+                                <tr><td colspan="5" class="table-message">Chưa có dữ liệu realtime.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ==========================================
                  YEARS
             =========================================== -->
 
@@ -2621,6 +2698,12 @@ tbody tr:hover {
                         </div>
 
 
+                        <div class="import-steps">
+                            <div class="import-step"><strong>1. Chọn Excel</strong><span>MSHS • Họ và tên • Lớp năm học</span></div>
+                            <div class="import-step"><strong>2. Kiểm tra dữ liệu</strong><span>Phát hiện mã sai, thiếu dữ liệu và trùng mã trước khi ghi DB.</span></div>
+                            <div class="import-step"><strong>3. Xác nhận cập nhật</strong><span>Chỉ file hợp lệ mới được phép đồng bộ vào năm học hiện tại.</span></div>
+                        </div>
+
                         <div class="form-group">
 
                             <label>
@@ -2809,6 +2892,20 @@ tbody tr:hover {
                         ></div>
 
 
+                        <div class="preview-table">
+                            <strong>Xem trước 20 học sinh đầu tiên</strong>
+                            <div class="table-wrapper" style="margin-top:12px;">
+                                <table>
+                                    <thead><tr><th>Dòng</th><th>Mã HS</th><th>Họ và tên</th><th>Lớp</th></tr></thead>
+                                    <tbody id="excelPreviewTableBody">
+                                        <tr><td colspan="4" class="table-message">Chưa có dữ liệu xem trước.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="excelImportSuccess" class="import-success-panel"></div>
+
                         <div
                             style="
                                 display:flex;
@@ -2838,8 +2935,7 @@ tbody tr:hover {
                                 font-size:12px;
                             "
                         >
-                            Chức năng cập nhật database sẽ được
-                            kích hoạt sau khi hoàn tất kiểm tra.
+                            Database chỉ được cập nhật sau khi file vượt qua bước kiểm tra và Admin xác nhận.
                         </div>
 
 
@@ -3744,6 +3840,11 @@ document
                     loadSchoolYears()
                         .then(loadClasses);
                 }
+                if (page === "monitor")
+                {
+                    loadSystemMonitor();
+                }
+
                 if (page === "years")
                 {
                     loadCurrentSchoolYear();
@@ -8275,6 +8376,127 @@ async function createAndActivateSchoolYear() {
     }
 
 }
+let monitorRefreshTimer = null;
+
+
+async function loadSystemMonitor() {
+
+    const body =
+        document.getElementById(
+            "monitorTableBody"
+        );
+
+    const errorBox =
+        document.getElementById(
+            "monitorError"
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/system-monitor",
+                { cache: "no-store" }
+            );
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message ||
+                "Không thể tải trạng thái"
+            );
+        }
+
+
+        const summary =
+            data.summary || {};
+
+
+        document.getElementById("monitorClasses").textContent =
+            Number(summary.active_classes || 0);
+
+        document.getElementById("monitorTeachers").textContent =
+            Number(summary.teachers_online || 0);
+
+        document.getElementById("monitorStudents").textContent =
+            Number(summary.students_online || 0);
+
+        document.getElementById("monitorSharing").textContent =
+            Number(summary.students_sharing || 0);
+
+
+        const rows =
+            Array.isArray(data.classes)
+                ? data.classes
+                : [];
+
+
+        body.innerHTML =
+            rows.length
+                ? rows.map(
+                    item => `
+                        <tr>
+                            <td><strong>${escapeHtml(item.class_code || "")}</strong></td>
+                            <td>${item.teacher_online ? "🟢 Online" : "—"}</td>
+                            <td>${Number(item.students_online || 0)}</td>
+                            <td>${Number(item.students_sharing || 0)}</td>
+                            <td>${item.teacher_online ? '<span class="badge badge-active">Đang hoạt động</span>' : '<span class="text-muted">Chờ GV</span>'}</td>
+                        </tr>
+                    `
+                ).join("")
+                : '<tr><td colspan="5" class="table-message">Hiện chưa có lớp nào đang kết nối.</td></tr>';
+
+
+        if (errorBox) {
+            errorBox.style.display = "none";
+        }
+
+
+    } catch (error) {
+
+        if (errorBox) {
+            errorBox.textContent =
+                error.message;
+            errorBox.style.display =
+                "block";
+        }
+
+    }
+
+
+    clearTimeout(
+        monitorRefreshTimer
+    );
+
+
+    const monitorPage =
+        document.getElementById(
+            "page-monitor"
+        );
+
+
+    if (
+        monitorPage &&
+        monitorPage.classList.contains(
+            "active"
+        )
+    ) {
+
+        monitorRefreshTimer =
+            setTimeout(
+                loadSystemMonitor,
+                10000
+            );
+
+    }
+
+}
+
+
 // =====================================================
 // PREVIEW SCHOOL EXCEL
 // =====================================================
@@ -8440,6 +8662,10 @@ function showExcelPreview(data) {
         )
         +
         Number(
+            summary.invalid_student_code || 0
+        )
+        +
+        Number(
             summary.missing_full_name || 0
         )
         +
@@ -8512,6 +8738,37 @@ function showExcelPreview(data) {
 
             `)
             .join("");
+
+
+    const previewBody =
+        document.getElementById(
+            "excelPreviewTableBody"
+        );
+
+
+    const previewRows =
+        Array.isArray(data.preview)
+            ? data.preview
+            : [];
+
+
+    if (previewBody) {
+
+        previewBody.innerHTML =
+            previewRows.length
+                ? previewRows.map(
+                    item => `
+                        <tr>
+                            <td>${Number(item.excel_row || 0)}</td>
+                            <td><strong>${escapeHtml(item.student_code || "")}</strong></td>
+                            <td>${escapeHtml(item.full_name || "")}</td>
+                            <td>${escapeHtml(item.class_code || "")}</td>
+                        </tr>
+                    `
+                ).join("")
+                : '<tr><td colspan="4" class="table-message">Không có dữ liệu xem trước.</td></tr>';
+
+    }
 
 
     // ==========================================
@@ -8859,6 +9116,36 @@ async function importSchoolExcel() {
             "Lớp ngừng sử dụng: " +
             (summary.classes_deactivated || 0)
         );
+
+
+        const successBox =
+            document.getElementById(
+                "excelImportSuccess"
+            );
+
+        if (successBox) {
+
+            successBox.style.display =
+                "block";
+
+            successBox.innerHTML =
+                "<strong>✓ Đồng bộ thành công</strong><br>" +
+                "Năm học: " +
+                escapeHtml(data.school_year?.name || "") +
+                " • " +
+                Number(summary.total_students || 0) +
+                " học sinh • " +
+                Number(summary.total_classes || 0) +
+                " lớp.<br>" +
+                "Thêm mới " +
+                Number(summary.students_created || 0) +
+                " HS, cập nhật " +
+                Number(summary.students_updated || 0) +
+                " HS, chuyển lớp " +
+                Number(summary.enrollments_updated || 0) +
+                " HS.";
+
+        }
 
 
         // ==========================================
