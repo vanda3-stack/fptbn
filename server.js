@@ -4621,6 +4621,27 @@ app.post("/api/teacher/login", async (req, res) => {
 });
 
 
+// Kiểm tra phiên trùng ngay khi học sinh nhấn nút chia sẻ.
+app.post("/api/student/session-check", async (req, res) => {
+    try {
+        const code = String(req.body?.student_code || "").trim().toUpperCase();
+        if (!code) return res.status(400).json({success:false,message:"Thiếu mã học sinh"});
+        const [rows] = await db.execute(
+            "SELECT id FROM students WHERE student_code=? AND is_active=1 LIMIT 1",
+            [code]
+        );
+        if (!rows.length) return res.status(404).json({success:false,message:"Không tìm thấy mã học sinh"});
+        const duplicate = Array.from(students.entries()).some(([id, entry]) =>
+            Number(entry.studentId)===Number(rows[0].id) &&
+            !!io.sockets.sockets.get(id)?.connected
+        );
+        res.json({success:true,alreadyActive:duplicate});
+    } catch (error) {
+        console.error("STUDENT SESSION CHECK ERROR:",error);
+        res.status(500).json({success:false,message:"Không kiểm tra được phiên học sinh"});
+    }
+});
+
 app.get("/api/teacher/class-roster", async (req, res) => {
     try {
         const token = String(req.headers["x-teacher-token"] || "").trim();
