@@ -605,7 +605,6 @@ button.addEventListener(
 
 
     if (
-        displaySettings.displaySurface &&
         displaySettings.displaySurface !== "monitor"
     ) {
 
@@ -620,7 +619,7 @@ button.addEventListener(
         alert(
             "⚠️ BẠN CHƯA CHỌN TOÀN BỘ MÀN HÌNH!\n\n" +
             "Hãy chọn TOÀN BỘ MÀN HÌNH (Entire Screen).\n" +
-            "Không chọn Tab hoặc Cửa sổ."
+            "Không chọn Tab hoặc Cửa sổ. Nếu trình duyệt không xác định được loại chia sẻ, hãy dùng Chrome phiên bản mới nhất."
         );
 
         statusBox.textContent =
@@ -982,7 +981,6 @@ button.addEventListener(
 
 
                         if (
-                            settings.displaySurface &&
                             settings.displaySurface !== "monitor"
                         ) {
 
@@ -996,7 +994,7 @@ button.addEventListener(
                             alert(
                                 "⚠️ BẠN CHƯA CHỌN TOÀN BỘ MÀN HÌNH!\n\n" +
                                 "Hãy chọn TOÀN BỘ MÀN HÌNH (Entire Screen).\n" +
-                                "Không chọn Tab hoặc Cửa sổ."
+                                "Không chọn Tab hoặc Cửa sổ. Nếu trình duyệt không xác định được loại chia sẻ, hãy dùng Chrome phiên bản mới nhất."
                             );
 
 
