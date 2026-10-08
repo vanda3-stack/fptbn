@@ -2,6 +2,8 @@
 <html lang="vi">
 
 <head>
+<link rel="icon" type="image/png" href="/assets/branding/favicon.png">
+
 
     <meta charset="UTF-8">
 
@@ -868,7 +870,12 @@
             .student-badge { padding: 6px 9px; }
         }
 
-    </style>
+    
+.fptbn-brand-logo{display:block;width:auto;height:43px;max-width:min(260px,40vw);object-fit:contain;object-position:left center}
+.fptbn-login-icon{display:block;width:65px;height:65px;object-fit:contain;margin:auto}
+.join-icon:has(.fptbn-login-icon){background:transparent!important;box-shadow:none!important}
+@media(max-width:650px){.fptbn-brand-logo{height:33px;max-width:180px}}
+</style>
 
 </head>
 
@@ -885,9 +892,7 @@
 
         <div>
 
-            <div class="brand-title">
-                🖥 FPTBN Monitor
-            </div>
+            <div class="brand-title"><img src="/assets/branding/logo-horizontal.png" alt="FPTBN Monitor" class="fptbn-brand-logo"></div>
 
             <div class="brand-subtitle">
                 Hệ thống lớp học trực tuyến
@@ -917,9 +922,7 @@
         <section class="join-card">
 
 
-            <div class="join-icon">
-                👨‍🎓
-            </div>
+            <div class="join-icon"><img src="/assets/branding/logo-icon.png" alt="" class="fptbn-login-icon"></div>
 
 
             <h1 class="join-title">
