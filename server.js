@@ -5226,6 +5226,24 @@ io.on(
                         );
 
 
+                    // Chỉ cho phép một phiên đang hoạt động trên mỗi mã HS.
+                    // Kiểm tra ngay tại máy chủ để ngăn mở tab/trình duyệt thứ hai.
+                    const existingSession = Array.from(students.entries()).find(
+                        ([socketId, entry]) =>
+                            socketId !== socket.id &&
+                            Number(entry.studentId) === Number(dbStudent.student_id)
+                    );
+                    if (existingSession) {
+                        const oldSocket = io.sockets.sockets.get(existingSession[0]);
+                        if (oldSocket && oldSocket.connected) {
+                            socket.emit("student-join-error", {
+                                message: "Mã học sinh này đang tham gia lớp ở một tab hoặc thiết bị khác. Vui lòng đóng phiên đang dùng trước khi đăng nhập lại."
+                            });
+                            return;
+                        }
+                        students.delete(existingSession[0]);
+                    }
+
                     const room =
                         getClassRoom(
                             classCode
