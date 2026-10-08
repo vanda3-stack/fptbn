@@ -910,6 +910,9 @@
         @media(max-width:1000px) { .student-login-shell { grid-template-columns:1fr; min-height:0; } .login-story { padding:36px 35px; } .login-story h1 br { display:none; } .story-subtitle { margin-bottom:18px; } .story-benefits { grid-template-columns:repeat(3,1fr); gap:12px; } .story-benefit { align-items:flex-start; gap:8px; } .benefit-icon { width:40px; height:40px; font-size:20px; } .story-illustration { display:none; } .login-form-side { padding:25px; } }
         @media(max-width:650px) { #joinPage { padding:14px; min-height:calc(100vh - 64px); } .student-login-shell { border-radius:22px; } .login-story { padding:26px 23px 15px; } .story-kicker { font-size:14px; } .login-story h1 { font-size:32px; } .story-subtitle { font-size:15px; margin-bottom:12px; } .story-benefits { display:none; } .login-form-side { padding:12px; } #joinPage .join-card { padding:25px 19px; border-radius:17px; } #joinPage .join-icon { width:58px; height:58px; font-size:29px; } #joinPage .join-title { font-size:25px; } #joinPage .join-description { margin-bottom:25px; } #joinPage #studentCode { font-size:14px; } }
 
+
+        #joinPage .story-illustration { right:-10px; bottom:-48px; width:min(100%,570px); height:350px; background:transparent; border-radius:0; }
+        #joinPage .student-art { width:100%; height:100%; display:block; filter:drop-shadow(0 8px 16px rgba(36,62,101,.09)); }
     </style>
 
 </head>
@@ -965,9 +968,25 @@
             <div class="story-benefit"><span class="benefit-icon green">✓</span><span><strong>Đồng hành cùng thầy cô</strong><small>Chủ động trong từng tiết học</small></span></div>
           </div>
           <div class="story-illustration" aria-hidden="true">
-            <div class="illustration-orbit orbit-one">✎</div><div class="illustration-orbit orbit-two">✦</div>
-            <div class="illustration-person">👨‍💻</div>
-            <div class="illustration-books">📚</div>
+            <svg class="student-art" viewBox="0 0 560 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Học sinh đang học với máy tính">
+              <defs><linearGradient id="artBg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e5f1ff"/><stop offset="1" stop-color="#fff0dd"/></linearGradient><linearGradient id="artHood" x1="0" x2="1"><stop stop-color="#ff8c30"/><stop offset="1" stop-color="#ee641e"/></linearGradient></defs>
+              <ellipse cx="295" cy="294" rx="240" ry="85" fill="url(#artBg)"/>
+              <rect x="36" y="291" width="495" height="19" rx="9" fill="#f4cfad"/>
+              <rect x="46" y="270" width="108" height="15" rx="4" fill="#f9a03e"/><rect x="52" y="255" width="102" height="14" rx="4" fill="#7aa9e9"/><rect x="48" y="240" width="111" height="13" rx="4" fill="#fff" stroke="#d6e0ed"/>
+              <rect x="178" y="250" width="47" height="42" rx="8" fill="#f7fafc" stroke="#d5e1f0" stroke-width="3"/><path d="M188 252l-4-38M199 251l7-43M212 251l15-35" stroke="#2878d7" stroke-width="7" stroke-linecap="round"/>
+              <path d="M231 284q-5-85 76-91 89-8 116 91" fill="url(#artHood)"/><path d="M270 218q36 39 85 0" fill="none" stroke="#e95f20" stroke-width="7"/>
+              <rect x="274" y="145" width="67" height="73" rx="29" fill="#ffc8a1"/>
+              <ellipse cx="307" cy="118" rx="67" ry="65" fill="#ffccaa"/>
+              <path d="M243 118q-26-50 15-78 14-26 46-17 27-24 55 4 39-5 39 42-11 28-30 33-13-22-28-18-24 16-41 2-14 28-49 32z" fill="#503024"/>
+              <path d="M252 74q-4-40 39-43M318 33q27-14 48 11" stroke="#6b402c" stroke-width="16" stroke-linecap="round" fill="none"/>
+              <circle cx="281" cy="119" r="5" fill="#302b2b"/><circle cx="333" cy="119" r="5" fill="#302b2b"/><path d="M295 151q14 12 26 0" stroke="#c56b59" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M272 241q22 22 47 20" stroke="#ffc8a1" stroke-width="23" stroke-linecap="round"/>
+              <path d="M341 243q20 19 48 16" stroke="#ffc8a1" stroke-width="23" stroke-linecap="round"/>
+              <path d="M342 195h170l-28 96H311z" fill="#a7b3c9" stroke="#8899b5" stroke-width="3"/><path d="M307 291h195" stroke="#899ab6" stroke-width="11" stroke-linecap="round"/>
+              <text x="419" y="255" font-family="Arial,sans-serif" font-size="27" font-weight="800" fill="white" text-anchor="middle">FPT</text>
+              <circle cx="165" cy="93" r="29" fill="#ffba77"/><text x="165" y="105" text-anchor="middle" font-size="34" fill="white">✦</text>
+              <rect x="447" y="42" width="66" height="66" rx="18" fill="#9b9cf8"/><text x="480" y="85" font-size="39" text-anchor="middle" fill="white">✎</text>
+            </svg>
           </div>
         </div>
         <div class="login-form-side">
