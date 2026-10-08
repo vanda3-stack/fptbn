@@ -4621,6 +4621,31 @@ app.post("/api/teacher/login", async (req, res) => {
 });
 
 
+app.get("/api/teacher/class-roster", async (req, res) => {
+    try {
+        const token = String(req.headers["x-teacher-token"] || "").trim();
+        const classCode = normalizeClassCode(req.query.classCode);
+        if (!token || !teacherLoginTokens.has(token)) return res.status(401).json({success:false,message:"Phiên giáo viên không hợp lệ"});
+        if (!classCode) return res.status(400).json({success:false,message:"Thiếu mã lớp"});
+        const [classes] = await db.execute(
+            "SELECT c.id FROM classes c INNER JOIN school_years sy ON sy.id=c.school_year_id WHERE c.class_code=? AND c.is_active=1 AND sy.is_current=1 LIMIT 1",
+            [classCode]
+        );
+        if (!classes.length) return res.status(404).json({success:false,message:"Không tìm thấy lớp"});
+        const [students] = await db.execute(
+            "SELECT s.id, s.student_code, s.full_name FROM students s INNER JOIN student_enrollments se ON se.student_id=s.id WHERE se.class_id=? AND s.is_active=1 ORDER BY s.full_name",
+            [classes[0].id]
+        );
+        const room = getClassRoom(classCode);
+        const sockets = await io.in(room).fetchSockets();
+        const onlineIds = new Set(sockets.filter(x=>x.data.role==="student" && x.data.classCode===classCode).map(x=>Number(x.data.studentId)));
+        res.json({success:true,students:students.map(x=>({...x,online:onlineIds.has(Number(x.id))}))});
+    } catch (error) {
+        console.error("CLASS ROSTER ERROR:",error);
+        res.status(500).json({success:false,message:"Không tải được sĩ số"});
+    }
+});
+
 app.get("/api/teacher/classes", async (req, res) => {
 
     try {
