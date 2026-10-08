@@ -1711,6 +1711,9 @@ tbody tr:hover {
 .school-identity{display:inline-flex;align-items:center;gap:8px;min-width:0;flex-shrink:0}.school-identity img{display:block;width:auto;height:42px;max-width:175px;object-fit:contain}.school-name-fallback{display:none;font-size:17px;color:#fff;white-space:nowrap}.school-name-fallback em{font-style:normal;color:#ff7623}.school-identity:has(img[style*="display: none"]) .school-name-fallback{display:inline}.fptbn-product-brand{display:flex;align-items:center;gap:13px;min-width:0}.fptbn-product-brand .fptbn-brand-logo{height:30px;max-width:175px}.fptbn-product-brand .brand-subtitle{font-size:11px}.school-brand-divider{width:1px;height:36px;background:rgba(148,163,184,.35);flex-shrink:0}@media(max-width:650px){.school-identity img{height:31px;max-width:112px}.fptbn-product-brand .fptbn-brand-logo{height:23px;max-width:118px}.school-brand-divider{height:28px}.fptbn-product-brand{gap:7px}}
 
 .sidebar .school-identity{margin-bottom:12px}.sidebar .school-identity img{height:45px;max-width:175px}.login-card .school-identity{justify-content:center;margin-bottom:12px}.login-card .school-name-fallback{color:#0f172a}
+
+/* Full product logo centered on sign-in; school identity in header/sidebar unchanged. */
+.login-full-brand{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto 16px}.login-full-brand img{display:block;width:min(100%,290px);height:auto;max-height:124px;object-fit:contain}.join-card .login-full-brand img{max-height:128px}.teacher-login-card .login-full-brand img{max-height:128px}.login-card .login-full-brand img{max-height:128px}@media(max-width:500px){.login-full-brand img{width:min(100%,235px);max-height:100px}}
 </style>
 
 </head>
@@ -1727,7 +1730,7 @@ tbody tr:hover {
 
     <div class="login-card">
 
-        <span class="school-identity"><img src="/assets/branding/logo-fpt-schools.webp" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><div class="login-logo"><img src="/assets/branding/logo-icon.png" alt="FPTBN Monitor" class="fptbn-admin-icon"></div>
+        <span class="school-identity"><img src="/assets/branding/logo-fpt-schools.webp" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><div class="login-full-brand"><img src="/assets/branding/logo-full.png" alt="FPTBN Monitor"></div>
 
         <h1>
             Quản trị hệ thống
