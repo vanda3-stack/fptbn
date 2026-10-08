@@ -913,6 +913,27 @@
 
         #joinPage .story-illustration { right:-10px; bottom:-48px; width:min(100%,570px); height:350px; background:transparent; border-radius:0; }
         #joinPage .student-art { width:100%; height:100%; display:block; filter:drop-shadow(0 8px 16px rgba(36,62,101,.09)); }
+
+        /* Login-only masthead; classroom header remains intact after joining */
+        .login-masthead { min-height:105px; padding:22px clamp(24px,7vw,115px) 14px; display:flex; align-items:center; justify-content:space-between; gap:25px; background:linear-gradient(115deg,#fffaf7,#f5f8ff 52%,#f4f7ff); }
+        .fpt-school-lockup { display:flex; align-items:center; min-height:58px; }
+        .fpt-official-logo { display:block; max-width:300px; width:auto; height:58px; object-fit:contain; object-position:left center; }
+        .fpt-logo-fallback { display:flex; align-items:center; gap:13px; }
+        .fpt-mark { display:flex; align-items:center; gap:1px; font-size:31px; font-weight:900; font-style:italic; color:#fff; }
+        .fpt-mark b { display:grid; place-items:center; width:34px; height:43px; transform:skew(-12deg); background:#0876c9; border-radius:5px; }
+        .fpt-mark b:nth-child(2) { background:#fa7622; } .fpt-mark b:nth-child(3) { background:#20a14c; }
+        .fpt-school-name { display:flex; flex-direction:column; gap:2px; color:#1655a2; font-size:18px; letter-spacing:.025em; }
+        .fpt-school-name small { font-size:15px; letter-spacing:.04em; }
+        .school-motto { color:#687797; font-size:13px; letter-spacing:.08em; text-align:right; white-space:nowrap; }
+        .school-motto span { display:block; width:44px; height:2px; background:#ff7623; margin:13px 0 0 auto; }
+        body:has(#joinPage:not([style*="display: none"])) > .header { display:none; }
+        body:has(#joinPage[style*="display: none"]) > .login-masthead { display:none; }
+        body:has(#classroom[style*="display: block"]) > .login-masthead { display:none; }
+        #joinPage { min-height:calc(100vh - 105px); padding-top:14px; }
+        .classroom-brand { display:flex; flex-direction:column; gap:3px; color:#fff; }
+        .classroom-brand strong { font-size:17px; } .classroom-brand span { color:#94a3b8; font-size:11px; }
+        @media(max-width:720px) { .login-masthead { padding:18px 20px; min-height:85px; } .school-motto { display:none; } .fpt-official-logo { max-width:240px; height:48px; } .fpt-mark { font-size:23px; } .fpt-mark b { width:27px; height:34px; } .fpt-school-name { font-size:15px; } .fpt-school-name small { font-size:12px; } #joinPage { min-height:calc(100vh - 85px); } }
+
     </style>
 
 </head>
@@ -925,31 +946,17 @@
          HEADER
     =========================================== -->
 
-    <header class="header">
-
-
-        <div>
-
-            <div class="brand-title">
-                🖥 FPTBN Monitor
-            </div>
-
-            <div class="brand-subtitle">
-                Hệ thống lớp học trực tuyến
-            </div>
-
-        </div>
-
-
-        <div
-            class="student-badge"
-            id="studentBadge"
-        >
-            👨‍🎓 Học sinh
-        </div>
-
-
+    <header class="header" aria-label="Thông tin lớp học">
+      <div class="classroom-brand"><strong>FPTBN Monitor</strong><span>Không gian học tập</span></div>
+      <div class="student-badge" id="studentBadge">👨‍🎓 Học sinh</div>
     </header>
+    <div class="login-masthead" aria-label="FPT Schools Bắc Ninh">
+      <div class="fpt-school-lockup">
+        <img class="fpt-official-logo" src="/assets/fpt-schools-bac-ninh.png" alt="FPT Schools Bắc Ninh" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="fpt-logo-fallback" style="display:none"><span class="fpt-mark"><b>F</b><b>P</b><b>T</b></span><span class="fpt-school-name"><strong>FPT SCHOOLS</strong><small>BẮC NINH</small></span></span>
+      </div>
+      <div class="school-motto">KIẾN TẠO TRẢI NGHIỆM HỌC TẬP KHÁC BIỆT<span></span></div>
+    </div>
 
 
     <!-- ==========================================
