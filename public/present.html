@@ -72,6 +72,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;background:#07111feF;backdrop
 @keyframes warningGlow{0%,100%{box-shadow:0 20px 60px #0009}50%{box-shadow:0 20px 60px #0009,0 0 25px #ff536b33}}
 @keyframes downBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* PRESENTATION VFX 2 */
+.slide{isolation:isolate}.slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(450px circle at var(--mx,50%) var(--my,50%),rgba(39,215,161,.065),transparent 75%);transition:opacity .3s}
+.ambientOrb{position:absolute;z-index:-1;pointer-events:none;width:260px;height:260px;border-radius:50%;filter:blur(65px);background:#2563eb22;animation:orbDrift 11s ease-in-out infinite alternate}.ambientOrb.second{width:180px;height:180px;right:8%;bottom:4%;background:#27d7a122;animation-delay:-5s}
+@keyframes orbDrift{from{transform:translate(-25px,-15px) scale(.9)}to{transform:translate(55px,30px) scale(1.2)}}
+.slide.is-active .eyebrow{animation:labelGlow 2.5s ease-in-out infinite alternate}@keyframes labelGlow{from{text-shadow:none}to{text-shadow:0 0 15px #27d7a177}}
+.svStudent.warn,.tmStudent.bad{animation:attentionBorder 2s ease-in-out infinite}@keyframes attentionBorder{50%{box-shadow:0 0 22px #fb923c88;border-color:#ffbb70}}
+.deckScreen,.deviceScreen{background-size:200% 200%;animation:slideShimmer 8s ease-in-out infinite}@keyframes slideShimmer{50%{background-position:100% 100%}}
+.solutionVisual,.shareDiagram,.browser,.warningMock,.teacherMock{transition:box-shadow .4s ease,border-color .4s ease}.solutionVisual:hover,.shareDiagram:hover,.browser:hover,.warningMock:hover,.teacherMock:hover{box-shadow:0 30px 80px #000a,0 0 40px #2563eb22;border-color:#4b78a6}
+.slideIndex{position:fixed;left:18px;bottom:18px;z-index:45;font-size:11px;letter-spacing:1px;color:#91a5bd;background:#0c192bdd;border:1px solid #304663;border-radius:999px;padding:7px 11px}
+.slideDots{position:fixed;right:13px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:9px}.slideDots a{display:block;width:7px;height:7px;border-radius:50%;background:#52647b;transition:transform .2s,background .2s}.slideDots a.active{background:var(--green);transform:scale(1.55);box-shadow:0 0 12px #27d7a188}
+@media(max-width:900px){.slideDots{display:none}}@media(prefers-reduced-motion:reduce){.ambientOrb{animation:none}.slide.is-active .eyebrow,.svStudent.warn,.tmStudent.bad,.deckScreen,.deviceScreen{animation:none}}
 </style>
 </head>
 <body>
@@ -147,5 +159,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;background:#07111feF;backdrop
     });
     el.addEventListener("mouseleave",()=>el.style.transform="");
   });
+})();
+</script><div class="slideIndex" id="slideIndex">01 / 01</div><div class="slideDots" id="slideDots" aria-label="Điều hướng nội dung"></div>
+<script>
+(()=>{const slides=[...document.querySelectorAll(".slide")],dots=document.getElementById("slideDots"),counter=document.getElementById("slideIndex");if(!slides.length)return;
+slides.forEach((s,i)=>{const orb=document.createElement("div");orb.className="ambientOrb";orb.style.top=(i%2?12:60)+"%";orb.style.left=(i%2?8:62)+"%";s.prepend(orb);const second=document.createElement("div");second.className="ambientOrb second";s.prepend(second);
+const a=document.createElement("a");a.href="#"+(s.id||"slide-"+i);if(!s.id)s.id="slide-"+i;a.title="Phần "+(i+1);a.setAttribute("aria-label","Đến phần "+(i+1));dots.append(a);
+s.addEventListener("pointermove",e=>{if(e.pointerType==="touch")return;const r=s.getBoundingClientRect();s.style.setProperty("--mx",(e.clientX-r.left)+"px");s.style.setProperty("--my",(e.clientY-r.top)+"px")},{passive:true});});
+const links=[...dots.children];let active=-1;const update=()=>{const center=innerHeight*.52;let idx=0,best=Infinity;slides.forEach((s,i)=>{const r=s.getBoundingClientRect(),d=Math.abs((r.top+r.bottom)/2-center);if(d<best){best=d;idx=i}});if(idx!==active){active=idx;counter.textContent=String(idx+1).padStart(2,"0")+" / "+String(slides.length).padStart(2,"0");links.forEach((a,i)=>{a.classList.toggle("active",i===idx);if(i===idx)a.setAttribute("aria-current","location");else a.removeAttribute("aria-current")})}};
+addEventListener("scroll",update,{passive:true});addEventListener("resize",update);update();
 })();
 </script></body></html>
