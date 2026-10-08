@@ -868,72 +868,6 @@
             .student-badge { padding: 6px 9px; }
         }
 
-
-        /* STUDENT LOGIN 2026 — visual refresh, classroom styles untouched */
-        #joinPage { min-height:calc(100vh - 64px); padding:38px 24px; background:radial-gradient(circle at 10% 88%,#cfe2ff 0,transparent 32%),radial-gradient(circle at 95% 24%,#ffe6c9 0,transparent 30%),#f5f8ff; color:#0e1b3d; }
-        body:has(#joinPage:not([style*="display: none"])) .header { background:#f5f8ff; border-color:#e5eaf3; box-shadow:none; }
-        body:has(#joinPage:not([style*="display: none"])) .brand-title { color:#0e2450; }
-        body:has(#joinPage:not([style*="display: none"])) .brand-subtitle { color:#687899; }
-        body:has(#joinPage:not([style*="display: none"])) .student-badge { background:#fff; color:#1852a2; border-color:#d9e5f9; }
-        .student-login-shell { width:min(1300px,100%); min-height:690px; margin:auto; display:grid; grid-template-columns:1.05fr 1fr; overflow:hidden; border:1px solid rgba(255,255,255,.9); border-radius:36px; background:rgba(255,255,255,.80); box-shadow:0 24px 70px rgba(37,66,115,.12); }
-        .login-story { position:relative; min-width:0; padding:65px 58px 240px; overflow:hidden; background:linear-gradient(150deg,#fff 5%,#f2f7ff 65%,#fff2e4 100%); }
-        .story-kicker { color:#ff731c; font-weight:800; letter-spacing:.04em; font-size:19px; }
-        .login-story h1 { margin:14px 0 6px; font-size:clamp(36px,4vw,56px); line-height:1.08; letter-spacing:-.035em; color:#0b1638; }
-        .story-subtitle { margin:0 0 34px; color:#6d7b9c; font-size:21px; }
-        .story-benefits { position:relative; z-index:2; display:grid; gap:19px; }
-        .story-benefit { display:flex; align-items:center; gap:16px; }
-        .benefit-icon { flex:none; display:grid; place-items:center; width:53px; height:53px; border-radius:17px; font-size:26px; font-weight:800; }
-        .benefit-icon.blue { color:#1671f5; background:#e4f1ff; } .benefit-icon.orange { color:#ff7926; background:#fff0df; } .benefit-icon.green { color:#08a879; background:#e0f8ed; }
-        .story-benefit strong { display:block; color:#172348; font-size:16px; } .story-benefit small { display:block; margin-top:5px; color:#667797; font-size:13px; line-height:1.5; }
-        .story-illustration { position:absolute; bottom:-75px; right:-20px; width:480px; height:290px; border-radius:55% 45% 0 0; background:linear-gradient(145deg,#d8e9ff,#fce9d4); }
-        .illustration-person { position:absolute; bottom:75px; left:125px; font-size:142px; filter:drop-shadow(0 15px 16px rgba(45,67,105,.15)); }
-        .illustration-books { position:absolute; bottom:85px; left:25px; font-size:57px; }
-        .illustration-orbit { position:absolute; display:grid; place-items:center; width:66px; height:66px; border-radius:18px; font-size:34px; box-shadow:0 10px 22px rgba(54,79,119,.1); }
-        .orbit-one { right:60px; top:-38px; color:#fff; background:#83d6ce; } .orbit-two { left:35px; top:-60px; color:#fff; background:#ffba7c; }
-        .login-form-side { padding:35px; display:flex; align-items:center; justify-content:center; background:rgba(247,250,255,.75); }
-        #joinPage .join-card { width:100%; max-width:560px; padding:43px 37px; border:1px solid #edf0f8; border-radius:27px; background:#fff; box-shadow:0 12px 45px rgba(33,62,116,.055); }
-        #joinPage .join-icon { width:82px; height:82px; margin:0 auto 19px; border-radius:50%; background:linear-gradient(145deg,#ff9b34,#ff701c); color:white; font-size:40px; display:grid; place-items:center; }
-        #joinPage .join-title { color:#0b1638; font-size:31px; letter-spacing:-.03em; margin:0; }
-        #joinPage .join-description { margin:9px auto 45px; color:#8490ae; font-size:16px; }
-        #joinPage .input-label { color:#34476c; font-size:14px; margin-bottom:11px; }
-        #joinPage #studentCode { height:62px; border:2px solid #e1e9f6; border-radius:13px; padding:0 17px; background:#fff; color:#12244c; font-size:15px; font-weight:600; letter-spacing:0; }
-        #joinPage #studentCode::placeholder { color:#9aa8c0; }
-        #joinPage #studentCode:focus { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.12); }
-        #joinPage .student-code-hint { margin:9px 0 0; color:#7d8ca7; font-size:12px; }
-        #joinPage #shareButton { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:23px; min-height:61px; border-radius:13px; background:#1761e9; font-size:16px; box-shadow:0 10px 23px rgba(37,99,235,.15); }
-        #joinPage #shareButton:hover { background:#0c51d5; }
-        #joinPage #shareButton span { display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.2); font-size:19px; }
-        #joinPage #status { margin:12px 0 0; color:#7a88a4; font-size:12px; min-height:18px; }
-        #joinPage .instruction { margin-top:24px; padding:19px 20px; background:#f0f5ff; border:0; border-radius:15px; color:#4d6187; font-size:13px; }
-        #joinPage .instruction-title { color:#1761e9; font-size:14px; }
-        #joinPage .instruction ol { margin:10px 0 0; padding-left:22px; } #joinPage .instruction li { padding:3px 0; }
-        @media(max-width:1000px) { .student-login-shell { grid-template-columns:1fr; min-height:0; } .login-story { padding:36px 35px; } .login-story h1 br { display:none; } .story-subtitle { margin-bottom:18px; } .story-benefits { grid-template-columns:repeat(3,1fr); gap:12px; } .story-benefit { align-items:flex-start; gap:8px; } .benefit-icon { width:40px; height:40px; font-size:20px; } .story-illustration { display:none; } .login-form-side { padding:25px; } }
-        @media(max-width:650px) { #joinPage { padding:14px; min-height:calc(100vh - 64px); } .student-login-shell { border-radius:22px; } .login-story { padding:26px 23px 15px; } .story-kicker { font-size:14px; } .login-story h1 { font-size:32px; } .story-subtitle { font-size:15px; margin-bottom:12px; } .story-benefits { display:none; } .login-form-side { padding:12px; } #joinPage .join-card { padding:25px 19px; border-radius:17px; } #joinPage .join-icon { width:58px; height:58px; font-size:29px; } #joinPage .join-title { font-size:25px; } #joinPage .join-description { margin-bottom:25px; } #joinPage #studentCode { font-size:14px; } }
-
-
-        #joinPage .story-illustration { right:-10px; bottom:-48px; width:min(100%,570px); height:350px; background:transparent; border-radius:0; }
-        #joinPage .student-art { width:100%; height:100%; display:block; filter:drop-shadow(0 8px 16px rgba(36,62,101,.09)); }
-
-        /* Login-only masthead; classroom header remains intact after joining */
-        .login-masthead { min-height:105px; padding:22px clamp(24px,7vw,115px) 14px; display:flex; align-items:center; justify-content:space-between; gap:25px; background:linear-gradient(115deg,#fffaf7,#f5f8ff 52%,#f4f7ff); }
-        .fpt-school-lockup { display:flex; align-items:center; min-height:58px; }
-        .fpt-official-logo { display:block; max-width:300px; width:auto; height:58px; object-fit:contain; object-position:left center; }
-        .fpt-logo-fallback { display:flex; align-items:center; gap:13px; }
-        .fpt-mark { display:flex; align-items:center; gap:1px; font-size:31px; font-weight:900; font-style:italic; color:#fff; }
-        .fpt-mark b { display:grid; place-items:center; width:34px; height:43px; transform:skew(-12deg); background:#0876c9; border-radius:5px; }
-        .fpt-mark b:nth-child(2) { background:#fa7622; } .fpt-mark b:nth-child(3) { background:#20a14c; }
-        .fpt-school-name { display:flex; flex-direction:column; gap:2px; color:#1655a2; font-size:18px; letter-spacing:.025em; }
-        .fpt-school-name small { font-size:15px; letter-spacing:.04em; }
-        .school-motto { color:#687797; font-size:13px; letter-spacing:.08em; text-align:right; white-space:nowrap; }
-        .school-motto span { display:block; width:44px; height:2px; background:#ff7623; margin:13px 0 0 auto; }
-        body:has(#joinPage:not([style*="display: none"])) > .header { display:none; }
-        body:has(#joinPage[style*="display: none"]) > .login-masthead { display:none; }
-        body:has(#classroom[style*="display: block"]) > .login-masthead { display:none; }
-        #joinPage { min-height:calc(100vh - 105px); padding-top:14px; }
-        .classroom-brand { display:flex; flex-direction:column; gap:3px; color:#fff; }
-        .classroom-brand strong { font-size:17px; } .classroom-brand span { color:#94a3b8; font-size:11px; }
-        @media(max-width:720px) { .login-masthead { padding:18px 20px; min-height:85px; } .school-motto { display:none; } .fpt-official-logo { max-width:240px; height:48px; } .fpt-mark { font-size:23px; } .fpt-mark b { width:27px; height:34px; } .fpt-school-name { font-size:15px; } .fpt-school-name small { font-size:12px; } #joinPage { min-height:calc(100vh - 85px); } }
-
     </style>
 
 </head>
@@ -946,74 +880,134 @@
          HEADER
     =========================================== -->
 
-    <header class="header" aria-label="Thông tin lớp học">
-      <div class="classroom-brand"><strong>FPTBN Monitor</strong><span>Không gian học tập</span></div>
-      <div class="student-badge" id="studentBadge">👨‍🎓 Học sinh</div>
+    <header class="header">
+
+
+        <div>
+
+            <div class="brand-title">
+                🖥 FPTBN Monitor
+            </div>
+
+            <div class="brand-subtitle">
+                Hệ thống lớp học trực tuyến
+            </div>
+
+        </div>
+
+
+        <div
+            class="student-badge"
+            id="studentBadge"
+        >
+            👨‍🎓 Học sinh
+        </div>
+
+
     </header>
-    <div class="login-masthead" aria-label="FPT Schools Bắc Ninh">
-      <div class="fpt-school-lockup">
-        <img class="fpt-official-logo" src="/assets/fpt-schools-bac-ninh.png" alt="FPT Schools Bắc Ninh" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <span class="fpt-logo-fallback" style="display:none"><span class="fpt-mark"><b>F</b><b>P</b><b>T</b></span><span class="fpt-school-name"><strong>FPT SCHOOLS</strong><small>BẮC NINH</small></span></span>
-      </div>
-      <div class="school-motto">KIẾN TẠO TRẢI NGHIỆM HỌC TẬP KHÁC BIỆT<span></span></div>
-    </div>
 
 
     <!-- ==========================================
          JOIN PAGE
     =========================================== -->
 
-    <main id="joinPage" aria-label="Đăng nhập học sinh">
-      <section class="student-login-shell">
-        <div class="login-story">
-          <div class="story-kicker">FPTBN MONITOR</div>
-          <h1>Tham gia<br>lớp học</h1>
-          <p class="story-subtitle">Kết nối · Học tập · Tiến bộ</p>
-          <div class="story-benefits">
-            <div class="story-benefit"><span class="benefit-icon blue">▣</span><span><strong>Chia sẻ màn hình</strong><small>Thầy cô dễ dàng hướng dẫn và hỗ trợ</small></span></div>
-            <div class="story-benefit"><span class="benefit-icon orange">✦</span><span><strong>Học tập tập trung</strong><small>Cùng tham gia hoạt động trên lớp</small></span></div>
-            <div class="story-benefit"><span class="benefit-icon green">✓</span><span><strong>Đồng hành cùng thầy cô</strong><small>Chủ động trong từng tiết học</small></span></div>
-          </div>
-          <div class="story-illustration" aria-hidden="true">
-            <svg class="student-art" viewBox="0 0 560 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Học sinh đang học với máy tính">
-              <defs><linearGradient id="artBg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e5f1ff"/><stop offset="1" stop-color="#fff0dd"/></linearGradient><linearGradient id="artHood" x1="0" x2="1"><stop stop-color="#ff8c30"/><stop offset="1" stop-color="#ee641e"/></linearGradient></defs>
-              <ellipse cx="295" cy="294" rx="240" ry="85" fill="url(#artBg)"/>
-              <rect x="36" y="291" width="495" height="19" rx="9" fill="#f4cfad"/>
-              <rect x="46" y="270" width="108" height="15" rx="4" fill="#f9a03e"/><rect x="52" y="255" width="102" height="14" rx="4" fill="#7aa9e9"/><rect x="48" y="240" width="111" height="13" rx="4" fill="#fff" stroke="#d6e0ed"/>
-              <rect x="178" y="250" width="47" height="42" rx="8" fill="#f7fafc" stroke="#d5e1f0" stroke-width="3"/><path d="M188 252l-4-38M199 251l7-43M212 251l15-35" stroke="#2878d7" stroke-width="7" stroke-linecap="round"/>
-              <path d="M231 284q-5-85 76-91 89-8 116 91" fill="url(#artHood)"/><path d="M270 218q36 39 85 0" fill="none" stroke="#e95f20" stroke-width="7"/>
-              <rect x="274" y="145" width="67" height="73" rx="29" fill="#ffc8a1"/>
-              <ellipse cx="307" cy="118" rx="67" ry="65" fill="#ffccaa"/>
-              <path d="M243 118q-26-50 15-78 14-26 46-17 27-24 55 4 39-5 39 42-11 28-30 33-13-22-28-18-24 16-41 2-14 28-49 32z" fill="#503024"/>
-              <path d="M252 74q-4-40 39-43M318 33q27-14 48 11" stroke="#6b402c" stroke-width="16" stroke-linecap="round" fill="none"/>
-              <circle cx="281" cy="119" r="5" fill="#302b2b"/><circle cx="333" cy="119" r="5" fill="#302b2b"/><path d="M295 151q14 12 26 0" stroke="#c56b59" stroke-width="4" fill="none" stroke-linecap="round"/>
-              <path d="M272 241q22 22 47 20" stroke="#ffc8a1" stroke-width="23" stroke-linecap="round"/>
-              <path d="M341 243q20 19 48 16" stroke="#ffc8a1" stroke-width="23" stroke-linecap="round"/>
-              <path d="M342 195h170l-28 96H311z" fill="#a7b3c9" stroke="#8899b5" stroke-width="3"/><path d="M307 291h195" stroke="#899ab6" stroke-width="11" stroke-linecap="round"/>
-              <text x="419" y="255" font-family="Arial,sans-serif" font-size="27" font-weight="800" fill="white" text-anchor="middle">FPT</text>
-              <circle cx="165" cy="93" r="29" fill="#ffba77"/><text x="165" y="105" text-anchor="middle" font-size="34" fill="white">✦</text>
-              <rect x="447" y="42" width="66" height="66" rx="18" fill="#9b9cf8"/><text x="480" y="85" font-size="39" text-anchor="middle" fill="white">✎</text>
-            </svg>
-          </div>
-        </div>
-        <div class="login-form-side">
-          <section class="join-card">
-            <div class="join-icon" aria-hidden="true">🎓</div>
-            <h2 class="join-title">FPTBN Monitor</h2>
-            <p class="join-description">Dành cho học sinh</p>
-            <label class="input-label" for="studentCode">Mã học sinh</label>
-            <input id="studentCode" type="text" placeholder="Nhập mã học sinh (VD: FBN12345)" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" inputmode="text" aria-describedby="studentCodeHint">
-            <div id="studentCodeHint" class="student-code-hint">Nhập mã do nhà trường cung cấp.</div>
-            <button id="shareButton" type="button">Tham gia lớp học <span aria-hidden="true">→</span></button>
-            <div id="status" role="status" aria-live="polite">Đang kết nối máy chủ...</div>
-            <div class="instruction">
-              <div class="instruction-title">ⓘ &nbsp; Hướng dẫn nhanh</div>
-              <ol><li>Nhập mã học sinh của bạn</li><li>Nhấn <strong>Tham gia lớp học</strong></li><li>Chọn <strong>Toàn bộ màn hình</strong> khi trình duyệt yêu cầu</li></ol>
+    <main id="joinPage">
+
+
+        <section class="join-card">
+
+
+            <div class="join-icon">
+                👨‍🎓
             </div>
-          </section>
-        </div>
-      </section>
+
+
+            <h1 class="join-title">
+                Vào lớp học
+            </h1>
+
+
+            <div class="join-description">
+
+                Nhập <strong>Mã học sinh</strong> để bắt đầu buổi học.
+
+            </div>
+
+
+            <!-- ==================================
+                STUDENT CODE
+            =================================== -->
+
+            <label
+                class="input-label"
+                for="studentCode"
+            >
+                Mã học sinh
+            </label>
+
+            <input
+                id="studentCode"
+                type="text"
+                placeholder="FBN12345"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                maxlength="8"
+                inputmode="text"
+                aria-describedby="studentCodeHint"
+            >
+
+            <div
+                id="studentCodeHint"
+                style="margin-top:7px;font-size:12px;color:#94a3b8;"
+            >
+                Ví dụ: <strong>FBN12345</strong> • Không cần nhập tên hoặc chọn lớp.
+            </div>
+
+
+            <!-- ==================================
+                 JOIN BUTTON
+            =================================== -->
+
+            <button
+                id="shareButton"
+                type="button"
+            >
+                Vào lớp học →
+            </button>
+
+
+            <!-- ==================================
+                 SERVER STATUS
+            =================================== -->
+
+            <div id="status">
+                🟡 Đang kết nối máy chủ...
+            </div>
+
+
+            <!-- ==================================
+                 INSTRUCTION
+            =================================== -->
+
+            <div class="instruction">
+
+                <div class="instruction-title">
+                    🖥 Bước tiếp theo
+                </div>
+
+                Khi trình duyệt hỏi, hãy chọn
+                <strong>Toàn bộ màn hình / Entire Screen</strong>
+                rồi nhấn <strong>Chia sẻ</strong>.
+
+            </div>
+
+
+        </section>
+
+
     </main>
+
 
     <!-- ==========================================
          CLASSROOM
