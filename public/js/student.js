@@ -511,6 +511,21 @@ button.addEventListener(
     );
 
 
+    // Kiểm tra mã đang được dùng TRƯỚC khi mở hộp thoại chia sẻ màn hình.
+    const sessionResponse = await fetch("/api/student/session-check", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({student_code:studentCode}),
+        cache: "no-store"
+    });
+    const sessionData = await sessionResponse.json();
+    if (!sessionResponse.ok || !sessionData.success) {
+        throw new Error(sessionData.message || "Không kiểm tra được phiên đăng nhập.");
+    }
+    if (sessionData.alreadyActive) {
+        throw new Error("Mã học sinh " + studentCode + " đang được sử dụng ở tab hoặc thiết bị khác. Hãy đóng phiên trước rồi thử lại.");
+    }
+
     // =========================================
     // MÃ HS ĐÚNG -> BẮT ĐẦU SHARE
     // =========================================
