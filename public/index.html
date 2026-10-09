@@ -940,6 +940,11 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 #classroom .learning-banner strong { font-size:15px; color:#fff; }
 #classroom .learning-banner p { margin:2px 0 0; color:#bfd2ec; font-size:11px; line-height:1.3; }
 @media(max-width:650px) { #classroom .teacher-video-box { height:calc(100dvh - 158px); min-height:180px; } #classroom .learning-banner { height:46px; gap:7px; padding:4px 8px; } #classroom .learning-banner svg { width:42px; height:34px; flex-basis:42px; } #classroom .learning-banner strong { font-size:12px; } #classroom .learning-banner p { font-size:9px; } }
+/* Remove teacher-panel title and emphasize centered waiting message. */
+#classroom .teacher-panel .panel-header { display:none; }
+#classroom #waitingTeacher { font-size:clamp(20px,2.4vw,30px); line-height:1.5; font-weight:800; }
+#classroom .teacher-video-box { height:calc(100dvh - 137px); }
+@media(max-width:650px) { #classroom #waitingTeacher { font-size:clamp(18px,4.5vw,24px); } #classroom .teacher-video-box { height:calc(100dvh - 125px); } }
 </style>
 
 </head>
@@ -1078,11 +1083,6 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
             =================================== -->
 
             <div class="teacher-panel">
-
-
-                <div class="panel-header">
-                    👨‍🏫 Màn hình giáo viên
-                </div>
 
 
                 <div class="teacher-video-box">
