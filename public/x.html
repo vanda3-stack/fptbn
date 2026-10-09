@@ -1003,6 +1003,35 @@
 
 /* Full product logo centered on sign-in; school identity in header/sidebar unchanged. */
 .login-full-brand{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto 16px}.login-full-brand img{display:block;width:min(100%,290px);height:auto;max-height:124px;object-fit:contain}.join-card .login-full-brand img{max-height:128px}.teacher-login-card .login-full-brand img{max-height:128px}.login-card .login-full-brand img{max-height:128px}@media(max-width:500px){.login-full-brand img{width:min(100%,235px);max-height:100px}}
+
+/* Teacher cockpit: responsive one-screen monitoring grid (up to 30 students). */
+#teacherApp{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#teacherApp .header{position:relative;top:auto;flex:0 0 66px;min-height:66px;height:66px;padding:7px 14px;gap:10px}
+#teacherApp .teacher-school-brand{flex-direction:row;align-items:center;gap:12px;min-width:0;flex-shrink:0}
+#teacherApp .teacher-school-brand .school-identity img{height:47px;max-width:115px}
+.teacher-brand-caption{font-size:10px;font-weight:800;letter-spacing:1px;color:#a8bad4;white-space:nowrap;border-left:1px solid #41536d;padding-left:12px}
+#teacherApp .header-actions{flex-wrap:nowrap;gap:7px;min-width:0}
+#teacherApp .header-actions button{padding:9px 11px;font-size:12px;white-space:nowrap}
+#teacherApp #teacherIdentity,#teacherApp #count{padding:8px 10px;font-size:11px;white-space:nowrap;min-width:0}
+#teacherApp .main{flex:1 1 0;min-height:0;overflow:hidden;padding:7px 9px 9px;display:flex;flex-direction:column}
+#teacherApp #students{flex:1 1 0;min-height:0;min-width:0;display:grid;gap:6px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr);align-content:stretch}
+#teacherApp #students:has(> .student:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+#teacherApp #students:has(> .student:nth-child(7)){grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
+#teacherApp #students:has(> .student:nth-child(13)){grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
+#teacherApp #students:has(> .student:nth-child(21)){grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}
+#teacherApp #students>.student{min-height:0;min-width:0;height:100%;display:flex;flex-direction:column;border-width:1px;border-radius:7px}
+#teacherApp #students>.student .student-title{flex:0 0 26px;height:26px;min-height:26px;padding:3px 6px;font-size:10px;gap:3px}
+#teacherApp #students>.student .student-status{font-size:9px}
+#teacherApp #students>.student video{flex:1 1 0;min-height:0;height:calc(100% - 26px);width:100%;aspect-ratio:auto;object-fit:contain}
+#teacherApp #students>.student.expanded{display:flex;position:fixed;top:72px;left:10px;right:10px;bottom:10px;width:auto;height:auto;z-index:9000;border-width:2px}
+#teacherApp #students>.student.expanded .student-title{flex:0 0 42px;height:42px;min-height:42px;font-size:14px}
+#teacherApp #students>.student.expanded video{height:calc(100% - 42px)}
+#teacherApp #empty{padding:25px 12px}
+#teacherApp #teacherShareBox{width:190px;right:10px;bottom:10px;opacity:.94}
+#teacherApp #teacherPreview{max-height:90px}
+@media(max-width:1100px){#teacherApp .teacher-brand-caption{display:none}#teacherApp .teacher-school-brand .school-identity img{height:40px;max-width:95px}#teacherApp #teacherIdentity{max-width:140px;overflow:hidden;text-overflow:ellipsis}#teacherApp .header-actions{gap:4px}#teacherApp .header-actions button{padding:8px;font-size:11px}}
+@media(max-width:700px){#teacherApp .header{height:auto;min-height:64px;flex-basis:auto;flex-wrap:wrap}#teacherApp .header-actions{width:100%;justify-content:space-between;flex-wrap:wrap}#teacherApp .main{overflow:auto}#teacherApp #students{min-height:500px;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:150px}#teacherApp #students>.student{height:150px}#teacherApp #students>.student.expanded{height:auto}#teacherApp #teacherShareBox{width:140px}}
+
 </style>
 
 </head>
@@ -1061,13 +1090,7 @@
     <header class="header">
 
 
-        <div class="brand fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><span class="school-brand-divider" aria-hidden="true"></span><div><div class="brand-title"><img src="/assets/branding/logo-horizontal.png" alt="FPTBN Monitor" class="fptbn-brand-logo"></div>
-
-            <div class="brand-subtitle">
-                Màn hình quản lý lớp học
-            </div>
-
-        </div></div>
+        <div class="brand teacher-school-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><span class="teacher-brand-caption">QUẢN LÝ LỚP HỌC</span></div>
 
 
         <div class="header-actions">
