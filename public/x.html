@@ -1017,6 +1017,45 @@
     font-size: 10px;
   }
 }
+
+/* Modern teacher authentication screen; teacher dashboard remains unchanged. */
+#teacherLoginPage {
+ min-height:100dvh; padding:32px 16px;
+ background:radial-gradient(ellipse 65% 55% at 50% -12%,#234979 0%,transparent 75%),
+ radial-gradient(circle at 5% 95%,#13294b 0%,transparent 42%),#070e1c;
+ position:relative; isolation:isolate;
+}
+#teacherLoginPage::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.26; z-index:-1;
+ background-image:linear-gradient(#28466a44 1px,transparent 1px),linear-gradient(90deg,#28466a44 1px,transparent 1px);
+ background-size:48px 48px; mask-image:linear-gradient(to bottom,transparent,#000 40%,transparent); }
+#teacherLoginPage .teacher-login-card {
+ width:min(100%,470px); max-width:470px; padding:clamp(26px,4vw,42px);
+ border:1px solid #334e70; border-radius:22px;
+ background:linear-gradient(150deg,#15253d 0%,#0c1729 95%);
+ box-shadow:0 28px 90px #0009,0 1px 0 #ffffff0c inset;
+}
+#teacherLoginPage .teacher-login-logo { display:flex; justify-content:center; margin-bottom:24px; }
+#teacherLoginPage .teacher-login-logo img { height:60px; max-width:175px; width:auto; object-fit:contain; }
+#teacherLoginPage .teacher-login-eyebrow { display:flex; align-items:center; justify-content:center; gap:8px; color:#8eb8f2; font-size:10px; letter-spacing:.15em; font-weight:800; margin-bottom:14px; }
+#teacherLoginPage .teacher-login-dot { width:7px; height:7px; border-radius:50%; background:#48d4a4; box-shadow:0 0 12px #48d4a488; }
+#teacherLoginPage .teacher-login-card h1 { font-size:clamp(25px,3vw,31px); letter-spacing:-.04em; font-weight:850; color:#f5f9ff; margin-bottom:10px; }
+#teacherLoginPage .teacher-login-note { max-width:345px; margin:0 auto 29px; font-size:13px; line-height:1.7; color:#a7bbd6; }
+#teacherLoginPage .teacher-login-card label { font-size:12px; font-weight:750; color:#cfdef1; margin:17px 0 9px; }
+#teacherLoginPage .teacher-login-card input,
+#teacherLoginPage .teacher-login-card select { height:52px; padding:0 15px; background:#0a1729; border:1px solid #39516e; border-radius:12px; color:#eff6ff; font-size:14px; transition:border-color .2s,box-shadow .2s; }
+#teacherLoginPage .teacher-login-card input::placeholder { color:#6f87a5; }
+#teacherLoginPage .teacher-login-card input:focus,
+#teacherLoginPage .teacher-login-card select:focus { border-color:#5da4ff; box-shadow:0 0 0 3px #3b82f62b; }
+#teacherLoginPage #teacherLoginButton,
+#teacherLoginPage #teacherEnterClassButton { height:54px; margin-top:24px; border-radius:12px; background:linear-gradient(105deg,#1464e9,#328cfc); border:1px solid #75b2ff55; box-shadow:0 10px 25px #1257c044; font-size:14px; font-weight:800; transition:filter .2s,transform .2s; }
+#teacherLoginPage #teacherLoginButton:hover,
+#teacherLoginPage #teacherEnterClassButton:hover { filter:brightness(1.1); transform:translateY(-1px); }
+#teacherLoginPage #teacherLoginButton:disabled,
+#teacherLoginPage #teacherEnterClassButton:disabled { opacity:.6; cursor:wait; transform:none; }
+#teacherLoginPage #teacherLoginStatus { font-size:12px; line-height:1.6; margin-top:17px; color:#a9c0df; }
+#teacherLoginPage #teacherClassRow { border-top:1px solid #2a4260; margin-top:20px; padding-top:8px; }
+@media(max-width:480px) { #teacherLoginPage .teacher-login-card { padding:26px 22px; } #teacherLoginPage .teacher-login-logo img { height:49px; } }
+
 </style>
 
 </head>
@@ -1026,10 +1065,11 @@
 
     <section id="teacherLoginPage">
         <div class="teacher-login-card">
-            <div class="login-full-brand"><img src="/assets/branding/logo-full.png" alt="FPTBN Monitor"></div>
-            <h1>👨‍🏫 Giáo viên</h1>
+            <div class="teacher-login-logo"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools"></div>
+            <div class="teacher-login-eyebrow"><span class="teacher-login-dot"></span> FPTBN MONITOR · TEACHER PORTAL</div>
+            <h1>Chào mừng giáo viên</h1>
             <div class="teacher-login-note">
-                Đăng nhập bằng email giáo viên, sau đó chọn lớp đang giảng dạy.
+                Đăng nhập để quản lý lớp học và theo dõi màn hình học sinh.
             </div>
 
             <label for="teacherEmail">Email giáo viên</label>
@@ -1049,7 +1089,7 @@
             >
 
             <button id="teacherLoginButton" type="button">
-                Tiếp tục
+                Đăng nhập <span aria-hidden="true">→</span>
             </button>
 
             <div id="teacherClassRow">
@@ -1057,7 +1097,7 @@
                 <select id="teacherClassSelect"></select>
 
                 <button id="teacherEnterClassButton" type="button">
-                    🎓 Vào lớp
+                    Vào lớp học →
                 </button>
             </div>
 
