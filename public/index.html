@@ -945,6 +945,9 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 #classroom #waitingTeacher { font-size:clamp(20px,2.4vw,30px); line-height:1.5; font-weight:800; }
 #classroom .teacher-video-box { height:calc(100dvh - 137px); }
 @media(max-width:650px) { #classroom #waitingTeacher { font-size:clamp(18px,4.5vw,24px); } #classroom .teacher-video-box { height:calc(100dvh - 125px); } }
+/* Center the waiting message and keep it on one line on desktop. */
+#classroom #waitingTeacher { left:50%; top:50%; transform:translate(-50%,-50%); width:max-content; max-width:calc(100% - 24px); white-space:nowrap; padding:12px 16px; }
+@media(max-width:650px) { #classroom #waitingTeacher { font-size:clamp(12px,3.5vw,18px); padding:8px; } }
 </style>
 
 </head>
@@ -1097,7 +1100,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
                     <div id="waitingTeacher">
 
-                        👨‍🏫 Giáo viên chưa chia sẻ màn hình
+                        Giáo viên chưa chia sẻ màn hình
 
                     </div>
 
