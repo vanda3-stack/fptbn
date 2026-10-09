@@ -5044,6 +5044,23 @@ io.on(
                     }
 
 
+                    // Chỉ một phiên giáo viên được phép điều khiển một lớp.
+                    // Kiểm tra phía máy chủ để tránh ghi đè kết nối cũ.
+                    const existingTeacherSocketId = teachersByClass.get(classCode);
+                    if (existingTeacherSocketId && existingTeacherSocketId !== socket.id) {
+                        const existingTeacherSocket = io.sockets.sockets.get(existingTeacherSocketId);
+                        if (existingTeacherSocket?.connected) {
+                            socket.emit("teacher-join-error", {
+                                message: existingTeacherSocket.data.teacherId === login.teacherId
+                                    ? "Email này đang mở lớp " + classCode + " ở một tab hoặc thiết bị khác. Vui lòng đóng phiên cũ trước khi vào lại."
+                                    : "Lớp " + classCode + " đang có giáo viên khác quản lý. Vui lòng chờ giáo viên đó kết thúc hoặc rời lớp."
+                            });
+                            return;
+                        }
+                        // Dọn tham chiếu của phiên đã mất kết nối.
+                        teachersByClass.delete(classCode);
+                    }
+
                     const selectedClass =
                         classRows[0];
 
