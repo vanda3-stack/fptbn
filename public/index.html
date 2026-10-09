@@ -925,6 +925,11 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
  #classroom .teacher-video-box { height:calc(100dvh - 185px); min-height:220px; }
 }
 
+/* Minimal classroom: status remains available without a top bar. */
+#classroom .classroom-top { background:transparent; border:0; padding:0; margin:0; min-height:0; justify-content:flex-end; }
+#classroom #studentStatus { margin:0 0 9px; }
+#classroom .teacher-video-box { height:calc(100dvh - 168px); }
+@media(max-width:650px){ #classroom .teacher-video-box { height:calc(100dvh - 151px); } }
 </style>
 
 </head>
@@ -940,14 +945,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
     <header class="header">
 
 
-        <div class="fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><div><div class="brand-title">FPTBN MONITOR</div>
-
-            <div class="brand-subtitle">
-                Hệ thống lớp học trực tuyến
-            </div>
-
-        </div></div>
-
+        <div class="fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span></div>
 
         <div
             class="student-badge"
@@ -1045,9 +1043,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
         <section class="classroom-top">
 
 
-            <div class="classroom-title">
-                🎓 Lớp học đang hoạt động
-            </div>
+            
 
 
             <div id="studentStatus">
