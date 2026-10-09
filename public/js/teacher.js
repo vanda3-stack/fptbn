@@ -3075,3 +3075,24 @@ window.addEventListener(
 
     }
 );
+// Đóng chế độ phóng to màn hình học sinh bằng phím Esc.
+document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+
+    const expandedCards = document.querySelectorAll("#students .student.expanded");
+    if (!expandedCards.length) return;
+
+    expandedCards.forEach(card => {
+        card.classList.remove("expanded");
+        const studentId = card.id.replace(/^student-/, "");
+        if (studentId) {
+            socket.emit("student-quality", {
+                target: studentId,
+                mode: "grid"
+            });
+            setStudentStatus(studentId, "Đang chia sẻ");
+        }
+    });
+    event.preventDefault();
+});
+
