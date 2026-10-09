@@ -881,6 +881,50 @@
 
 /* Full product logo centered on sign-in; school identity in header/sidebar unchanged. */
 .login-full-brand{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto 16px}.login-full-brand img{display:block;width:min(100%,290px);height:auto;max-height:124px;object-fit:contain}.join-card .login-full-brand img{max-height:128px}.teacher-login-card .login-full-brand img{max-height:128px}.login-card .login-full-brand img{max-height:128px}@media(max-width:500px){.login-full-brand img{width:min(100%,235px);max-height:100px}}
+
+/* Student experience refresh — dark classroom, no changes to WebRTC DOM IDs. */
+:root { color-scheme:dark; --student-bg:#080f1e; --student-surface:#101d31; --student-line:#273b56; --student-accent:#3b82f6; }
+html,body { background:var(--student-bg); color:#eaf2ff; font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%),#080f1e; }
+.header { height:68px; min-height:68px; padding:0 clamp(14px,2vw,32px); background:rgba(10,19,35,.94); border-bottom:1px solid #233751; box-shadow:0 8px 32px #0003; gap:12px; }
+.header .fptbn-product-brand { display:flex; align-items:center; gap:15px; min-width:0; }
+.header .school-identity img { height:40px; width:auto; max-width:125px; object-fit:contain; }
+.header .brand-title { font-size:13px; font-weight:850; letter-spacing:.14em; color:#cfe2ff; }
+.header .brand-subtitle { font-size:11px; color:#8099b9; margin-top:4px; }
+.header .student-badge { background:#132b43; border:1px solid #315174; border-radius:100px; padding:8px 13px; font-size:12px; white-space:nowrap; }
+#joinPage { min-height:calc(100dvh - 68px); display:flex; align-items:center; justify-content:center; padding:28px 16px; }
+#joinPage .join-card { width:min(100%,470px); max-width:470px; margin:auto; padding:clamp(24px,4vw,42px); background:linear-gradient(155deg,#15243b,#0e192b); border:1px solid #344966; border-radius:22px; box-shadow:0 25px 90px #0007,0 0 0 1px #ffffff08 inset; }
+#joinPage .login-full-brand { margin-bottom:24px; }
+#joinPage .login-full-brand img { max-height:90px; }
+#joinPage .join-title { font-size:clamp(26px,3vw,34px); font-weight:800; margin:0 0 26px; letter-spacing:-.03em; }
+#joinPage .input-label { color:#b9cce5; font-size:13px; font-weight:700; margin-bottom:9px; }
+#joinPage #studentCode { background:#091526; border:1px solid #38516f; color:#f2f7ff; border-radius:12px; min-height:52px; font-size:17px; letter-spacing:.04em; transition:border-color .2s,box-shadow .2s; }
+#joinPage #studentCode:focus { border-color:#60a5fa; box-shadow:0 0 0 3px #3b82f633; outline:none; }
+#joinPage #shareButton { background:linear-gradient(110deg,#1769f4,#368cf9); border:1px solid #60a5fa66; border-radius:12px; min-height:54px; box-shadow:0 10px 24px #1253c544; font-weight:750; }
+#joinPage #shareButton:hover { filter:brightness(1.1); transform:translateY(-1px); }
+#joinPage #status { border-radius:10px; background:#0b1a2d; border:1px solid #263e5b; font-size:12px; line-height:1.5; }
+#classroom { min-height:calc(100dvh - 68px); padding:clamp(12px,1.6vw,22px); background:transparent; }
+#classroom .classroom-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; background:#111e32; border:1px solid #283d59; border-radius:14px; padding:13px 18px; margin:0 0 14px; }
+#classroom .classroom-title { font-size:16px; font-weight:800; color:#f2f7ff; }
+#classroom #studentStatus { border-radius:99px; padding:8px 12px; background:#0c2930; border:1px solid #1e6b65; font-size:12px; }
+#classroom .screen-layout { display:block; width:100%; max-width:none; margin:0; }
+#classroom .teacher-panel { width:100%; max-width:none; margin:0; padding:0; background:#101b2e; border:1px solid #2b405e; border-radius:16px; overflow:hidden; box-shadow:0 14px 44px #0005; }
+#classroom .panel-header { padding:12px 17px; background:#14243a; border-bottom:1px solid #2d425e; font-size:14px; font-weight:750; }
+#classroom .teacher-video-box { position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:calc(100dvh - 210px); min-height:300px; max-height:none; aspect-ratio:auto; background:#050a13; border:0; border-radius:0; overflow:hidden; }
+#classroom #teacherVideo { display:block; width:100%; height:100%; max-height:100%; object-fit:contain; background:#050a13; }
+#classroom #waitingTeacher { max-width:min(90%,520px); text-align:center; color:#c4d6ed; font-size:clamp(15px,2vw,21px); line-height:1.6; }
+@media(max-width:650px) {
+ .header { height:62px; min-height:62px; padding:0 12px; }
+ .header .school-identity img { height:31px; }
+ .header .brand-title { font-size:10px; }
+ .header .brand-subtitle { display:none; }
+ .header .student-badge { font-size:11px; padding:6px 8px; }
+ #joinPage { min-height:calc(100dvh - 62px); }
+ #classroom { min-height:calc(100dvh - 62px); padding:9px; }
+ #classroom .classroom-top { padding:10px; }
+ #classroom .teacher-video-box { height:calc(100dvh - 185px); min-height:220px; }
+}
+
 </style>
 
 </head>
@@ -896,7 +940,7 @@
     <header class="header">
 
 
-        <div class="fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><span class="school-brand-divider" aria-hidden="true"></span><div><div class="brand-title"><img src="/assets/branding/logo-horizontal.png" alt="FPTBN Monitor" class="fptbn-brand-logo"></div>
+        <div class="fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><div><div class="brand-title">FPTBN MONITOR</div>
 
             <div class="brand-subtitle">
                 Hệ thống lớp học trực tuyến
