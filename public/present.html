@@ -105,6 +105,35 @@ nav{background:#060f20ee;border-bottom:1px solid #35557a55;box-shadow:0 10px 45p
 @media(max-width:520px){.wrap{width:calc(100% - 30px)}.heroCopy h1{font-size:40px}.heroCopy .lead{font-size:14px}.heroMetrics b{font-size:17px}.heroMetrics span{font-size:9px}.heroDashboard{height:350px}.demoGrid>div{height:66px}.demoGrid i{font-size:18px}.demoSidebar{width:48px}.demoSidebarLogo{font-size:17px}.demoMain{padding:8px}.heroFloat{display:none}.nav .brand .school-brand-divider{display:none}.product-wordmark{font-size:11px}.product-icon{width:24px;height:24px}.school-identity img{max-width:65px}.nav .btn{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.heroBrowser{transform:none}.btn{transition:none}}
 
+
+/* Vietnamese typography: readable, natural wrapping on presentation slides. */
+.slide .wrap, .heroLandingGrid > *, .heroGrid > *, .split > *, .adminGrid > *,
+.roles > *, .featureGrid > *, .points > *, .timeline > *, .flow > *,
+.challengeGrid > *, .stats > * { min-width:0; }
+.slide h1, .slide h2, .slide h3 { word-break:normal; overflow-wrap:normal; hyphens:none; line-height:1.17; }
+.slide h1, .slide h2 { text-wrap:balance; letter-spacing:-.025em; }
+.slide p, .slide .lead, .slide .eyebrow, .slide .caption,
+.slide .pc, .slide .feature, .slide .card, .slide .step, .slide .challenge,
+.slide .mile, .slide .node { word-break:normal; overflow-wrap:break-word; hyphens:none; text-wrap:pretty; }
+.slide .eyebrow { line-height:1.55; letter-spacing:.07em; }
+.slide .btn, .nav .btn { line-height:1.4; text-align:center; }
+.nav .links a { white-space:nowrap; }
+@media(max-width:1050px) {
+ .slide h1 { font-size:clamp(34px,4.6vw,58px); }
+ .slide h2 { font-size:clamp(27px,3.4vw,42px); }
+}
+@media(max-width:900px) {
+ .slide h1 { font-size:clamp(32px,7vw,48px); }
+ .slide h2 { font-size:clamp(25px,5.3vw,37px); }
+ .slide .wrap { max-width:100%; }
+ .slide .eyebrow { font-size:11px; }
+}
+@media(max-width:520px) {
+ .slide h1, .heroCopy h1 { font-size:clamp(29px,8vw,39px); line-height:1.16; }
+ .slide h2 { font-size:clamp(24px,6.2vw,32px); line-height:1.22; }
+ .slide .lead { line-height:1.65; }
+ .slide .btn { white-space:normal; }
+}
 </style>
 </head>
 <body>
