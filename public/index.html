@@ -930,6 +930,16 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 #classroom #studentStatus { margin:0 0 9px; }
 #classroom .teacher-video-box { height:calc(100dvh - 168px); }
 @media(max-width:650px){ #classroom .teacher-video-box { height:calc(100dvh - 151px); } }
+
+/* Classroom content begins immediately beneath the header. */
+#classroom .classroom-top { display:none !important; }
+#classroom { padding-top:8px; }
+#classroom .teacher-video-box { height:calc(100dvh - 280px); min-height:220px; }
+#classroom .learning-banner { display:flex; align-items:center; justify-content:center; gap:22px; min-height:126px; margin-top:12px; padding:12px 24px; background:linear-gradient(115deg,#102445,#172e56,#101b33); border:1px solid #294b79; border-radius:15px; }
+#classroom .learning-banner svg { display:block; width:175px; height:auto; flex:0 0 175px; }
+#classroom .learning-banner strong { font-size:24px; color:#fff; }
+#classroom .learning-banner p { margin:8px 0 0; color:#bfd2ec; font-size:14px; line-height:1.5; }
+@media(max-width:650px) { #classroom .teacher-video-box { height:calc(100dvh - 245px); min-height:170px; } #classroom .learning-banner { gap:10px; min-height:100px; padding:10px; } #classroom .learning-banner svg { width:90px; flex-basis:90px; } #classroom .learning-banner strong { font-size:17px; } #classroom .learning-banner p { font-size:11px; } }
 </style>
 
 </head>
@@ -1107,6 +1117,17 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
 
 
+        </section>
+        <section class="learning-banner" aria-label="Thông điệp học tập">
+          <svg viewBox="0 0 190 95" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="47" cy="42" r="31" fill="#254d9c" opacity=".45"/>
+            <rect x="51" y="13" width="105" height="68" rx="8" fill="#244f92" stroke="#7bb4ff" stroke-width="2"/>
+            <rect x="60" y="22" width="87" height="48" rx="4" fill="#0b1b35"/>
+            <path d="M74 37 H133 M74 47 H119 M74 57 H128" stroke="#8cc4ff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M39 87 H168 L157 80 H51 Z" fill="#497ed0"/>
+            <path d="M24 10 L29 19 L38 23 L29 27 L24 36 L20 27 L11 23 L20 19 Z" fill="#ffd166"/>
+          </svg>
+          <div><strong>Tập trung học tập</strong><p>Hãy theo dõi bài giảng của giáo viên và hoàn thành các hoạt động trên lớp nhé!</p></div>
         </section>
 
 
