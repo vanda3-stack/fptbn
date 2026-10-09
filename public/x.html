@@ -1032,6 +1032,15 @@
 @media(max-width:1100px){#teacherApp .teacher-brand-caption{display:none}#teacherApp .teacher-school-brand .school-identity img{height:40px;max-width:95px}#teacherApp #teacherIdentity{max-width:140px;overflow:hidden;text-overflow:ellipsis}#teacherApp .header-actions{gap:4px}#teacherApp .header-actions button{padding:8px;font-size:11px}}
 @media(max-width:700px){#teacherApp .header{height:auto;min-height:64px;flex-basis:auto;flex-wrap:wrap}#teacherApp .header-actions{width:100%;justify-content:space-between;flex-wrap:wrap}#teacherApp .main{overflow:auto}#teacherApp #students{min-height:500px;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:150px}#teacherApp #students>.student{height:150px}#teacherApp #students>.student.expanded{height:auto}#teacherApp #teacherShareBox{width:140px}}
 
+
+/* Fix: video intrinsic size must never enlarge grid tracks and push previews below viewport. */
+#teacherApp #students{height:100%;grid-auto-rows:minmax(0,1fr);overflow:hidden}
+#teacherApp #students>.student:not(.expanded){position:relative;display:block;min-height:0;min-width:0;overflow:hidden}
+#teacherApp #students>.student:not(.expanded) .student-title{position:absolute;z-index:2;top:0;left:0;right:0;height:25px;min-height:25px;display:flex;align-items:center}
+#teacherApp #students>.student:not(.expanded) video{position:absolute;inset:25px 0 0;width:100%;height:calc(100% - 25px);min-height:0;max-height:none;display:block;object-fit:contain}
+#teacherApp #students>.student.expanded video{position:relative;inset:auto;width:100%;height:calc(100% - 42px)}
+@media(max-width:700px){#teacherApp #students{height:auto;overflow:visible;grid-auto-rows:150px}#teacherApp #students>.student:not(.expanded){height:150px}}
+
 </style>
 
 </head>
