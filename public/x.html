@@ -1056,6 +1056,19 @@
 #teacherLoginPage #teacherClassRow { border-top:1px solid #2a4260; margin-top:20px; padding-top:8px; }
 @media(max-width:480px) { #teacherLoginPage .teacher-login-card { padding:26px 22px; } #teacherLoginPage .teacher-login-logo img { height:49px; } }
 
+
+/* Vietnamese typography and responsive text flow */
+#teacherLoginPage .teacher-login-card { min-width:0; }
+#teacherLoginPage .teacher-login-card h1 { font-size:clamp(23px,5vw,30px); line-height:1.28; letter-spacing:-.025em; text-wrap:balance; overflow-wrap:normal; word-break:normal; }
+#teacherLoginPage .teacher-login-note { max-width:390px; line-height:1.65; text-wrap:pretty; word-break:normal; overflow-wrap:normal; }
+#teacherLoginPage .teacher-login-eyebrow { flex-wrap:wrap; line-height:1.5; text-align:center; letter-spacing:.08em; }
+#teacherLoginPage .teacher-login-card label { line-height:1.45; }
+#teacherLoginPage #teacherLoginButton,
+#teacherLoginPage #teacherEnterClassButton { line-height:1.35; white-space:normal; text-align:center; padding:10px 14px; }
+#teacherLoginPage #teacherLoginStatus { overflow-wrap:break-word; word-break:normal; text-wrap:pretty; }
+#teacherApp .header, #teacherApp .header-actions { min-width:0; }
+#teacherApp button { line-height:1.35; }
+@media(max-width:480px) { #teacherLoginPage .teacher-login-card h1 { font-size:24px; } #teacherLoginPage .teacher-login-eyebrow { font-size:9px; } }
 </style>
 
 </head>
@@ -1067,7 +1080,7 @@
         <div class="teacher-login-card">
             <div class="teacher-login-logo"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools"></div>
             <div class="teacher-login-eyebrow"><span class="teacher-login-dot"></span> FPTBN MONITOR · TEACHER PORTAL</div>
-            <h1>Chào mừng giáo viên</h1>
+            <h1>Chào mừng thầy cô</h1>
             <div class="teacher-login-note">
                 Đăng nhập để quản lý lớp học và theo dõi màn hình học sinh.
             </div>
