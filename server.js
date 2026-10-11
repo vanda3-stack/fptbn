@@ -5014,12 +5014,19 @@ io.on(
                     }
 
 
+                    // EXAM là phòng thi ảo, không cần bản ghi trong bảng classes.
+                    // Lớp học thông thường vẫn phải được xác thực qua database.
                     let classRows;
+
                     if (classCode === "EXAM") {
-                        classRows = [{id:0,class_code:"EXAM",class_name:"Phòng thi chung",school_year:""}];
+                        classRows = [{
+                            id: 0,
+                            class_code: "EXAM",
+                            class_name: "Phòng thi chung (nhiều lớp)",
+                            school_year: ""
+                        }];
                     } else {
-                    [classRows] =
-                        await db.query(
+                        [classRows] = await db.query(
                             `
                             SELECT
                                 c.id,
@@ -5037,26 +5044,15 @@ io.on(
                             `,
                             [classCode]
                         );
+                    }
 
-
-                    if (
-                        classRows.length === 0
-                    ) {
-
-                        socket.emit(
-                            "teacher-join-error",
-                            {
-                                message:
-                                    "Không tìm thấy lớp học đang hoạt động."
-                            }
-                        );
-
+                    if (classRows.length === 0) {
+                        socket.emit("teacher-join-error", {
+                            message: "Không tìm thấy lớp học đang hoạt động."
+                        });
                         return;
-
                     }
 
-
-                    }
                     // Chỉ một phiên giáo viên được phép điều khiển một lớp.
                     // Kiểm tra phía máy chủ để tránh ghi đè kết nối cũ.
                     const existingTeacherSocketId = teachersByClass.get(classCode);
