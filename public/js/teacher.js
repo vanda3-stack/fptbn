@@ -196,6 +196,12 @@ socket.on(
 );
 
 
+function examStudentLabel(student) {
+    const originalClass = String(student?.originalClassCode || "").trim();
+    const isExam = typeof activeTeacherClass !== "undefined" && activeTeacherClass === "EXAM";
+    return isExam && originalClass ? student.name + " · " + originalClass : student.name;
+}
+
 // =====================================================
 // DANH SÁCH HS HIỆN TẠI
 // =====================================================
@@ -215,13 +221,13 @@ socket.on(
 
                 studentNames.set(
                     student.id,
-                    student.name
+                    examStudentLabel(student)
                 );
 
 
                 createStudentBox(
                     student.id,
-                    student.name
+                    examStudentLabel(student)
                 );
 
 
@@ -281,13 +287,13 @@ socket.on(
 
         studentNames.set(
             data.id,
-            data.name
+            examStudentLabel(data)
         );
 
 
         createStudentBox(
             data.id,
-            data.name
+            examStudentLabel(data)
         );
 
 
@@ -328,13 +334,13 @@ socket.on(
 
         studentNames.set(
             data.id,
-            data.name
+            examStudentLabel(data)
         );
 
 
         createStudentBox(
             data.id,
-            data.name
+            examStudentLabel(data)
         );
 
 
