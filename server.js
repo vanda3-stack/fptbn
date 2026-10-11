@@ -4648,6 +4648,13 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         const classCode = normalizeClassCode(req.query.classCode);
         if (!token || !teacherLoginTokens.has(token)) return res.status(401).json({success:false,message:"Phiên giáo viên không hợp lệ"});
         if (!classCode) return res.status(400).json({success:false,message:"Thiếu mã lớp"});
+        if (classCode === "EXAM") {
+            const examStudents = Array.from(students.values())
+                .filter(x => x.classCode === "EXAM")
+                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true}));
+            return res.json({success:true,students:examStudents});
+        }
+
         const [classes] = await db.execute(
             "SELECT c.id FROM classes c INNER JOIN school_years sy ON sy.id=c.school_year_id WHERE c.class_code=? AND c.is_active=1 AND sy.is_current=1 LIMIT 1",
             [classCode]
@@ -5006,6 +5013,10 @@ io.on(
                     }
 
 
+                    let classRows;
+                    if (classCode === "EXAM") {
+                        classRows = [{id:0,class_code:"EXAM",class_name:"Phòng thi chung",school_year:""}];
+                    } else {
                     const [classRows] =
                         await db.query(
                             `
@@ -5044,6 +5055,7 @@ io.on(
                     }
 
 
+                    }
                     // Chỉ một phiên giáo viên được phép điều khiển một lớp.
                     // Kiểm tra phía máy chủ để tránh ghi đè kết nối cũ.
                     const existingTeacherSocketId = teachersByClass.get(classCode);
@@ -5258,10 +5270,9 @@ io.on(
                         rows[0];
 
 
-                    const classCode =
-                        normalizeClassCode(
-                            dbStudent.class_code
-                        );
+                    const originalClassCode = normalizeClassCode(dbStudent.class_code);
+                    const examMode = data?.examMode === true;
+                    const classCode = examMode ? "EXAM" : originalClassCode;
 
 
                     // Chỉ cho phép một phiên đang hoạt động trên mỗi mã HS.
@@ -5328,6 +5339,7 @@ io.on(
                                 dbStudent.class_id,
 
                             classCode,
+                            originalClassCode,
 
                             className:
                                 dbStudent.class_name,
