@@ -5017,7 +5017,7 @@ io.on(
                     if (classCode === "EXAM") {
                         classRows = [{id:0,class_code:"EXAM",class_name:"Phòng thi chung",school_year:""}];
                     } else {
-                    const [classRows] =
+                    [classRows] =
                         await db.query(
                             `
                             SELECT
