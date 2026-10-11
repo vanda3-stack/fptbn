@@ -68,8 +68,7 @@ async function loginTeacherByEmail() {
         const examOption = document.createElement("option");
         examOption.value = "EXAM";
         examOption.textContent = "EXAM — Phòng thi chung (nhiều lớp)";
-        teacherClassSelect.insertBefore(examOption, teacherClassSelect.firstChild);
-        teacherClassSelect.value = "EXAM";
+        teacherClassSelect.appendChild(examOption);
 
         teacherEmailInput.disabled = true;
         teacherPasswordInput.disabled = true;
