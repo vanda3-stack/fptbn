@@ -255,6 +255,7 @@ socket.on(
             socket.emit(
                 "student-join",
                 {
+                    examMode: window.FPTBN_EXAM_MODE === true,
                     studentId:
                         studentId,
 
@@ -655,6 +656,7 @@ button.addEventListener(
             socket.emit(
                 "student-join",
                 {
+                    examMode: window.FPTBN_EXAM_MODE === true,
                     studentId:
                         studentId,
 
