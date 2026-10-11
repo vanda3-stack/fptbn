@@ -4931,6 +4931,7 @@ function getStudentList(classCode) {
 
                 classCode:
                     student.classCode,
+                originalClassCode: student.originalClassCode || student.classCode,
 
                 className:
                     student.className,
@@ -5382,6 +5383,7 @@ io.on(
                                 dbStudent.class_id,
 
                             classCode,
+                            originalClassCode,
 
                             className:
                                 dbStudent.class_name,
@@ -5396,6 +5398,7 @@ io.on(
                         "class-info",
                         {
                             classCode,
+                            originalClassCode,
 
                             className:
                                 dbStudent.class_name,
@@ -5488,7 +5491,8 @@ io.on(
                             student.name,
 
                         classCode:
-                            student.classCode
+                            student.classCode,
+                        originalClassCode: student.originalClassCode || student.classCode
                     }
                 );
 
@@ -5539,7 +5543,8 @@ io.on(
                             student.name,
 
                         classCode:
-                            student.classCode
+                            student.classCode,
+                        originalClassCode: student.originalClassCode || student.classCode
                     }
                 );
 
