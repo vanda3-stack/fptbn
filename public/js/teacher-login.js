@@ -65,9 +65,11 @@ async function loginTeacherByEmail() {
             teacherClassSelect.appendChild(option);
         });
 
-        if (classData.classes.length === 0) {
-            throw new Error("Chưa có lớp học đang hoạt động.");
-        }
+        const examOption = document.createElement("option");
+        examOption.value = "EXAM";
+        examOption.textContent = "EXAM — Phòng thi chung (nhiều lớp)";
+        teacherClassSelect.insertBefore(examOption, teacherClassSelect.firstChild);
+        teacherClassSelect.value = "EXAM";
 
         teacherEmailInput.disabled = true;
         teacherPasswordInput.disabled = true;
