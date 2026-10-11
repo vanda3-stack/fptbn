@@ -1092,29 +1092,25 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
                  Đây là màn hình chính HS nhìn thấy.
             =================================== -->
 
-            <div class="teacher-panel">
-
-
-                <div class="teacher-video-box">
-
-
-                    <video
-                        id="teacherVideo"
-                        autoplay
-                        playsinline
-                    ></video>
-
-
-                    <div id="waitingTeacher">
-
-                        Giáo viên chưa chia sẻ màn hình
-
-                    </div>
-
-
+            <div class="teacher-panel" style="width:100%">
+                <div class="teacher-video-box" style="min-height:calc(100vh - 255px);padding:32px 20px;background:linear-gradient(145deg,#0b1931,#152e55);border:1px solid #375c8d;border-radius:18px">
+                    <!-- Keep video nodes for existing student.js/WebRTC event handlers. -->
+                    <video id="teacherVideo" autoplay playsinline style="display:none"></video>
+                    <div id="waitingTeacher" style="display:none"></div>
+                    <section aria-label="Tài nguyên phòng thi" style="width:100%;max-width:850px;text-align:center">
+                        <div style="font-size:46px;margin-bottom:12px">📚</div>
+                        <h1 style="font-size:clamp(27px,4vw,42px);margin:0 0 14px;color:#f8fafc">Tài nguyên phòng thi</h1>
+                        <p style="font-size:17px;line-height:1.7;color:#c3d6f3;margin:0 auto 32px;max-width:680px">Chọn bài kiểm tra hoặc tài liệu hướng dẫn. Các đường dẫn sẽ mở trong tab mới; hãy giữ FPTBN Monitor đang chia sẻ toàn bộ màn hình.</p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px">
+                            <a href="https://forms.gle/TdZg6tAYFM1gqT1x8" target="_blank" rel="noopener noreferrer" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:185px;padding:24px;border-radius:18px;background:#2563eb;color:#fff;text-decoration:none;box-shadow:0 8px 24px #0004">
+                                <span style="font-size:42px">📝</span><strong style="font-size:23px">Làm bài kiểm tra</strong><span style="font-size:14px">Mở Google Forms ↗</span>
+                            </a>
+                            <a href="https://content.vexrobotics.com/docs/2026-2027/level-up/files/LevelUp-2.1.pdf" target="_blank" rel="noopener noreferrer" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:185px;padding:24px;border-radius:18px;background:#087f70;color:#fff;text-decoration:none;box-shadow:0 8px 24px #0004">
+                                <span style="font-size:42px">📖</span><strong style="font-size:23px">Đọc tài liệu Level Up</strong><span style="font-size:14px">Game Manual 2.1 (PDF) ↗</span>
+                            </a>
+                        </div>
+                    </section>
                 </div>
-
-
             </div>
 
 
@@ -1144,13 +1140,6 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
     </main>
 
 
-
-    <!-- Exam resources: accessible without interrupting screen sharing -->
-    <nav id="examResources" aria-label="Tài nguyên phòng thi" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:12px 16px;border:1px solid #49678d;border-radius:16px;background:#101f35f2;box-shadow:0 8px 30px #0008;max-width:calc(100vw - 24px);font:600 15px system-ui,sans-serif;">
-      <span style="color:#dbeafe;align-self:center">📚 Tài nguyên phòng thi</span>
-      <a href="https://forms.gle/TdZg6tAYFM1gqT1x8" target="_blank" rel="noopener noreferrer" style="color:white;background:#2563eb;border-radius:10px;padding:10px 14px;text-decoration:none">📝 Mở bài kiểm tra ↗</a>
-      <a href="https://content.vexrobotics.com/docs/2026-2027/level-up/files/LevelUp-2.1.pdf" target="_blank" rel="noopener noreferrer" style="color:white;background:#167b67;border-radius:10px;padding:10px 14px;text-decoration:none">📖 Đọc Game Manual ↗</a>
-    </nav>
 
     <!-- ==========================================
          SOCKET.IO
