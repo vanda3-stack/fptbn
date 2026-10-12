@@ -111,6 +111,9 @@ let screenStream = null;
 
 // HS -> GV
 let studentPeer = null;
+// In EXAM each proctor needs a separate student-screen RTCPeerConnection.
+const examStudentPeers = new Map();
+const examPendingIce = new Map();
 
 // GV -> HS
 let teacherPeer = null;
@@ -1225,6 +1228,12 @@ async function answerStudentScreen(
     }
 
 
+    // EXAM: answer each teacher independently; never replace another proctor's stream.
+    if (window.FPTBN_EXAM_MODE === true) {
+        await answerExamStudentScreen(data);
+        return;
+    }
+
     // =============================================
     // ĐÓNG PEER CŨ
     // =============================================
@@ -1482,6 +1491,47 @@ async function answerStudentScreen(
 
 }
 
+
+// EXAM ONLY: separate peer and ICE queue for every teacher socket.
+async function answerExamStudentScreen(data) {
+    const teacherId = String(data.from || "");
+    if (!teacherId || !screenStream) return;
+    const previous = examStudentPeers.get(teacherId);
+    if (previous) { try { previous.close(); } catch (_) {} }
+    const peer = new RTCPeerConnection(rtcConfig);
+    examStudentPeers.set(teacherId, peer);
+    for (const track of screenStream.getTracks()) peer.addTrack(track, screenStream);
+    peer.onicecandidate = event => {
+        if (event.candidate && examStudentPeers.get(teacherId) === peer) {
+            socket.emit("webrtc-ice", {target: teacherId, type: "student-screen", candidate: event.candidate});
+        }
+    };
+    peer.onconnectionstatechange = () => {
+        if (examStudentPeers.get(teacherId) !== peer) return;
+        if (peer.connectionState === "connected") studentStatus.textContent = "🟢 Đang chia sẻ màn hình cho giáo viên giám sát";
+        if (peer.connectionState === "failed" || peer.connectionState === "closed") {
+            examStudentPeers.delete(teacherId);
+            try { peer.close(); } catch (_) {}
+        }
+    };
+    try {
+        await peer.setRemoteDescription(data.sdp);
+        const queue = examPendingIce.get(teacherId) || [];
+        examPendingIce.delete(teacherId);
+        for (const candidate of queue) {
+            try { await peer.addIceCandidate(candidate); } catch (err) { console.warn("EXAM ICE:", err); }
+        }
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        if (examStudentPeers.get(teacherId) === peer) {
+            socket.emit("webrtc-answer", {target: teacherId, type: "student-screen", sdp: peer.localDescription});
+        }
+    } catch (err) {
+        console.error("EXAM student screen error:", err);
+        if (examStudentPeers.get(teacherId) === peer) examStudentPeers.delete(teacherId);
+        try { peer.close(); } catch (_) {}
+    }
+}
 
 // =====================================================
 // GV -> HS
@@ -1783,6 +1833,21 @@ socket.on(
 
         }
 
+
+        if (window.FPTBN_EXAM_MODE === true && data.type === "student-screen") {
+            const teacherId = String(data.from || "");
+            if (!teacherId) return;
+            const peer = examStudentPeers.get(teacherId);
+            if (!peer || !peer.remoteDescription) {
+                const queue = examPendingIce.get(teacherId) || [];
+                queue.push(data.candidate);
+                examPendingIce.set(teacherId, queue);
+            } else {
+                try { await peer.addIceCandidate(data.candidate); }
+                catch (err) { console.warn("EXAM ICE:", err); }
+            }
+            return;
+        }
 
         let peer =
             null;
@@ -2371,6 +2436,11 @@ socket.on(
 // =====================================================
 
 function closeStudentPeer() {
+    for (const peer of examStudentPeers.values()) {
+        try { peer.close(); } catch (_) {}
+    }
+    examStudentPeers.clear();
+    examPendingIce.clear();
 
     if (!studentPeer) {
 
