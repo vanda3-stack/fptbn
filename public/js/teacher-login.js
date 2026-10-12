@@ -129,6 +129,14 @@ socket.on("teacher-ready", data => {
     teacherLoginPage.style.display = "none";
     teacherApp.style.display = "block";
 
+    // Exam is monitoring-only: no teacher screen share and no global end-class.
+    const examOnly = activeTeacherClass === "EXAM";
+    const teacherShareControl = document.getElementById("shareTeacher");
+    const teacherEndControl = document.getElementById("endClass");
+    if (teacherShareControl) teacherShareControl.style.display = examOnly ? "none" : "";
+    if (teacherEndControl && examOnly) teacherEndControl.textContent = "🚪 Rời phòng thi";
+
+
     // Chỉ hiện tài nguyên khi giáo viên vào phòng EXAM.
     let examResources = document.getElementById("teacherExamResources");
     if (activeTeacherClass === "EXAM") {
