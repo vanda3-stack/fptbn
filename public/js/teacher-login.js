@@ -142,7 +142,7 @@ socket.on("teacher-ready", data => {
             label.style.color = "#dbeafe";
             examResources.appendChild(label);
             const links = [
-                ["📝 Bài kiểm tra ↗", "https://forms.gle/TdZg6tAYFM1gqT1x8", "#2563eb"],
+                ["📝 Bài kiểm tra ↗", "https://forms.gle/zdrRxyh1kQZQRXq98", "#2563eb"],
                 ["📖 Game Manual ↗", "https://content.vexrobotics.com/docs/2026-2027/level-up/files/LevelUp-2.1.pdf", "#167b67"]
             ];
             for (const [text, url, color] of links) {
