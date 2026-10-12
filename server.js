@@ -4881,6 +4881,8 @@ app.post("/api/student/login", async (req, res) => {
 
 const students = new Map();
 const teachersByClass = new Map();
+// EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
+const examTeachers = new Set();
 
 
 function normalizeClassCode(value) {
@@ -5053,21 +5055,21 @@ io.on(
                         return;
                     }
 
-                    // Chỉ một phiên giáo viên được phép điều khiển một lớp.
-                    // Kiểm tra phía máy chủ để tránh ghi đè kết nối cũ.
-                    const existingTeacherSocketId = teachersByClass.get(classCode);
-                    if (existingTeacherSocketId && existingTeacherSocketId !== socket.id) {
-                        const existingTeacherSocket = io.sockets.sockets.get(existingTeacherSocketId);
-                        if (existingTeacherSocket?.connected) {
-                            socket.emit("teacher-join-error", {
-                                message: existingTeacherSocket.data.teacherId === login.teacherId
-                                    ? "Email này đang mở lớp " + classCode + " ở một tab hoặc thiết bị khác. Vui lòng đóng phiên cũ trước khi vào lại."
-                                    : "Lớp " + classCode + " đang có giáo viên khác quản lý. Vui lòng chờ giáo viên đó kết thúc hoặc rời lớp."
-                            });
-                            return;
+                    // Normal classes remain single-teacher. EXAM is a shared proctor room.
+                    if (classCode !== "EXAM") {
+                        const existingTeacherSocketId = teachersByClass.get(classCode);
+                        if (existingTeacherSocketId && existingTeacherSocketId !== socket.id) {
+                            const existingTeacherSocket = io.sockets.sockets.get(existingTeacherSocketId);
+                            if (existingTeacherSocket?.connected) {
+                                socket.emit("teacher-join-error", {
+                                    message: existingTeacherSocket.data.teacherId === login.teacherId
+                                        ? "Email này đang mở lớp " + classCode + " ở một tab hoặc thiết bị khác. Vui lòng đóng phiên cũ trước khi vào lại."
+                                        : "Lớp " + classCode + " đang có giáo viên khác quản lý. Vui lòng chờ giáo viên đó kết thúc hoặc rời lớp."
+                                });
+                                return;
+                            }
+                            teachersByClass.delete(classCode);
                         }
-                        // Dọn tham chiếu của phiên đã mất kết nối.
-                        teachersByClass.delete(classCode);
                     }
 
                     const selectedClass =
@@ -5100,10 +5102,11 @@ io.on(
                     );
 
 
-                    teachersByClass.set(
-                        classCode,
-                        socket.id
-                    );
+                    if (classCode === "EXAM") {
+                        examTeachers.add(socket.id);
+                    } else {
+                        teachersByClass.set(classCode, socket.id);
+                    }
 
 
                     console.log(
@@ -5403,9 +5406,9 @@ io.on(
                                 dbStudent.school_year,
 
                             teacherOnline:
-                                teachersByClass.has(
-                                    classCode
-                                )
+                                classCode === "EXAM"
+                                    ? examTeachers.size > 0
+                                    : teachersByClass.has(classCode)
                         }
                     );
 
@@ -5878,6 +5881,16 @@ io.on(
                 }
 
 
+                // Leaving EXAM must never end the exam for students or other teachers.
+                if (classCode === "EXAM") {
+                    examTeachers.delete(socket.id);
+                    socket.leave(getClassRoom("EXAM"));
+                    socket.data.classCode = null;
+                    socket.data.role = null;
+                    console.log("Exam proctor left:", socket.id, "remaining:", examTeachers.size);
+                    return;
+                }
+
                 const room =
                     getClassRoom(
                         classCode
@@ -6000,6 +6013,12 @@ io.on(
                     socket.data.role ===
                     "teacher"
                 ) {
+                    // Other EXAM proctors and students stay online when one teacher disconnects.
+                    if (socket.data.classCode === "EXAM") {
+                        examTeachers.delete(socket.id);
+                        console.log("Exam proctor disconnected:", socket.id, "remaining:", examTeachers.size);
+                        return;
+                    }
 
                     const classCode =
                         normalizeClassCode(
