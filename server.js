@@ -4885,6 +4885,7 @@ const teachersByClass = new Map();
 const examTeachers = new Set();
 // Focus Mode is session-scoped and never applies to EXAM.
 const focusByClass = new Map();
+const focusAlertLast = new Map();
 
 
 function normalizeClassCode(value) {
@@ -5524,6 +5525,10 @@ io.on(
             const reason = String(data?.reason || "");
             if (!allowed.includes(reason)) return;
             if (reason === "fullscreen-exit" && !focusByClass.get(student.classCode)) return;
+            const key = socket.id + ":" + reason;
+            const now = Date.now();
+            if (now - (focusAlertLast.get(key) || 0) < 15000) return;
+            focusAlertLast.set(key, now);
             const teacherId = teachersByClass.get(student.classCode);
             if (teacherId) io.to(teacherId).emit("focus-alert", {
                 id: socket.id, name: student.name, reason, at: Date.now()
@@ -5963,6 +5968,7 @@ io.on(
                 teachersByClass.delete(
                     classCode
                 );
+                focusByClass.delete(classCode);
 
             }
         );
@@ -6067,6 +6073,7 @@ io.on(
                         teachersByClass.delete(
                             classCode
                         );
+                        focusByClass.delete(classCode);
 
 
                         socket.to(
