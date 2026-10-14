@@ -3107,9 +3107,9 @@ document.addEventListener("keydown", event => {
 (() => {
     const panel = document.createElement("div");
     panel.id = "focusTeacherPanel";
-    panel.style.cssText = "display:none;position:fixed;bottom:18px;left:18px;z-index:10000;background:#15243b;color:white;border:1px solid #547197;border-radius:12px;padding:12px;max-width:310px;box-shadow:0 8px 24px #0006;font:14px Arial";
+    panel.style.cssText = "display:none;align-items:center;gap:12px;flex-wrap:wrap;background:#15243b;color:white;border:1px solid #547197;border-radius:12px;padding:12px;margin:10px 0;box-shadow:0 3px 10px #0002;font:14px Arial";
     panel.innerHTML = '<strong>🎯 Lớp học tập trung</strong><div style="display:flex;gap:8px;margin:10px 0"><button id="focusToggle" style="padding:9px;border:0;border-radius:7px;cursor:pointer">Bật tập trung</button><label><input id="focusVoice" type="checkbox" checked> Đọc cảnh báo</label></div><div id="focusTeacherStatus" style="font-size:12px;color:#cbd5e1">Chưa bật</div><div id="focusTeacherAlerts" style="max-height:130px;overflow:auto;font-size:12px;margin-top:8px"></div>';
-    document.body.appendChild(panel);
+    (shareTeacherButton?.parentElement || document.getElementById("teacherApp") || document.body).appendChild(panel);
     let enabled = false;
     let lastSpoken = 0;
     const queue = [];
@@ -3125,7 +3125,7 @@ document.addEventListener("keydown", event => {
     };
     const refresh = () => {
         const exam = typeof activeTeacherClass !== "undefined" && activeTeacherClass === "EXAM";
-        panel.style.display = typeof teacherClassJoined !== "undefined" && teacherClassJoined && !exam ? "block" : "none";
+        panel.style.display = typeof teacherClassJoined !== "undefined" && teacherClassJoined && !exam ? "flex" : "none";
         const btn = document.getElementById("focusToggle");
         btn.textContent = enabled ? "Tắt tập trung" : "Bật tập trung";
         btn.style.background = enabled ? "#fecaca" : "#bfdbfe";
