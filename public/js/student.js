@@ -2564,9 +2564,9 @@ window.addEventListener(
     let focusEnabled = false, awaySince = 0, awayTimer = null, lastAlert = new Map(), suppressExit = false;
     const panel = document.createElement("div");
     panel.id = "focusStudentPrompt";
-    panel.style.cssText = "display:none;position:fixed;inset:0;z-index:20000;background:#020617ef;color:white;align-items:center;justify-content:center;text-align:center;padding:24px;font:16px Arial";
+    panel.style.cssText = "display:none;background:#172554;color:white;border:1px solid #3b82f6;border-radius:12px;padding:16px;margin:0 0 12px;text-align:center;font:15px Arial";
     panel.innerHTML = '<div style="max-width:480px"><h2>🎯 Chế độ tập trung</h2><p>Giáo viên yêu cầu theo dõi bài giảng toàn màn hình.</p><button id="focusStudentEnter" style="background:#2563eb;color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer">Xem toàn màn hình</button></div>';
-    document.body.appendChild(panel);
+    (document.getElementById("classroom") || document.body).prepend(panel);
     const active = () => document.getElementById("classroom")?.style.display === "block";
     const emitAlert = reason => {
         if (!active()) return;
@@ -2577,7 +2577,8 @@ window.addEventListener(
         socket.emit("focus-alert",{reason});
     };
     const updatePrompt = () => {
-        panel.style.display = active() && focusEnabled && !document.fullscreenElement ? "flex" : "none";
+        panel.style.display = active() && focusEnabled && !document.fullscreenElement ? "block" : "none";
+        document.body.classList.toggle("fptbn-focus-active", active() && focusEnabled);
     };
     document.getElementById("focusStudentEnter").addEventListener("click", async () => {
         try { await document.documentElement.requestFullscreen(); }
