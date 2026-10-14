@@ -85,6 +85,14 @@ async function loginTeacherByEmail() {
     }
 }
 
+// Initial focus selection appears alongside class selection.
+const focusStartRow = document.createElement("div");
+focusStartRow.id = "focusStartRow";
+focusStartRow.style.cssText = "margin:14px 0;padding:12px;border:1px solid #64748b;border-radius:10px";
+focusStartRow.innerHTML = '<label style="display:block;margin-bottom:8px;font-weight:700">Chế độ bắt đầu tiết học</label><label style="display:block;margin-bottom:7px"><input type="radio" name="focusStart" value="normal" checked> Lớp học bình thường</label><label style="display:block"><input type="radio" name="focusStart" value="focus"> Lớp học tập trung (yêu cầu toàn màn hình)</label>';
+teacherEnterClassButton.parentNode.insertBefore(focusStartRow, teacherEnterClassButton);
+teacherClassSelect.addEventListener("change", () => { focusStartRow.style.display = teacherClassSelect.value === "EXAM" ? "none" : ""; });
+
 function enterTeacherClass() {
     const classCode = teacherClassSelect.value.trim().toUpperCase();
 
@@ -104,7 +112,8 @@ function enterTeacherClass() {
 
     socket.emit("teacher-join", {
         token: teacherLoginToken,
-        classCode: activeTeacherClass
+        classCode: activeTeacherClass,
+        focusMode: activeTeacherClass !== "EXAM" && document.querySelector('input[name="focusStart"]:checked')?.value === "focus"
     });
 }
 
