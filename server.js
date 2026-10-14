@@ -5393,6 +5393,8 @@ io.on(
                     );
 
 
+                    socket.emit("activity-monitor-mode", { enabled: Array.from(io.sockets.sockets.values()).some(peer => peer.data.role === "teacher" && peer.data.classCode === classCode && peer.data.activityMonitorEnabled === true) });
+
                     socket.emit(
                         "class-info",
                         {
@@ -5434,6 +5436,48 @@ io.on(
             }
         );
 
+
+
+        // Teachers opt in individually; only rooms with an opted-in teacher notify students.
+        socket.on("activity-monitor-toggle", data => {
+            if (socket.data.role !== "teacher" || !socket.data.classCode) return;
+            socket.data.activityMonitorEnabled = data?.enabled === true;
+            const room = getClassRoom(socket.data.classCode);
+            const active = Array.from(io.sockets.sockets.values()).some(peer =>
+                peer.data.role === "teacher" &&
+                peer.data.classCode === socket.data.classCode &&
+                peer.data.activityMonitorEnabled === true
+            );
+            io.to(room).emit("activity-monitor-mode", { enabled: active });
+        });
+
+        // Student activity signals: trust server-side room membership only.
+        socket.on("student-activity", payload => {
+            const student = students.get(socket.id);
+            if (!student || !socket.data.classCode) return;
+            const teachersMonitoring = Array.from(io.sockets.sockets.values()).filter(peer =>
+                peer.data.role === "teacher" && peer.data.classCode === socket.data.classCode &&
+                peer.data.activityMonitorEnabled === true
+            );
+            if (!teachersMonitoring.length) return;
+            const allowed = new Set([
+                "page-hidden", "page-visible", "window-blur",
+                "window-focus", "window-narrowed"
+            ]);
+            const type = String(payload?.type || "");
+            if (!allowed.has(type)) return;
+            const now = Date.now();
+            const rate = socket.data.lastActivityEventAt || 0;
+            if (now - rate < 750) return;
+            socket.data.lastActivityEventAt = now;
+            const classCode = socket.data.classCode;
+            for (const teacher of teachersMonitoring) teacher.emit("student-activity-alert", {
+                type,
+                studentSocketId: socket.id,
+                studentCode: student.studentCode || "",
+                serverTime: now
+            });
+        });
 
         // =============================================
         // STUDENT SCREEN READY
