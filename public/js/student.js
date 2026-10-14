@@ -2565,12 +2565,15 @@ window.addEventListener(
 // =====================================================
 (() => {
     let lastSent = new Map();
+    let monitorEnabled = false;
+    socket.on("activity-monitor-mode", data => { monitorEnabled = data?.enabled === true; });
+    socket.on("disconnect", () => { monitorEnabled = false; });
     let blurTimer = null;
     let resizeTimer = null;
     let baselineWidth = 0;
     let baselineHeight = 0;
     const sendActivity = (type, detail = "") => {
-        if (!joinedClass || !socket.connected) return;
+        if (!joinedClass || !socket.connected || !monitorEnabled) return;
         const now = Date.now();
         const key = type + ":" + detail;
         if (now - (lastSent.get(key) || 0) < 5000) return;
