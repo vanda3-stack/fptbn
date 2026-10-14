@@ -85,18 +85,6 @@ async function loginTeacherByEmail() {
     }
 }
 
-// Initial focus selection appears alongside class selection.
-const focusStartRow = document.createElement("div");
-focusStartRow.id = "focusStartRow";
-focusStartRow.style.cssText = "margin:14px 0;padding:16px;border:1px solid #64748b;border-radius:12px;background:#0f172a;color:#e2e8f0";
-focusStartRow.innerHTML = '<div style="font-weight:700;margin-bottom:10px">🎯 Chế độ tiết học</div>' +
-    '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #475569;border-radius:9px;margin-bottom:8px;cursor:pointer"><input type="radio" name="focusStart" value="normal" checked style="margin-top:3px"><span><strong>Lớp học bình thường</strong><small style="display:block;opacity:.8;margin-top:3px">Học sinh chia sẻ Entire Screen, không yêu cầu toàn màn hình trình duyệt.</small></span></label>' +
-    '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #2563eb;border-radius:9px;cursor:pointer"><input type="radio" name="focusStart" value="focus" style="margin-top:3px"><span><strong>Lớp học tập trung</strong><small style="display:block;opacity:.8;margin-top:3px">Học sinh vào lớp được yêu cầu fullscreen; thoát fullscreen sẽ cảnh báo giáo viên.</small></span></label>';
-
-teacherEnterClassButton.parentNode.insertBefore(focusStartRow, teacherEnterClassButton);
-teacherClassSelect.addEventListener("change", () => { focusStartRow.style.display = teacherClassSelect.value === "EXAM" ? "none" : ""; });
-focusStartRow.style.display = teacherClassSelect.value === "EXAM" ? "none" : "";
-
 function enterTeacherClass() {
     const classCode = teacherClassSelect.value.trim().toUpperCase();
 
@@ -116,8 +104,7 @@ function enterTeacherClass() {
 
     socket.emit("teacher-join", {
         token: teacherLoginToken,
-        classCode: activeTeacherClass,
-        focusMode: activeTeacherClass !== "EXAM" && document.querySelector('input[name="focusStart"]:checked')?.value === "focus"
+        classCode: activeTeacherClass
     });
 }
 
