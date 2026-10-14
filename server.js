@@ -4621,30 +4621,6 @@ app.post("/api/teacher/login", async (req, res) => {
 });
 
 
-// Public class session status for the student login page (no personal data).
-// Student identity is still validated by the existing login and socket handlers.
-app.get("/api/student/class-mode", async (req, res) => {
-    try {
-        const code = String(req.query.student_code || "").trim().toUpperCase();
-        if (!/^FBN\\d{5}$/.test(code)) return res.status(400).json({success:false});
-        const [rows] = await db.query(`
-            SELECT c.class_code FROM students s
-            JOIN student_enrollments se ON se.student_id=s.id
-            JOIN classes c ON c.id=se.class_id
-            JOIN school_years sy ON sy.id=c.school_year_id
-            WHERE s.student_code=? AND s.is_active=1 AND c.is_active=1 AND sy.is_current=1
-            LIMIT 1`, [code]);
-        if (!rows.length) return res.status(404).json({success:false});
-        const classCode = normalizeClassCode(rows[0].class_code);
-        res.set("Cache-Control", "no-store");
-        res.json({success:true,teacherOnline:teachersByClass.has(classCode),
-            focusMode:teachersByClass.has(classCode) && focusByClass.get(classCode)===true});
-    } catch (error) {
-        console.error("CLASS MODE LOOKUP ERROR:",error);
-        res.status(500).json({success:false});
-    }
-});
-
 // Kiểm tra phiên trùng ngay khi học sinh nhấn nút chia sẻ.
 app.post("/api/student/session-check", async (req, res) => {
     try {
@@ -4907,9 +4883,6 @@ const students = new Map();
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
-// Focus Mode is session-scoped and never applies to EXAM.
-const focusByClass = new Map();
-const focusAlertLast = new Map();
 
 
 function normalizeClassCode(value) {
@@ -5133,7 +5106,6 @@ io.on(
                         examTeachers.add(socket.id);
                     } else {
                         teachersByClass.set(classCode, socket.id);
-                        focusByClass.set(classCode, data?.focusMode === true);
                     }
 
 
@@ -5175,8 +5147,6 @@ io.on(
                         }
                     );
 
-
-                    socket.emit("focus-state", { enabled: classCode !== "EXAM" && focusByClass.get(classCode) === true });
 
                     socket.emit(
                         "student-list",
@@ -5391,8 +5361,6 @@ io.on(
                     );
 
 
-                    socket.emit("focus-state", { enabled: classCode !== "EXAM" && focusByClass.get(classCode) === true });
-
                     socket.to(
                         room
                     ).emit(
@@ -5530,34 +5498,6 @@ io.on(
             }
         );
 
-
-        // Focus control is restricted to the authenticated teacher of this class.
-        socket.on("focus-set", data => {
-            const code = normalizeClassCode(socket.data.classCode);
-            if (socket.data.role !== "teacher" || !code || code === "EXAM" ||
-                teachersByClass.get(code) !== socket.id) return;
-            const enabled = data?.enabled === true;
-            focusByClass.set(code, enabled);
-            io.to(getClassRoom(code)).emit("focus-state", { enabled });
-        });
-
-        // Student events: server derives identity from socket, never trusts supplied names.
-        socket.on("focus-alert", data => {
-            const student = students.get(socket.id);
-            if (!student || student.classCode === "EXAM") return;
-            const allowed = ["tab-hidden", "window-blur", "fullscreen-exit"];
-            const reason = String(data?.reason || "");
-            if (!allowed.includes(reason)) return;
-            if (reason === "fullscreen-exit" && !focusByClass.get(student.classCode)) return;
-            const key = socket.id + ":" + reason;
-            const now = Date.now();
-            if (now - (focusAlertLast.get(key) || 0) < 15000) return;
-            focusAlertLast.set(key, now);
-            const teacherId = teachersByClass.get(student.classCode);
-            if (teacherId) io.to(teacherId).emit("focus-alert", {
-                id: socket.id, name: student.name, reason, at: Date.now()
-            });
-        });
 
         // =============================================
         // STUDENT STOPPED SCREEN
@@ -5992,7 +5932,6 @@ io.on(
                 teachersByClass.delete(
                     classCode
                 );
-                focusByClass.delete(classCode);
 
             }
         );
@@ -6097,7 +6036,6 @@ io.on(
                         teachersByClass.delete(
                             classCode
                         );
-                        focusByClass.delete(classCode);
 
 
                         socket.to(
