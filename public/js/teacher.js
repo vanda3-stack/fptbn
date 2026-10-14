@@ -3115,12 +3115,34 @@ document.addEventListener("keydown", event => {
         "window-focus": "Quay lại cửa sổ học tập",
         "window-narrowed": "Cửa sổ học tập bị thu hẹp (có thể chia đôi)"
     };
+    let enabled = false;
+    let countAlerts = 0;
+    let lastSpoken = 0;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:10001;padding:12px;border-radius:9px;cursor:pointer;background:#eee;color:#222;border:1px solid #aaa";
+    const refresh = () => {
+        toggle.textContent = enabled ? "🔔 Cảnh báo: BẬT (" + countAlerts + ")" : "🔕 Cảnh báo: TẮT";
+    };
+    toggle.addEventListener("click", () => {
+        enabled = !enabled;
+        countAlerts = 0;
+        box.style.display = "none";
+        socket.emit("activity-monitor-toggle", {enabled});
+        if (!enabled && window.speechSynthesis) speechSynthesis.cancel();
+        refresh();
+    });
+    socket.on("connect", () => {
+        if (enabled) socket.emit("activity-monitor-toggle", {enabled:true});
+    });
+    document.body.appendChild(toggle);
+    refresh();
     const recent = [];
     const box = document.createElement("section");
     box.id = "activityAlerts";
     box.setAttribute("aria-live", "polite");
     Object.assign(box.style, {
-        position: "fixed", right: "14px", bottom: "14px", zIndex: "9999",
+        position: "fixed", right: "14px", bottom: "70px", zIndex: "9999",
         width: "min(380px, calc(100vw - 28px))", maxHeight: "35vh",
         overflowY: "auto", padding: "12px", background: "#ffffff",
         color: "#17202a", border: "1px solid #d4dbe3",
@@ -3134,7 +3156,9 @@ document.addEventListener("keydown", event => {
     box.appendChild(heading);
     document.body.appendChild(box);
     socket.on("student-activity-alert", data => {
-        if (!data || !translations[data.type]) return;
+        if (!enabled || !["page-hidden","window-blur","window-narrowed"].includes(data?.type)) return;
+        countAlerts++;
+        refresh();
         const item = document.createElement("div");
         item.style.padding = "7px 0";
         item.style.borderTop = "1px solid #eee";
@@ -3148,5 +3172,12 @@ document.addEventListener("keydown", event => {
         recent.push(item);
         if (recent.length > 6) recent.shift()?.remove();
         box.style.display = "block";
+        if (window.speechSynthesis && Date.now() - lastSpoken > 4500) {
+            lastSpoken = Date.now();
+            speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance("Cảnh báo: " + name + ", " + translations[data.type]);
+            speech.lang = "vi-VN";
+            speechSynthesis.speak(speech);
+        }
     });
 })();
