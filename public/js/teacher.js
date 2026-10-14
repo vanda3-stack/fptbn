@@ -3102,3 +3102,51 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
 });
 
+
+
+// =====================================================
+// SMART ACTIVITY MONITORING — teacher alerts
+// =====================================================
+(() => {
+    const translations = {
+        "page-hidden": "Rời tab hoặc thu nhỏ trang học tập",
+        "page-visible": "Quay lại trang học tập",
+        "window-blur": "Cửa sổ học tập mất tiêu điểm",
+        "window-focus": "Quay lại cửa sổ học tập",
+        "window-narrowed": "Cửa sổ học tập bị thu hẹp (có thể chia đôi)"
+    };
+    const recent = [];
+    const box = document.createElement("section");
+    box.id = "activityAlerts";
+    box.setAttribute("aria-live", "polite");
+    Object.assign(box.style, {
+        position: "fixed", right: "14px", bottom: "14px", zIndex: "9999",
+        width: "min(380px, calc(100vw - 28px))", maxHeight: "35vh",
+        overflowY: "auto", padding: "12px", background: "#ffffff",
+        color: "#17202a", border: "1px solid #d4dbe3",
+        borderRadius: "12px", boxShadow: "0 4px 25px #0002",
+        font: "13px system-ui, sans-serif", display: "none"
+    });
+    const heading = document.createElement("strong");
+    heading.textContent = "Cảnh báo hoạt động học sinh";
+    heading.style.display = "block";
+    heading.style.marginBottom = "8px";
+    box.appendChild(heading);
+    document.body.appendChild(box);
+    socket.on("student-activity-alert", data => {
+        if (!data || !translations[data.type]) return;
+        const item = document.createElement("div");
+        item.style.padding = "7px 0";
+        item.style.borderTop = "1px solid #eee";
+        const student = studentNames.get(data.studentSocketId);
+        const name = typeof student === "string"
+            ? student
+            : (student?.name || data.studentCode || "Học sinh");
+        const time = new Date(data.serverTime || Date.now()).toLocaleTimeString("vi-VN");
+        item.textContent = time + " · " + name + ": " + translations[data.type];
+        box.insertBefore(item, heading.nextSibling);
+        recent.push(item);
+        if (recent.length > 6) recent.shift()?.remove();
+        box.style.display = "block";
+    });
+})();
