@@ -4621,6 +4621,30 @@ app.post("/api/teacher/login", async (req, res) => {
 });
 
 
+// Public class session status for the student login page (no personal data).
+// Student identity is still validated by the existing login and socket handlers.
+app.get("/api/student/class-mode", async (req, res) => {
+    try {
+        const code = String(req.query.student_code || "").trim().toUpperCase();
+        if (!/^FBN\\d{5}$/.test(code)) return res.status(400).json({success:false});
+        const [rows] = await db.query(`
+            SELECT c.class_code FROM students s
+            JOIN student_enrollments se ON se.student_id=s.id
+            JOIN classes c ON c.id=se.class_id
+            JOIN school_years sy ON sy.id=c.school_year_id
+            WHERE s.student_code=? AND s.is_active=1 AND c.is_active=1 AND sy.is_current=1
+            LIMIT 1`, [code]);
+        if (!rows.length) return res.status(404).json({success:false});
+        const classCode = normalizeClassCode(rows[0].class_code);
+        res.set("Cache-Control", "no-store");
+        res.json({success:true,teacherOnline:teachersByClass.has(classCode),
+            focusMode:teachersByClass.has(classCode) && focusByClass.get(classCode)===true});
+    } catch (error) {
+        console.error("CLASS MODE LOOKUP ERROR:",error);
+        res.status(500).json({success:false});
+    }
+});
+
 // Kiểm tra phiên trùng ngay khi học sinh nhấn nút chia sẻ.
 app.post("/api/student/session-check", async (req, res) => {
     try {
