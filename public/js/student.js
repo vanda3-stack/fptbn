@@ -679,6 +679,21 @@ button.addEventListener(
     }
 
 
+            // Best-effort fullscreen immediately after Entire Screen is selected.
+            // Browsers may reject this because the Share dialog is not a page gesture.
+            // The existing in-class fullscreen button remains the fallback.
+            if (window.FPTBN_EXAM_MODE !== true &&
+                preparedClassMode?.code === studentCode &&
+                preparedClassMode.focus === true &&
+                !document.fullscreenElement &&
+                document.documentElement.requestFullscreen) {
+                try {
+                    await document.documentElement.requestFullscreen();
+                } catch (fullscreenError) {
+                    console.info("Fullscreen after screen sharing was blocked; showing fallback button.", fullscreenError);
+                }
+            }
+
             // =========================================
             // ĐÁNH DẤU ĐÃ VÀO LỚP
             // =========================================
