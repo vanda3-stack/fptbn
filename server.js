@@ -4883,6 +4883,8 @@ const students = new Map();
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
+// Focus Mode is session-scoped and never applies to EXAM.
+const focusByClass = new Map();
 
 
 function normalizeClassCode(value) {
@@ -5106,6 +5108,7 @@ io.on(
                         examTeachers.add(socket.id);
                     } else {
                         teachersByClass.set(classCode, socket.id);
+                        focusByClass.set(classCode, data?.focusMode === true);
                     }
 
 
@@ -5147,6 +5150,8 @@ io.on(
                         }
                     );
 
+
+                    socket.emit("focus-state", { enabled: classCode !== "EXAM" && focusByClass.get(classCode) === true });
 
                     socket.emit(
                         "student-list",
@@ -5361,6 +5366,8 @@ io.on(
                     );
 
 
+                    socket.emit("focus-state", { enabled: classCode !== "EXAM" && focusByClass.get(classCode) === true });
+
                     socket.to(
                         room
                     ).emit(
@@ -5498,6 +5505,30 @@ io.on(
             }
         );
 
+
+        // Focus control is restricted to the authenticated teacher of this class.
+        socket.on("focus-set", data => {
+            const code = normalizeClassCode(socket.data.classCode);
+            if (socket.data.role !== "teacher" || !code || code === "EXAM" ||
+                teachersByClass.get(code) !== socket.id) return;
+            const enabled = data?.enabled === true;
+            focusByClass.set(code, enabled);
+            io.to(getClassRoom(code)).emit("focus-state", { enabled });
+        });
+
+        // Student events: server derives identity from socket, never trusts supplied names.
+        socket.on("focus-alert", data => {
+            const student = students.get(socket.id);
+            if (!student || student.classCode === "EXAM") return;
+            const allowed = ["tab-hidden", "window-blur", "fullscreen-exit"];
+            const reason = String(data?.reason || "");
+            if (!allowed.includes(reason)) return;
+            if (reason === "fullscreen-exit" && !focusByClass.get(student.classCode)) return;
+            const teacherId = teachersByClass.get(student.classCode);
+            if (teacherId) io.to(teacherId).emit("focus-alert", {
+                id: socket.id, name: student.name, reason, at: Date.now()
+            });
+        });
 
         // =============================================
         // STUDENT STOPPED SCREEN
