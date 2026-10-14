@@ -5435,6 +5435,30 @@ io.on(
         );
 
 
+
+        // Student activity signals: trust server-side room membership only.
+        socket.on("student-activity", payload => {
+            const student = students.get(socket.id);
+            if (!student || !socket.data.classCode) return;
+            const allowed = new Set([
+                "page-hidden", "page-visible", "window-blur",
+                "window-focus", "window-narrowed"
+            ]);
+            const type = String(payload?.type || "");
+            if (!allowed.has(type)) return;
+            const now = Date.now();
+            const rate = socket.data.lastActivityEventAt || 0;
+            if (now - rate < 750) return;
+            socket.data.lastActivityEventAt = now;
+            const classCode = socket.data.classCode;
+            io.to(getClassRoom(classCode)).emit("student-activity-alert", {
+                type,
+                studentSocketId: socket.id,
+                studentCode: student.studentCode || "",
+                serverTime: now
+            });
+        });
+
         // =============================================
         // STUDENT SCREEN READY
         // =============================================
