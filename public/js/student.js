@@ -2558,3 +2558,57 @@ window.addEventListener(
 
     }
 );
+
+// =====================================================
+// SMART ACTIVITY MONITORING — client-side signals only
+// Signals are NOT proof of misconduct; use with screen review.
+// =====================================================
+(() => {
+    let lastSent = new Map();
+    let blurTimer = null;
+    let resizeTimer = null;
+    let baselineWidth = 0;
+    let baselineHeight = 0;
+    const sendActivity = (type, detail = "") => {
+        if (!joinedClass || !socket.connected) return;
+        const now = Date.now();
+        const key = type + ":" + detail;
+        if (now - (lastSent.get(key) || 0) < 5000) return;
+        lastSent.set(key, now);
+        socket.emit("student-activity", { type, detail, clientTime: now });
+    };
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            sendActivity("page-hidden");
+        } else {
+            sendActivity("page-visible");
+        }
+    });
+    window.addEventListener("blur", () => {
+        clearTimeout(blurTimer);
+        blurTimer = setTimeout(() => {
+            if (!document.hidden && !document.hasFocus()) sendActivity("window-blur");
+        }, 1500);
+    });
+    window.addEventListener("focus", () => {
+        clearTimeout(blurTimer);
+        sendActivity("window-focus");
+    });
+    // Only signal significant size reduction; does not assert split-screen.
+    const noteBaseline = () => {
+        if (!joinedClass || document.hidden) return;
+        baselineWidth = Math.max(baselineWidth, window.innerWidth);
+        baselineHeight = Math.max(baselineHeight, window.innerHeight);
+    };
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (!joinedClass) return;
+            noteBaseline();
+            if (baselineWidth > 0 && window.innerWidth < baselineWidth * 0.72) {
+                sendActivity("window-narrowed");
+            }
+        }, 700);
+    });
+    setInterval(noteBaseline, 5000);
+})();
