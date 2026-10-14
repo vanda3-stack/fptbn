@@ -377,6 +377,15 @@ studentCodeInput.addEventListener("blur", () => {
     if (!preparedClassMode && /^FBN\\d{5}$/.test(code)) loadClassMode(code);
 });
 
+// Focus classroom entry is a two-gesture flow: prepare mode, then student
+// explicitly enters fullscreen, then Chrome asks for Entire Screen sharing.
+// This avoids requesting fullscreen after the browser's Share dialog.
+let focusEntryReadyForCode = null;
+studentCodeInput.addEventListener("input", () => {
+    focusEntryReadyForCode = null;
+    button.textContent = "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
+});
+
 // =====================================================
 // VÀO LỚP
 // =====================================================
@@ -430,16 +439,40 @@ button.addEventListener(
         studentCodeInput.value =
             code;
 
-        // Focus mode: request fullscreen during the student's own login click,
-        // before any asynchronous work. Chrome may exit when its Share picker opens.
-        // Do not apply to EXAM or normal classes.
-        const cachedMode = preparedClassMode?.code === code &&
-            preparedClassMode.focus === true;
-        if (window.FPTBN_EXAM_MODE !== true && cachedMode &&
-            !document.fullscreenElement && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(error => {
-                console.info("Fullscreen on login click was blocked:", error);
-            });
+        // First click checks class mode; focused classrooms then present a
+        // dedicated user-gesture button to enter fullscreen before sharing.
+        if (window.FPTBN_EXAM_MODE !== true && focusEntryReadyForCode !== code) {
+            button.disabled = true;
+            button.textContent = "Đang kiểm tra chế độ lớp...";
+            try {
+                const response = await fetch(
+                    "/api/student/class-mode?student_code=" + encodeURIComponent(code),
+                    {cache: "no-store"}
+                );
+                const mode = await response.json();
+                if (response.ok && mode.success && mode.teacherOnline && mode.focusMode) {
+                    focusEntryReadyForCode = code;
+                    button.disabled = false;
+                    button.textContent = "🎯 Bắt đầu học tập trung (toàn màn hình)";
+                    statusBox.textContent = "Nhấn Bắt đầu học tập trung, sau đó chọn Entire Screen và Share.";
+                    return;
+                }
+            } catch (modeError) {
+                console.info("Could not determine focus mode before joining:", modeError);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        if (focusEntryReadyForCode === code) {
+            // Must be called synchronously from the student's second click.
+            // A Chrome Share picker may still dismiss fullscreen.
+            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(error => {
+                    console.info("Fullscreen blocked by browser:", error);
+                });
+            }
+            focusEntryReadyForCode = null;
         }
 
         // =============================================
@@ -569,25 +602,6 @@ button.addEventListener(
         throw new Error("Mã học sinh " + studentCode + " đang được sử dụng ở tab hoặc thiết bị khác. Hãy đóng phiên trước rồi thử lại.");
     }
 
-    // Resolve the current teacher mode before the screen picker.
-    // Do not attempt fullscreen yet: the requested sequence is Share -> fullscreen.
-    let focusAfterShare = false;
-    if (window.FPTBN_EXAM_MODE !== true) {
-        try {
-            const modeResponse = await fetch(
-                "/api/student/class-mode?student_code=" + encodeURIComponent(studentCode),
-                {cache:"no-store"}
-            );
-            if (modeResponse.ok) {
-                const mode = await modeResponse.json();
-                focusAfterShare = mode.success === true &&
-                    mode.teacherOnline === true && mode.focusMode === true;
-            }
-        } catch (modeError) {
-            console.info("Class mode unavailable before sharing:", modeError);
-        }
-    }
-
     // =========================================
     // MÃ HS ĐÚNG -> BẮT ĐẦU SHARE
     // =========================================
@@ -697,19 +711,6 @@ button.addEventListener(
 
     }
 
-
-            // Best-effort fullscreen immediately after Entire Screen is selected.
-            // Browsers may reject this because the Share dialog is not a page gesture.
-            // The existing in-class fullscreen button remains the fallback.
-            if (focusAfterShare &&
-                !document.fullscreenElement &&
-                document.documentElement.requestFullscreen) {
-                try {
-                    await document.documentElement.requestFullscreen();
-                } catch (fullscreenError) {
-                    console.info("Fullscreen after screen sharing was blocked; showing fallback button.", fullscreenError);
-                }
-            }
 
             // =========================================
             // ĐÁNH DẤU ĐÃ VÀO LỚP
