@@ -349,6 +349,34 @@ socket.on(
 );
 
 
+// Preload the teacher-selected mode while the student types their ID.
+// Fullscreen must be requested synchronously from the student click.
+let preparedClassMode = null;
+let classModeTimer = null;
+let classModeRequest = 0;
+async function loadClassMode(code) {
+    const request = ++classModeRequest;
+    preparedClassMode = null;
+    if (!/^FBN\\d{5}$/.test(code) || window.FPTBN_EXAM_MODE === true) return;
+    try {
+        const response = await fetch("/api/student/class-mode?student_code=" + encodeURIComponent(code), {cache:"no-store"});
+        const data = await response.json();
+        if (request === classModeRequest && studentCodeInput.value.trim().toUpperCase() === code && response.ok && data.success) {
+            preparedClassMode = {code, focus: data.teacherOnline === true && data.focusMode === true, loadedAt:Date.now()};
+        }
+    } catch (error) { console.warn("Could not preload classroom mode", error); }
+}
+studentCodeInput.addEventListener("input", () => {
+    clearTimeout(classModeTimer);
+    const code = studentCodeInput.value.trim().toUpperCase();
+    preparedClassMode = null;
+    classModeTimer = setTimeout(() => loadClassMode(code), 180);
+});
+studentCodeInput.addEventListener("blur", () => {
+    const code = studentCodeInput.value.trim().toUpperCase();
+    if (!preparedClassMode && /^FBN\\d{5}$/.test(code)) loadClassMode(code);
+});
+
 // =====================================================
 // VÀO LỚP
 // =====================================================
@@ -402,6 +430,17 @@ button.addEventListener(
         studentCodeInput.value =
             code;
 
+        // Request fullscreen on the original user click, before any awaits.
+        // The browser may still exit fullscreen while opening the screen picker.
+        // In that case the existing in-class confirmation remains as fallback.
+        const autoFocus = window.FPTBN_EXAM_MODE !== true &&
+            preparedClassMode?.code === code && preparedClassMode.focus === true &&
+            Date.now() - preparedClassMode.loadedAt < 30000;
+        if (autoFocus && !document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(error =>
+                console.info("Fullscreen requires confirmation on this browser:", error)
+            );
+        }
 
         // =============================================
         // KIỂM TRA SOCKET
