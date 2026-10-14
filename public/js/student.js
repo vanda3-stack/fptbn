@@ -2565,7 +2565,7 @@ window.addEventListener(
     const panel = document.createElement("div");
     panel.id = "focusStudentPrompt";
     panel.style.cssText = "display:none;background:#172554;color:white;border:1px solid #3b82f6;border-radius:12px;padding:16px;margin:0 0 12px;text-align:center;font:15px Arial";
-    panel.innerHTML = '<div style="max-width:480px"><h2>🎯 Chế độ tập trung</h2><p>Giáo viên yêu cầu theo dõi bài giảng toàn màn hình.</p><button id="focusStudentEnter" style="background:#2563eb;color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer">Xem toàn màn hình</button></div>';
+    panel.innerHTML = '<div style="max-width:480px"><h2>🎯 Giáo viên đã mở lớp tập trung</h2><p>Đã chia sẻ màn hình thành công. Nhấn nút bên dưới để bắt đầu học toàn màn hình.</p><button id="focusStudentEnter" style="background:#2563eb;color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer">Xem toàn màn hình</button></div>';
     (document.getElementById("classroom") || document.body).prepend(panel);
     const active = () => document.getElementById("classroom")?.style.display === "block";
     const emitAlert = reason => {
@@ -2578,11 +2578,13 @@ window.addEventListener(
     };
     const updatePrompt = () => {
         panel.style.display = active() && focusEnabled && !document.fullscreenElement ? "block" : "none";
+        const enter = document.getElementById("focusStudentEnter");
+        if (enter) enter.textContent = "Bắt đầu học toàn màn hình";
         document.body.classList.toggle("fptbn-focus-active", active() && focusEnabled);
     };
     document.getElementById("focusStudentEnter").addEventListener("click", async () => {
         try { await document.documentElement.requestFullscreen(); }
-        catch (error) { console.warn("Fullscreen needs student gesture:",error); }
+        catch (error) { console.warn("Fullscreen needs student gesture:",error); document.getElementById("focusStudentEnter").textContent = "Thử bật toàn màn hình"; }
         updatePrompt();
     });
     socket.on("focus-state", async data => {
