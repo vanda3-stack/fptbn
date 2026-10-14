@@ -430,18 +430,6 @@ button.addEventListener(
         studentCodeInput.value =
             code;
 
-        // Request fullscreen on the original user click, before any awaits.
-        // The browser may still exit fullscreen while opening the screen picker.
-        // In that case the existing in-class confirmation remains as fallback.
-        const autoFocus = window.FPTBN_EXAM_MODE !== true &&
-            preparedClassMode?.code === code && preparedClassMode.focus === true &&
-            Date.now() - preparedClassMode.loadedAt < 30000;
-        if (autoFocus && !document.fullscreenElement && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(error =>
-                console.info("Fullscreen requires confirmation on this browser:", error)
-            );
-        }
-
         // =============================================
         // KIỂM TRA SOCKET
         // =============================================
@@ -569,6 +557,25 @@ button.addEventListener(
         throw new Error("Mã học sinh " + studentCode + " đang được sử dụng ở tab hoặc thiết bị khác. Hãy đóng phiên trước rồi thử lại.");
     }
 
+    // Resolve the current teacher mode before the screen picker.
+    // Do not attempt fullscreen yet: the requested sequence is Share -> fullscreen.
+    let focusAfterShare = false;
+    if (window.FPTBN_EXAM_MODE !== true) {
+        try {
+            const modeResponse = await fetch(
+                "/api/student/class-mode?student_code=" + encodeURIComponent(studentCode),
+                {cache:"no-store"}
+            );
+            if (modeResponse.ok) {
+                const mode = await modeResponse.json();
+                focusAfterShare = mode.success === true &&
+                    mode.teacherOnline === true && mode.focusMode === true;
+            }
+        } catch (modeError) {
+            console.info("Class mode unavailable before sharing:", modeError);
+        }
+    }
+
     // =========================================
     // MÃ HS ĐÚNG -> BẮT ĐẦU SHARE
     // =========================================
@@ -682,9 +689,7 @@ button.addEventListener(
             // Best-effort fullscreen immediately after Entire Screen is selected.
             // Browsers may reject this because the Share dialog is not a page gesture.
             // The existing in-class fullscreen button remains the fallback.
-            if (window.FPTBN_EXAM_MODE !== true &&
-                preparedClassMode?.code === studentCode &&
-                preparedClassMode.focus === true &&
+            if (focusAfterShare &&
                 !document.fullscreenElement &&
                 document.documentElement.requestFullscreen) {
                 try {
