@@ -430,6 +430,19 @@ button.addEventListener(
         studentCodeInput.value =
             code;
 
+        // Focus mode: request fullscreen during the student's own login click,
+        // before any asynchronous work. Chrome may exit when its Share picker opens.
+        // Do not apply to EXAM or normal classes.
+        const cachedMode = preparedClassMode?.code === code &&
+            preparedClassMode.focus === true &&
+            preparedClassMode.teacherOnline === true;
+        if (window.FPTBN_EXAM_MODE !== true && cachedMode &&
+            !document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(error => {
+                console.info("Fullscreen on login click was blocked:", error);
+            });
+        }
+
         // =============================================
         // KIỂM TRA SOCKET
         // =============================================
