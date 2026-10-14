@@ -2558,3 +2558,62 @@ window.addEventListener(
 
     }
 );
+// ===== Focus Mode: student fullscreen and visibility signals =====
+(() => {
+    if (window.FPTBN_EXAM_MODE === true) return;
+    let focusEnabled = false, awaySince = 0, awayTimer = null, lastAlert = new Map(), suppressExit = false;
+    const panel = document.createElement("div");
+    panel.id = "focusStudentPrompt";
+    panel.style.cssText = "display:none;position:fixed;inset:0;z-index:20000;background:#020617ef;color:white;align-items:center;justify-content:center;text-align:center;padding:24px;font:16px Arial";
+    panel.innerHTML = '<div style="max-width:480px"><h2>🎯 Chế độ tập trung</h2><p>Giáo viên yêu cầu theo dõi bài giảng toàn màn hình.</p><button id="focusStudentEnter" style="background:#2563eb;color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer">Xem toàn màn hình</button></div>';
+    document.body.appendChild(panel);
+    const active = () => document.getElementById("classroom")?.style.display === "block";
+    const emitAlert = reason => {
+        if (!active()) return;
+        if (reason === "fullscreen-exit" && !focusEnabled) return;
+        const now = Date.now();
+        if (now - (lastAlert.get(reason) || 0) < 15000) return;
+        lastAlert.set(reason,now);
+        socket.emit("focus-alert",{reason});
+    };
+    const updatePrompt = () => {
+        panel.style.display = active() && focusEnabled && !document.fullscreenElement ? "flex" : "none";
+    };
+    document.getElementById("focusStudentEnter").addEventListener("click", async () => {
+        try { await document.documentElement.requestFullscreen(); }
+        catch (error) { console.warn("Fullscreen needs student gesture:",error); }
+        updatePrompt();
+    });
+    socket.on("focus-state", async data => {
+        focusEnabled = data?.enabled === true;
+        if (!focusEnabled && document.fullscreenElement) {
+            suppressExit = true;
+            try { await document.exitFullscreen(); } catch (_) {}
+            setTimeout(()=>{suppressExit=false;},700);
+        }
+        updatePrompt();
+    });
+    document.addEventListener("fullscreenchange", () => {
+        if (focusEnabled && !document.fullscreenElement && !suppressExit) emitAlert("fullscreen-exit");
+        updatePrompt();
+    });
+    document.addEventListener("visibilitychange", () => {
+        clearTimeout(awayTimer);
+        if (document.hidden) {
+            awaySince = Date.now();
+            awayTimer = setTimeout(()=>{ if (document.hidden && Date.now()-awaySince >= 5000) emitAlert("tab-hidden"); }, 5000);
+        } else if (awaySince) {
+            if (Date.now()-awaySince >= 5000) emitAlert("tab-hidden");
+            awaySince=0;
+        }
+    });
+    window.addEventListener("blur", () => {
+        if (!active()) return;
+        const started=Date.now();
+        setTimeout(()=>{if (!document.hasFocus() && Date.now()-started >= 5000) emitAlert("window-blur");},5000);
+    });
+    // Joining happens after getDisplayMedia; prompt is shown when classroom becomes visible.
+    const observer = new MutationObserver(updatePrompt);
+    const classroom = document.getElementById("classroom");
+    if (classroom) observer.observe(classroom,{attributes:true,attributeFilter:["style"]});
+})();
