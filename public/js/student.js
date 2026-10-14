@@ -349,43 +349,6 @@ socket.on(
 );
 
 
-// Preload the teacher-selected mode while the student types their ID.
-// Fullscreen must be requested synchronously from the student click.
-let preparedClassMode = null;
-let classModeTimer = null;
-let classModeRequest = 0;
-async function loadClassMode(code) {
-    const request = ++classModeRequest;
-    preparedClassMode = null;
-    if (!/^FBN\\d{5}$/.test(code) || window.FPTBN_EXAM_MODE === true) return;
-    try {
-        const response = await fetch("/api/student/class-mode?student_code=" + encodeURIComponent(code), {cache:"no-store"});
-        const data = await response.json();
-        if (request === classModeRequest && studentCodeInput.value.trim().toUpperCase() === code && response.ok && data.success) {
-            preparedClassMode = {code, focus: data.teacherOnline === true && data.focusMode === true, loadedAt:Date.now()};
-        }
-    } catch (error) { console.warn("Could not preload classroom mode", error); }
-}
-studentCodeInput.addEventListener("input", () => {
-    clearTimeout(classModeTimer);
-    const code = studentCodeInput.value.trim().toUpperCase();
-    preparedClassMode = null;
-    classModeTimer = setTimeout(() => loadClassMode(code), 180);
-});
-studentCodeInput.addEventListener("blur", () => {
-    const code = studentCodeInput.value.trim().toUpperCase();
-    if (!preparedClassMode && /^FBN\\d{5}$/.test(code)) loadClassMode(code);
-});
-
-// Focus classroom entry is a two-gesture flow: prepare mode, then student
-// explicitly enters fullscreen, then Chrome asks for Entire Screen sharing.
-// This avoids requesting fullscreen after the browser's Share dialog.
-let focusEntryReadyForCode = null;
-studentCodeInput.addEventListener("input", () => {
-    focusEntryReadyForCode = null;
-    button.textContent = "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
-});
-
 // =====================================================
 // VÀO LỚP
 // =====================================================
@@ -439,41 +402,6 @@ button.addEventListener(
         studentCodeInput.value =
             code;
 
-        // First click checks class mode; focused classrooms then present a
-        // dedicated user-gesture button to enter fullscreen before sharing.
-        if (window.FPTBN_EXAM_MODE !== true && focusEntryReadyForCode !== code) {
-            button.disabled = true;
-            button.textContent = "Đang kiểm tra chế độ lớp...";
-            try {
-                const response = await fetch(
-                    "/api/student/class-mode?student_code=" + encodeURIComponent(code),
-                    {cache: "no-store"}
-                );
-                const mode = await response.json();
-                if (response.ok && mode.success && mode.teacherOnline && mode.focusMode) {
-                    focusEntryReadyForCode = code;
-                    button.disabled = false;
-                    button.textContent = "🎯 Bắt đầu học tập trung (toàn màn hình)";
-                    statusBox.textContent = "Nhấn Bắt đầu học tập trung, sau đó chọn Entire Screen và Share.";
-                    return;
-                }
-            } catch (modeError) {
-                console.info("Could not determine focus mode before joining:", modeError);
-            } finally {
-                button.disabled = false;
-            }
-        }
-
-        if (focusEntryReadyForCode === code) {
-            // Must be called synchronously from the student's second click.
-            // A Chrome Share picker may still dismiss fullscreen.
-            if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(error => {
-                    console.info("Fullscreen blocked by browser:", error);
-                });
-            }
-            focusEntryReadyForCode = null;
-        }
 
         // =============================================
         // KIỂM TRA SOCKET
@@ -2630,65 +2558,3 @@ window.addEventListener(
 
     }
 );
-// ===== Focus Mode: student fullscreen and visibility signals =====
-(() => {
-    if (window.FPTBN_EXAM_MODE === true) return;
-    let focusEnabled = false, awaySince = 0, awayTimer = null, lastAlert = new Map(), suppressExit = false;
-    const panel = document.createElement("div");
-    panel.id = "focusStudentPrompt";
-    panel.style.cssText = "display:none;background:#172554;color:white;border:1px solid #3b82f6;border-radius:12px;padding:16px;margin:0 0 12px;text-align:center;font:15px Arial";
-    panel.innerHTML = '<div style="max-width:480px"><h2>🎯 Giáo viên đã mở lớp tập trung</h2><p>Đã chia sẻ màn hình thành công. Nhấn nút bên dưới để bắt đầu học toàn màn hình.</p><button id="focusStudentEnter" style="background:#2563eb;color:white;border:0;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer">Xem toàn màn hình</button></div>';
-    (document.getElementById("classroom") || document.body).prepend(panel);
-    const active = () => document.getElementById("classroom")?.style.display === "block";
-    const emitAlert = reason => {
-        if (!active()) return;
-        if (reason === "fullscreen-exit" && !focusEnabled) return;
-        const now = Date.now();
-        if (now - (lastAlert.get(reason) || 0) < 15000) return;
-        lastAlert.set(reason,now);
-        socket.emit("focus-alert",{reason});
-    };
-    const updatePrompt = () => {
-        panel.style.display = active() && focusEnabled && !document.fullscreenElement ? "block" : "none";
-        const enter = document.getElementById("focusStudentEnter");
-        if (enter) enter.textContent = "Bắt đầu học toàn màn hình";
-        document.body.classList.toggle("fptbn-focus-active", active() && focusEnabled);
-    };
-    document.getElementById("focusStudentEnter").addEventListener("click", async () => {
-        try { await document.documentElement.requestFullscreen(); }
-        catch (error) { console.warn("Fullscreen needs student gesture:",error); document.getElementById("focusStudentEnter").textContent = "Thử bật toàn màn hình"; }
-        updatePrompt();
-    });
-    socket.on("focus-state", async data => {
-        focusEnabled = data?.enabled === true;
-        if (!focusEnabled && document.fullscreenElement) {
-            suppressExit = true;
-            try { await document.exitFullscreen(); } catch (_) {}
-            setTimeout(()=>{suppressExit=false;},700);
-        }
-        updatePrompt();
-    });
-    document.addEventListener("fullscreenchange", () => {
-        if (focusEnabled && !document.fullscreenElement && !suppressExit) emitAlert("fullscreen-exit");
-        updatePrompt();
-    });
-    document.addEventListener("visibilitychange", () => {
-        clearTimeout(awayTimer);
-        if (document.hidden) {
-            awaySince = Date.now();
-            awayTimer = setTimeout(()=>{ if (document.hidden && Date.now()-awaySince >= 5000) emitAlert("tab-hidden"); }, 5000);
-        } else if (awaySince) {
-            if (Date.now()-awaySince >= 5000) emitAlert("tab-hidden");
-            awaySince=0;
-        }
-    });
-    window.addEventListener("blur", () => {
-        if (!active()) return;
-        const started=Date.now();
-        setTimeout(()=>{if (!document.hasFocus() && Date.now()-started >= 5000) emitAlert("window-blur");},5000);
-    });
-    // Joining happens after getDisplayMedia; prompt is shown when classroom becomes visible.
-    const observer = new MutationObserver(updatePrompt);
-    const classroom = document.getElementById("classroom");
-    if (classroom) observer.observe(classroom,{attributes:true,attributeFilter:["style"]});
-})();
