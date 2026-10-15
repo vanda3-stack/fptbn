@@ -1592,6 +1592,7 @@ async function answerTeacherScreen(
 
             teacherVideo.srcObject =
                 event.streams[0];
+        window.dispatchEvent(new Event("teacher-screen-changed"));
 
 
             waitingTeacher.style.display =
@@ -2062,6 +2063,7 @@ socket.on(
 
         teacherVideo.srcObject =
             null;
+        window.dispatchEvent(new Event("teacher-screen-changed"));
 
 
         waitingTeacher.textContent =
@@ -2348,6 +2350,7 @@ socket.on(
 
         teacherVideo.srcObject =
             null;
+        window.dispatchEvent(new Event("teacher-screen-changed"));
 
 
         waitingTeacher.textContent =
@@ -2418,6 +2421,7 @@ socket.on(
 
         teacherVideo.srcObject =
             null;
+        window.dispatchEvent(new Event("teacher-screen-changed"));
 
 
         alert(
