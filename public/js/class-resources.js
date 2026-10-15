@@ -51,6 +51,7 @@
         form.onsubmit=event=>{event.preventDefault();const item=Object.fromEntries(new FormData(form)); item.visible=true;if(editing)item.id=editing; change(editing?'edit':'add',item);};
         details.append(summary,form);panel.append(details,status);
     }
+    socket.on('resources-cleanup-error', data => { if (teacher) window.alert(data.message); });
     socket.on('class-resources',render);
     socket.on(teacher?'teacher-ready':'class-info',()=>{editing=null;render([]);if(toggle)toggle.disabled=false;socket.emit('resources-get');});
     socket.on('disconnect',()=>{panel.hidden=true;if(toggle){toggle.disabled=true;toggle.setAttribute('aria-expanded','false');}});

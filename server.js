@@ -5888,6 +5888,11 @@ io.on(
 
                 // Leaving EXAM must never end the exam for students or other teachers.
                 if (classCode === "EXAM") {
+                    if (examTeachers.size === 1 && examTeachers.has(socket.id)) {
+                        try { resourceStore.clear("EXAM"); }
+                        catch (error) { console.error("Resource cleanup failed:", error); socket.emit("resources-cleanup-error", { message: "Chưa thể xóa tài nguyên phòng thi. Vui lòng thử lại." }); return; }
+                        io.to(getClassRoom("EXAM")).emit("class-resources", []);
+                    }
                     examTeachers.delete(socket.id);
                     socket.leave(getClassRoom("EXAM"));
                     socket.data.classCode = null;
@@ -5901,6 +5906,14 @@ io.on(
                         classCode
                     );
 
+
+                try { resourceStore.clear(classCode); }
+                catch (error) {
+                    console.error("Resource cleanup failed:", error);
+                    socket.emit("resources-cleanup-error", { message: "Chưa thể xóa tài nguyên của lớp. Vui lòng tải lại trang và thử kết thúc lớp lần nữa." });
+                    return;
+                }
+                io.to(room).emit("class-resources", []);
 
                 console.log(
                     "Teacher ended class:",
