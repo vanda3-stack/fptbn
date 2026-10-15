@@ -1303,6 +1303,7 @@ async function refresh(){const cls=typeof activeTeacherClass!=="undefined"?activ
 setInterval(()=>{if(typeof teacherClassJoined!=="undefined"&&teacherClassJoined)refresh()},5000);
 if(typeof socket!=="undefined"){socket.on("teacher-ready",()=>{lastClass="";setTimeout(refresh,250)});socket.on("student-join",refresh);socket.on("student-left",refresh)}
 })();
-</script></body>
+</script><script src="/js/class-resources.js"></script>
+</body>
 
 </html>

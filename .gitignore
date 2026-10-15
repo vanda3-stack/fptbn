@@ -4,3 +4,5 @@ node_modules/
 .vpanel-errors/
 .trash/
 .DS_Store
+
+data/

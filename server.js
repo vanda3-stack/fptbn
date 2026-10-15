@@ -4879,6 +4879,9 @@ app.post("/api/student/login", async (req, res) => {
 // Mỗi lớp là một Socket.IO room riêng.
 // Ví dụ class_code = 9A3 -> room = class:9A3
 
+const resourceModule = require("./lib/class-resources");
+const resourceStore = resourceModule.createStore(path.join(__dirname, "data", "class-resources.json"));
+
 const students = new Map();
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
@@ -4957,6 +4960,8 @@ function getStudentList(classCode) {
 io.on(
     "connection",
     socket => {
+
+        resourceModule.register(socket, io, resourceStore, getClassRoom);
 
         console.log(
             "Connected:",
