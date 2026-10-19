@@ -121,6 +121,7 @@ const excelUpload = multer({
 // MIDDLEWARE
 // =====================================================
 
+app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
 app.use(
@@ -4567,6 +4568,7 @@ app.patch(
 // =====================================================
 
 const teacherLoginTokens = new Map();
+require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens });
 
 
 app.post("/api/teacher/login", async (req, res) => {
