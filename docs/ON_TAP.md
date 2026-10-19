@@ -44,11 +44,11 @@ Bảng Word được đọc theo thứ tự ô trong tài liệu; mẫu bảng �
 
 ## Tự luận
 
-1. Thẻ hai mặt: tự nhẩm, lật xem đáp án, tự đánh giá chưa thuộc / nhớ một phần / nhớ đủ ý.
-2. Điền khuyết: ba mức tự sinh nhiều ô trống; mức khó che nhiều cụm từ hơn. Mẫu riêng của GV đặt `[[cụm từ]]` ngay trong từng ý; giữ nguyên nội dung khi bỏ dấu ngoặc. Chỉ chấm ô khuyết theo cụm từ chuẩn, có dấu, bỏ qua hoa/thường, khoảng trắng thừa và một số dấu câu. Không hỗ trợ đáp án đồng nghĩa cho ô khuyết ở bản này.
-3. Luyện viết: mỗi ý một ô viết. Hiện mức khớp các từ khóa do GV kiểm tra, giữ bài viết trên máy chủ. Đây là đối chiếu từ khóa, không chấm ngữ nghĩa, không đánh giá được câu phủ định hay mọi cách diễn đạt tương đương, không quy thành điểm tự luận.
+Hiển thị cả câu và toàn bộ các ý liền mạch trong một khung, chỉ có hai bước: Học đáp án và Tự luyện. HS đọc mẫu rồi ẩn để điền từ còn thiếu hoặc tự viết cả câu vào một ô lớn. Kiểm tra một lần cho cả câu; không chia màn hình theo từng ý. Xem `docs/ON_TAP_GIAO_DIEN.md` để biết luồng giao diện hiện hành.
 
-Mỗi hoạt động hoàn thành có UUID riêng để gửi lặp cùng lượt không tăng lượt. Trắc nghiệm chỉ lưu khi đủ bộ, chấm bằng đáp án máy chủ. Tự luận tính lượt theo từng câu và chế độ; thống kê tách từng loại. Thẻ nhớ là tự đánh giá, không được hiểu là đã thuộc thật. Không tính việc chỉ mở trang là lượt ôn. Khi mất kết nối, HS giữ trang và thử lưu lại; chưa hỗ trợ tiếp tục bản nháp sau khi đóng/tải lại trang.
+Điền khuyết dùng mẫu đã được giáo viên duyệt, chấm cụm từ có dấu (bỏ qua hoa/thường, khoảng trắng thừa và một số dấu câu). Luyện viết hiển thị đáp án mẫu sau khi kiểm tra, kèm đối chiếu từ khóa tham khảo, không chấm ngữ nghĩa và không quy thành điểm tự luận. Các cách diễn đạt tương đương có thể không được nhận diện.
+
+Mỗi lượt hoàn thành có UUID riêng. Chỉ ghi nhận sau khi kiểm tra thành công trên máy chủ; gửi lại cùng UUID không tăng lượt. Nếu mất kết nối, giữ trang và kiểm tra lại để lưu. Không tính việc đọc đáp án là lượt ôn. Bản nháp giữ trong bộ nhớ khi đổi câu hoặc cách luyện; chưa lưu khi rời phần tự luận hoặc tải lại trang.
 
 ## Tái sử dụng
 
@@ -64,8 +64,7 @@ Kiểm tra thực tế sau khi restart: GV tạo bộ ôn cho một lớp, đăn
 
 Phiên HS/GV kéo dài tối đa 8 giờ và mất hiệu lực sau khi Node.js khởi động lại. Mã HS chỉ nhận diện hồ sơ, không xác minh người đang sử dụng; phù hợp ôn tập, không dùng như xác thực cho kỳ thi lấy điểm. Bộ ôn là nội dung luyện tập nên đáp án được gửi xuống sau khi API xác minh lớp. Route GV dùng token được xác thực ở máy chủ, không dựa vào việc giấu đường dẫn.
 
-## Học tự luận từng phần
 
-Mỗi chế độ hiển thị một ý tại một thời điểm, có các nút Ý trước / Ý tiếp và bản đồ ý. HS lật thẻ và tự đánh giá riêng từng ý; điền khuyết hoặc viết xong một ý thì bấm Kiểm tra ý đó, không bắt buộc làm các ý khác trước. Chỉ đáp án của ý đang kiểm tra được mở. Câu trả lời và kết quả được giữ khi chuyển ý hoặc chuyển chế độ trong cùng câu. Chuyển câu hỏi, rời phần tự luận hoặc tải lại trang chưa lưu bản nháp.
+## Cập nhật giao diện cô đọng
 
-HS có thể đến ý chưa kiểm tra, ôn lại ý sai / chưa nhớ, xem ghép các ý đã học. Khi kiểm tra đủ mọi ý, bấm Hoàn thành & lưu cả câu: server tiếp tục lưu một lượt cho cả câu theo từng chế độ và chống nộp trùng UUID. Các lần kiểm tra từng ý không tăng lượt ôn. Đổi độ khó tạo lượt điền khuyết mới và cần xác nhận nếu lượt cũ đã có phần kiểm tra chưa lưu. Sau khi lưu, bắt đầu lượt mới để sửa. Kết quả đối chiếu từ khóa không được coi là đánh giá ngữ nghĩa.
+Xem docs/ON_TAP_GIAO_DIEN.md. Bản mới nhận thêm bài viết nguyên câu ở API; cần khởi động lại Node.js sau git pull. Không thêm bảng dữ liệu.
