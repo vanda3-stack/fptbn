@@ -63,3 +63,9 @@ node --test test/ot.test.js
 Kiểm tra thực tế sau khi restart: GV tạo bộ ôn cho một lớp, đăng nhập HS thuộc lớp đó và HS lớp khác, làm đủ một lượt trắc nghiệm, một lượt điền khuyết và một bài viết; kiểm tra báo cáo trên máy GV. Thử điện thoại Safari/Chrome. Kiểm thử tự động sử dụng DB giả lập để kiểm tra quyền và logic; chưa thay thế kiểm thử trên MySQL thật.
 
 Phiên HS/GV kéo dài tối đa 8 giờ và mất hiệu lực sau khi Node.js khởi động lại. Mã HS chỉ nhận diện hồ sơ, không xác minh người đang sử dụng; phù hợp ôn tập, không dùng như xác thực cho kỳ thi lấy điểm. Bộ ôn là nội dung luyện tập nên đáp án được gửi xuống sau khi API xác minh lớp. Route GV dùng token được xác thực ở máy chủ, không dựa vào việc giấu đường dẫn.
+
+## Học tự luận từng phần
+
+Mỗi chế độ hiển thị một ý tại một thời điểm, có các nút Ý trước / Ý tiếp và bản đồ ý. HS lật thẻ và tự đánh giá riêng từng ý; điền khuyết hoặc viết xong một ý thì bấm Kiểm tra ý đó, không bắt buộc làm các ý khác trước. Chỉ đáp án của ý đang kiểm tra được mở. Câu trả lời và kết quả được giữ khi chuyển ý hoặc chuyển chế độ trong cùng câu. Chuyển câu hỏi, rời phần tự luận hoặc tải lại trang chưa lưu bản nháp.
+
+HS có thể đến ý chưa kiểm tra, ôn lại ý sai / chưa nhớ, xem ghép các ý đã học. Khi kiểm tra đủ mọi ý, bấm Hoàn thành & lưu cả câu: server tiếp tục lưu một lượt cho cả câu theo từng chế độ và chống nộp trùng UUID. Các lần kiểm tra từng ý không tăng lượt ôn. Đổi độ khó tạo lượt điền khuyết mới và cần xác nhận nếu lượt cũ đã có phần kiểm tra chưa lưu. Sau khi lưu, bắt đầu lượt mới để sửa. Kết quả đối chiếu từ khóa không được coi là đánh giá ngữ nghĩa.
