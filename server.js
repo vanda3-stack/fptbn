@@ -124,7 +124,13 @@ const excelUpload = multer({
 app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
-app.get("/exam.html", (req, res) => res.redirect(302, "/clb.html"));
+// Short public address for the CLB student room.
+app.get("/clb", (req, res) => res.sendFile(path.join(__dirname, "public", "clb.html")));
+app.get(["/clb.html", "/exam.html"], (req, res) => {
+    const queryIndex = req.originalUrl.indexOf("?");
+    const query = queryIndex < 0 ? "" : req.originalUrl.slice(queryIndex);
+    res.redirect(302, "/clb" + query);
+});
 
 app.use(
     express.static(
