@@ -124,6 +124,15 @@ const excelUpload = multer({
 app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
+// Public revision addresses. Legacy URLs redirect before static files are served.
+app.get("/ontap", (req, res) => res.sendFile(path.join(__dirname, "public", "OT.html")));
+app.get("/giaovien", (req, res) => res.sendFile(path.join(__dirname, "public", "GV.html")));
+app.get(["/OT.html", "/GV.html"], (req, res) => {
+    const queryIndex = req.originalUrl.indexOf("?");
+    const query = queryIndex < 0 ? "" : req.originalUrl.slice(queryIndex);
+    res.redirect(302, (req.path.toLowerCase() === "/ot.html" ? "/ontap" : "/giaovien") + query);
+});
+
 // Short public address for the CLB student room.
 app.get("/clb", (req, res) => res.sendFile(path.join(__dirname, "public", "clb.html")));
 app.get(["/clb.html", "/exam.html"], (req, res) => {
@@ -6241,5 +6250,3 @@ server.listen(
 
     }
 );
-
-
