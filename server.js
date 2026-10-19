@@ -124,6 +124,8 @@ const excelUpload = multer({
 app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
+app.get("/exam.html", (req, res) => res.redirect(302, "/clb.html"));
+
 app.use(
     express.static(
         path.join(__dirname, "public")
@@ -4952,6 +4954,7 @@ const students = new Map();
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
+const clbBroadcast = require("./lib/room-broadcast").createRoomBroadcast();
 
 
 function normalizeClassCode(value) {
@@ -5123,7 +5126,7 @@ io.on(
                         classRows = [{
                             id: 0,
                             class_code: "EXAM",
-                            class_name: "Phòng thi chung (nhiều lớp)",
+                            class_name: "Phòng CLB (nhiều lớp)",
                             school_year: ""
                         }];
                     } else {
@@ -5720,6 +5723,10 @@ io.on(
                 }
 
 
+                if (data.type === "teacher-screen" &&
+                    (socket.data.role !== "teacher" || targetSocket.data.role !== "student" ||
+                     (socket.data.classCode === "EXAM" && !clbBroadcast.owns(socket.id)))) return;
+
                 targetSocket.emit(
                     "webrtc-offer",
                     {
@@ -5885,7 +5892,7 @@ io.on(
 
         socket.on(
             "teacher-share-started",
-            () => {
+            acknowledge => {
 
                 if (
                     socket.data.role !==
@@ -5905,6 +5912,15 @@ io.on(
                     return;
                 }
 
+
+                if (classCode === "EXAM" && !clbBroadcast.claim(socket.id)) {
+                    if (typeof acknowledge === "function") acknowledge({
+                        success: false,
+                        message: "Một giáo viên khác đang chia sẻ trong phòng CLB. Hãy chờ giáo viên đó dừng chia sẻ."
+                    });
+                    return;
+                }
+                if (typeof acknowledge === "function") acknowledge({success: true});
 
                 socket.to(
                     getClassRoom(
@@ -5940,6 +5956,8 @@ io.on(
                     return;
                 }
 
+
+                if (classCode === "EXAM" && !clbBroadcast.release(socket.id)) return;
 
                 socket.to(
                     getClassRoom(
@@ -5986,6 +6004,9 @@ io.on(
                         try { resourceStore.clear("EXAM"); }
                         catch (error) { console.error("Resource cleanup failed:", error); socket.emit("resources-cleanup-error", { message: "Chưa thể xóa tài nguyên phòng thi. Vui lòng thử lại." }); return; }
                         io.to(getClassRoom("EXAM")).emit("class-resources", []);
+                    }
+                    if (clbBroadcast.release(socket.id)) {
+                        socket.to(getClassRoom("EXAM")).emit("teacher-share-stopped");
                     }
                     examTeachers.delete(socket.id);
                     socket.leave(getClassRoom("EXAM"));
@@ -6127,6 +6148,9 @@ io.on(
                 ) {
                     // Other EXAM proctors and students stay online when one teacher disconnects.
                     if (socket.data.classCode === "EXAM") {
+                        if (clbBroadcast.release(socket.id)) {
+                            socket.to(getClassRoom("EXAM")).emit("teacher-share-stopped");
+                        }
                         examTeachers.delete(socket.id);
                         console.log("Exam proctor disconnected:", socket.id, "remaining:", examTeachers.size);
                         return;
@@ -6203,4 +6227,5 @@ server.listen(
 
     }
 );
+
 

@@ -67,7 +67,7 @@ async function loginTeacherByEmail() {
 
         const examOption = document.createElement("option");
         examOption.value = "EXAM";
-        examOption.textContent = "EXAM — Phòng thi chung (nhiều lớp)";
+        examOption.textContent = "CLB — Phòng câu lạc bộ (nhiều lớp)";
         teacherClassSelect.appendChild(examOption);
 
         teacherEmailInput.disabled = true;
@@ -129,51 +129,17 @@ socket.on("teacher-ready", data => {
     teacherLoginPage.style.display = "none";
     teacherApp.style.display = "block";
 
-    // Exam is monitoring-only: no teacher screen share and no global end-class.
-    const examOnly = activeTeacherClass === "EXAM";
+    // The shared CLB room supports both monitoring and teacher broadcasting.
     const teacherShareControl = document.getElementById("shareTeacher");
     const teacherEndControl = document.getElementById("endClass");
-    if (teacherShareControl) teacherShareControl.style.display = examOnly ? "none" : "";
-    if (teacherEndControl && examOnly) teacherEndControl.textContent = "🚪 Rời phòng thi";
-
-
-    // Chỉ hiện tài nguyên khi giáo viên vào phòng EXAM.
-    let examResources = document.getElementById("teacherExamResources");
-    if (activeTeacherClass === "EXAM") {
-        if (!examResources) {
-            examResources = document.createElement("nav");
-            examResources.id = "teacherExamResources";
-            examResources.setAttribute("aria-label", "Tài nguyên phòng thi");
-            examResources.style.cssText = "position:fixed;bottom:16px;right:16px;z-index:9999;display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;border:1px solid #47658b;border-radius:14px;background:#101f35f2;box-shadow:0 6px 24px #0008;font:600 14px system-ui,sans-serif;max-width:calc(100vw - 32px)";
-            const label = document.createElement("span");
-            label.textContent = "📚 Tài nguyên phòng thi";
-            label.style.color = "#dbeafe";
-            examResources.appendChild(label);
-            const links = [
-                ["📝 Bài kiểm tra ↗", "https://forms.gle/zdrRxyh1kQZQRXq98", "#2563eb"],
-                ["📖 Game Manual ↗", "https://content.vexrobotics.com/docs/2026-2027/level-up/files/LevelUp-2.1.pdf", "#167b67"]
-            ];
-            for (const [text, url, color] of links) {
-                const a = document.createElement("a");
-                a.textContent = text;
-                a.href = url;
-                a.target = "_blank";
-                a.rel = "noopener noreferrer";
-                a.style.cssText = "color:#fff;background:" + color + ";border-radius:9px;padding:9px 12px;text-decoration:none";
-                examResources.appendChild(a);
-            }
-            document.body.appendChild(examResources);
-        }
-        examResources.style.display = "flex";
-    } else if (examResources) {
-        examResources.style.display = "none";
-    }
-
+    if (teacherShareControl) teacherShareControl.style.display = "";
+    if (teacherEndControl) teacherEndControl.textContent = activeTeacherClass === "EXAM"
+        ? "🚪 Rời phòng CLB" : "⏹ Kết thúc lớp";
 
     teacherIdentity.textContent =
         (data.teacher?.full_name || loggedTeacher?.full_name || "Giáo viên") +
         " - " +
-        activeTeacherClass;
+        (activeTeacherClass === "EXAM" ? "CLB" : activeTeacherClass);
 });
 
 socket.on("teacher-join-error", data => {
@@ -191,3 +157,4 @@ socket.on("connect", () => {
         });
     }
 });
+

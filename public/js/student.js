@@ -2093,7 +2093,7 @@ socket.on(
         if (info?.classCode) {
 
             studentClassCode =
-                info.classCode;
+                (window.FPTBN_CLB_MODE && info.classCode === "EXAM" ? "CLB" : info.classCode);
 
         }
 

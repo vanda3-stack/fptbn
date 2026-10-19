@@ -1305,6 +1305,17 @@ shareTeacherButton.addEventListener(
                     });
 
 
+            // Reserve the shared room before sending offers to students.
+            if (typeof activeTeacherClass !== "undefined" && activeTeacherClass === "EXAM") {
+                const result = await new Promise((resolve, reject) => {
+                    socket.timeout(8000).emit("teacher-share-started", (error, response) => {
+                        if (error) reject(new Error("Không thể kết nối máy chủ. Vui lòng thử lại."));
+                        else resolve(response);
+                    });
+                });
+                if (!result?.success) throw new Error(result?.message || "Không thể chia sẻ màn hình.");
+            }
+
             // =========================================
             // PREVIEW
             // =========================================
@@ -1340,9 +1351,9 @@ shareTeacherButton.addEventListener(
             // BÁO SERVER
             // =========================================
 
-            socket.emit(
-                "teacher-share-started"
-            );
+            if (typeof activeTeacherClass === "undefined" || activeTeacherClass !== "EXAM") {
+                socket.emit("teacher-share-started");
+            }
 
 
             // =========================================
@@ -1386,6 +1397,9 @@ shareTeacherButton.addEventListener(
                 "Teacher share error:",
                 error
             );
+
+            stopTeacherShare();
+            alert(error.message || "Không thể chia sẻ màn hình. Vui lòng thử lại.");
 
         }
 
@@ -2850,7 +2864,8 @@ endClassButton.addEventListener(
 
         const ok =
             confirm(
-                "Kết thúc lớp học?"
+                typeof activeTeacherClass !== "undefined" && activeTeacherClass === "EXAM"
+                    ? "Rời phòng CLB?" : "Kết thúc lớp học?"
             );
 
 
@@ -3101,4 +3116,5 @@ document.addEventListener("keydown", event => {
     });
     event.preventDefault();
 });
+
 
