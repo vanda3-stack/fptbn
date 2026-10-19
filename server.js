@@ -6158,6 +6158,11 @@ io.on(
                             socket.to(getClassRoom("EXAM")).emit("teacher-share-stopped");
                         }
                         examTeachers.delete(socket.id);
+                        if (examTeachers.size === 0) {
+                            try { resourceStore.clear("EXAM"); }
+                            catch (error) { console.error("Resource cleanup on disconnect failed:", error); }
+                            io.to(getClassRoom("EXAM")).emit("class-resources", []);
+                        }
                         console.log("Exam proctor disconnected:", socket.id, "remaining:", examTeachers.size);
                         return;
                     }
@@ -6179,6 +6184,9 @@ io.on(
                             classCode
                         );
 
+                        try { resourceStore.clear(classCode); }
+                        catch (error) { console.error("Resource cleanup on disconnect failed:", error); }
+                        io.to(getClassRoom(classCode)).emit("class-resources", []);
 
                         socket.to(
                             getClassRoom(

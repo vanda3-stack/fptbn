@@ -111,6 +111,8 @@
     socket.on('resources-cleanup-error',data=>{if(teacher)window.alert(data.message);});
     socket.on('class-resources',render);
     socket.on(teacher?'teacher-ready':'class-info',()=>{if(teacher){reset();status.textContent='';toggle.disabled=false;}render([]);socket.emit('resources-get');});
-    socket.on('disconnect',()=>{close(false);placeStudentResources();if(toggle)toggle.disabled=true;});
+    socket.on('disconnect',()=>{render([]);close(false);if(teacher)reset();if(toggle)toggle.disabled=true;});
+    socket.on('teacher-offline',()=>{render([]);close(false);});
     socket.on('class-ended',()=>{render([]);close(false);});
 })();
+

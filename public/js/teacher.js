@@ -3118,3 +3118,11 @@ document.addEventListener("keydown", event => {
 });
 
 
+
+// pagehide runs after an accepted navigation/close, not when the close prompt is cancelled.
+window.addEventListener("pagehide", () => {
+    if (typeof teacherClassJoined !== "undefined" && teacherClassJoined) socket.disconnect();
+});
+window.addEventListener("pageshow", event => {
+    if (event.persisted && typeof teacherClassJoined !== "undefined" && teacherClassJoined) socket.connect();
+});
