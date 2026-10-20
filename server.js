@@ -12,73 +12,9 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
-// Application flood protection. Edge/network DDoS protection is still required.
-// Never trust forwarded IP headers unless the reverse proxy is explicitly configured.
-if (process.env.TRUST_PROXY) app.set("trust proxy", process.env.TRUST_PROXY.split(",").map(v => v.trim()));
-app.disable("x-powered-by");
-const floodBuckets = new Map();
-function floodAllowed(key, limit, windowMs) {
-    const now = Date.now();
-    let bucket = floodBuckets.get(key);
-    if (!bucket) {
-        // Fail closed rather than allocating unbounded memory under attack.
-        if (floodBuckets.size >= 20000) return false;
-        bucket = { count: 0, until: now + windowMs };
-        floodBuckets.set(key, bucket);
-    } else if (now >= bucket.until) {
-        bucket.count = 0; bucket.until = now + windowMs;
-    }
-    return ++bucket.count <= limit;
-}
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, bucket] of floodBuckets) if (now >= bucket.until) floodBuckets.delete(key);
-}, 30000).unref();
-const allowedOrigins = new Set((process.env.ALLOWED_ORIGINS || "https://fptbnmonitor.online,https://www.fptbnmonitor.online").split(",").map(v => v.trim()));
-let activeApiRequests = 0;
-app.use((req, res, next) => {
-    const ip = req.ip || req.socket.remoteAddress || "unknown";
-    const api = req.path.startsWith("/api/");
-    const login = /\/(login|session-check)$/.test(req.path);
-    const importing = req.path.startsWith("/api/admin/students/import");
-    const reject = () => {
-        res.setHeader("Retry-After", "60");
-        return res.status(429).json({ success: false, message: "Quá nhiều yêu cầu. Vui lòng chờ một phút rồi thử lại." });
-    };
-    // Shared school NAT: deliberately generous IP ceilings, combined with global ceilings.
-    if (!floodAllowed("http:" + ip, 3000, 60000) ||
-        (api && !floodAllowed("api:global", 10000, 60000)) ||
-        (login && !floodAllowed("login:" + ip, 600, 60000)) ||
-        (importing && !floodAllowed("import:global", 3, 60000))) return reject();
-    if (!api) return next();
-    if (activeApiRequests >= 80) {
-        res.setHeader("Retry-After", "5");
-        return res.status(503).json({ success: false, message: "Máy chủ đang bận. Vui lòng thử lại sau." });
-    }
-    activeApiRequests++;
-    let released = false;
-    const release = () => { if (!released) { released = true; activeApiRequests--; } };
-    res.once("finish", release); res.once("close", release);
-    next();
-});
-server.headersTimeout = 15000;
-server.requestTimeout = 30000;
-server.keepAliveTimeout = 5000;
-
 const io = new Server(server, {
-    maxHttpBufferSize: 128 * 1024,
-    perMessageDeflate: false,
-    allowRequest: (req, done) => {
-        const origin = req.headers.origin;
-        // Peer address is intentionally used here; forwarded headers are untrusted.
-        const ip = req.socket.remoteAddress || "unknown";
-        done(null, (!origin || allowedOrigins.has(origin)) &&
-            floodAllowed("handshake:" + ip, 1500, 60000) &&
-            floodAllowed("handshake:global", 2000, 60000) &&
-            io.engine.clientsCount < 1000);
-    },
     cors: {
-        origin: Array.from(allowedOrigins),
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
@@ -122,7 +58,7 @@ const excelUpload = multer({
 // =====================================================
 
 app.use("/api/ot", express.json({ limit: "1mb" }));
-app.use(express.json({ limit: "64kb" }));
+app.use(express.json());
 
 // Public revision addresses. Legacy URLs redirect before static files are served.
 app.get("/ontap", (req, res) => res.sendFile(path.join(__dirname, "public", "OT.html")));
@@ -5045,33 +4981,6 @@ io.on(
     "connection",
     socket => {
 
-        // Packet middleware covers resourceModule and all other event handlers.
-        const packetBuckets = new Map();
-        let violations = 0;
-        socket.use(([event], next) => {
-            const now = Date.now();
-            const group = event === "webrtc-ice" ? "ice" :
-                (event === "webrtc-offer" || event === "webrtc-answer") ? "sdp" :
-                (event === "teacher-join" || event === "student-join") ? "join" : "control";
-            const limits = { ice: [600, 10000], sdp: [160, 10000], join: [6, 60000], control: [100, 10000], all: [900, 10000] };
-            for (const key of [group, "all"]) {
-                const [limit, duration] = limits[key];
-                let bucket = packetBuckets.get(key);
-                if (!bucket || now >= bucket.until) {
-                    bucket = { count: 0, until: now + duration }; packetBuckets.set(key, bucket);
-                }
-                if (++bucket.count > limit) {
-                    if (++violations >= 10) socket.disconnect(true);
-                    return next(new Error("RATE_LIMITED"));
-                }
-            }
-            next();
-        });
-        // Students connect on page load, before entering their code and accepting
-        // the browser screen-sharing prompt. Do not forcibly disconnect this
-        // waiting state: a server disconnect disables Socket.IO auto-reconnect.
-        // Handshake, connection-count and packet limits remain enforced.
-        socket.on("error", () => {}); // Drop rejected packets without per-packet log amplification.
         resourceModule.register(socket, io, resourceStore, getClassRoom);
 
         console.log(
