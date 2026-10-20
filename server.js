@@ -5067,11 +5067,10 @@ io.on(
             }
             next();
         });
-        const joinDeadline = setTimeout(() => {
-            if (!socket.data.role) socket.disconnect(true);
-        }, 30000);
-        joinDeadline.unref();
-        socket.once("disconnect", () => clearTimeout(joinDeadline));
+        // Students connect on page load, before entering their code and accepting
+        // the browser screen-sharing prompt. Do not forcibly disconnect this
+        // waiting state: a server disconnect disables Socket.IO auto-reconnect.
+        // Handshake, connection-count and packet limits remain enforced.
         socket.on("error", () => {}); // Drop rejected packets without per-packet log amplification.
         resourceModule.register(socket, io, resourceStore, getClassRoom);
 
