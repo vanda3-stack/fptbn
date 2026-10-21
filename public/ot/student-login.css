@@ -1,0 +1,24 @@
+#otStudentBadge{display:none}
+body:has(.ot-login-page){background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%),#080f1e;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body:has(.ot-login-page)>header{height:68px;min-height:68px;padding:0 clamp(14px,2vw,32px);box-sizing:border-box;background:rgba(10,19,35,.94);border-bottom:1px solid #233751;box-shadow:0 8px 32px #0003;gap:12px;flex-wrap:nowrap}
+body:has(.ot-login-page) .wordmark .product-name{display:none}
+body:has(.ot-login-page) .wordmark img{height:40px;max-width:125px}
+body:has(.ot-login-page) #identity{display:none}
+body:has(.ot-login-page) #otStudentBadge{display:block;margin-left:auto;background:#132b43;color:#bfdbfe;border:1px solid #315174;border-radius:100px;padding:8px 13px;font-size:12px;font-weight:700;white-space:nowrap}
+main:has(.ot-login-page){width:100%;max-width:none;margin:0;padding:0;box-sizing:border-box}
+.ot-login-page{min-height:calc(100dvh - 68px);display:flex;align-items:center;justify-content:center;padding:28px 16px;box-sizing:border-box}
+.ot-login-card{width:100%;max-width:470px;margin:auto;padding:clamp(24px,4vw,42px);box-sizing:border-box;background:linear-gradient(155deg,#15243b,#0e192b);border:1px solid #344966;border-radius:22px;box-shadow:0 25px 90px #0007,0 0 0 1px #ffffff08 inset}
+.ot-login-brand{display:flex;justify-content:center;align-items:center;margin:0 auto 24px}
+.ot-login-brand img{display:block;width:min(100%,290px);height:auto;max-height:90px;object-fit:contain}
+.ot-login-card h1{text-align:center;font-size:clamp(26px,3vw,34px);font-weight:800;margin:0 0 26px;letter-spacing:-.03em}
+.ot-login-card label{display:block;color:#b9cce5;font-size:13px;font-weight:700;margin-bottom:9px}
+.ot-login-card #code{display:block;width:100%;height:58px;min-height:52px;padding:0 17px;box-sizing:border-box;background:#091526;border:1px solid #38516f;color:#f2f7ff;border-radius:12px;font-size:17px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.ot-login-card #code:focus{border-color:#60a5fa;box-shadow:0 0 0 3px #3b82f633;outline:none}
+.ot-login-card #code::placeholder{color:#64748b}
+.ot-login-card .ot-code-hint{font-size:12px;line-height:1.5;color:#9cafc7;margin:8px 0 0}
+.ot-login-card #otJoinButton{width:100%;min-height:54px;margin-top:22px;border:1px solid #60a5fa66;border-radius:12px;background:linear-gradient(110deg,#1769f4,#368cf9);color:white;box-shadow:0 10px 24px #1253c544;font-size:16px;font-weight:750;padding:10px 15px}
+.ot-login-card #otJoinButton:hover{filter:brightness(1.1)}
+.ot-login-card #otJoinButton:disabled{opacity:.58;cursor:wait}
+.ot-login-card #notice{border-radius:10px;background:#0b1a2d;border:1px solid #263e5b;font-size:12px;line-height:1.5;text-align:center;padding:10px;margin:14px 0 0;color:#94a3b8;overflow-wrap:anywhere}
+.ot-login-card #notice.error{color:#ffb5ac}
+@media(max-width:650px){body:has(.ot-login-page)>header{height:62px;min-height:62px;padding:0 12px}body:has(.ot-login-page) .wordmark img{height:31px}body:has(.ot-login-page) #otStudentBadge{font-size:11px;padding:6px 8px}.ot-login-page{min-height:calc(100dvh - 62px);padding:20px 14px}.ot-login-brand img{width:min(100%,235px)}}
