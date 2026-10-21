@@ -50,6 +50,9 @@ test('protected build serves transformed assets, reuses cache, detects tampering
     fs.writeFileSync(path.join(root, 'public', 'style.css'), 'body{color:blue}');
     const output = preparePublic(root);
     const asset = path.join(output, 'app.js');
+    assert.equal(fs.statSync(output).mode & 0o777, 0o755);
+    assert.equal(fs.statSync(asset).mode & 0o777, 0o644);
+    assert.equal(fs.statSync(path.join(root, '.protected-public-manifest.json')).mode & 0o777, 0o644);
     const stamp = fs.statSync(asset).mtimeMs;
     assert.equal(preparePublic(root), output);
     assert.equal(fs.statSync(asset).mtimeMs, stamp);

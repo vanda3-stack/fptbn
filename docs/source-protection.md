@@ -31,6 +31,11 @@ Thư mục đầu ra cần quyền ghi của tài khoản chạy Node.js. Không
 đồng thời với nhiều tiến trình khởi động; trên cấu hình nhiều worker hãy
 build một lần trước khi khởi động tất cả worker.
 
+Nếu build bằng root và Node.js chạy dưới tài khoản website, bản đầu ra dùng
+quyền thư mục `755` và tệp `644` để tài khoản dịch vụ đọc được. Không cần
+cấp quyền `777` hoặc thay quyền cho `.env`. Với bản đầu ra cũ có quyền
+`700`, chạy lại `npm run build:protected` sau khi lấy bản sửa mới rồi restart.
+
 Nếu LiteSpeed/vPanel đang phục vụ trực tiếp các tệp từ `public/`, cần chuyển
 document root tĩnh sang `.protected-public` hoặc chuyển toàn bộ yêu cầu
 website qua Node.js. Nếu không, các yêu cầu bỏ qua Node.js vẫn đọc mã gốc.
