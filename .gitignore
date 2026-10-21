@@ -6,3 +6,6 @@ node_modules/
 .DS_Store
 
 data/
+.protected-public/
+.protected-public-manifest.json
+.protected-public-build-*/

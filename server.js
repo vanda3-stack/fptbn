@@ -8,6 +8,8 @@ const crypto = require("crypto");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { Server } = require("socket.io");
+const { preparePublic } = require("./lib/protected-public");
+const publicDirectory = preparePublic();
 
 const app = express();
 const server = http.createServer(app);
@@ -61,8 +63,10 @@ app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json());
 
 // Public revision addresses. Legacy URLs redirect before static files are served.
-app.get("/ontap", (req, res) => res.sendFile(path.join(__dirname, "public", "OT.html")));
-app.get("/giaovien", (req, res) => res.sendFile(path.join(__dirname, "public", "GV.html")));
+// These fixed filenames live in a hidden build directory. Permit that parent
+// only for explicit page routes; express.static still denies hidden requests.
+app.get("/ontap", (req, res) => res.sendFile(path.join(publicDirectory, "OT.html"), {dotfiles: "allow"}));
+app.get("/giaovien", (req, res) => res.sendFile(path.join(publicDirectory, "GV.html"), {dotfiles: "allow"}));
 app.get(["/OT.html", "/GV.html"], (req, res) => {
     const queryIndex = req.originalUrl.indexOf("?");
     const query = queryIndex < 0 ? "" : req.originalUrl.slice(queryIndex);
@@ -70,7 +74,7 @@ app.get(["/OT.html", "/GV.html"], (req, res) => {
 });
 
 // Short public address for the CLB student room.
-app.get("/clb", (req, res) => res.sendFile(path.join(__dirname, "public", "clb.html")));
+app.get("/clb", (req, res) => res.sendFile(path.join(publicDirectory, "clb.html"), {dotfiles: "allow"}));
 app.get(["/clb.html", "/exam.html"], (req, res) => {
     const queryIndex = req.originalUrl.indexOf("?");
     const query = queryIndex < 0 ? "" : req.originalUrl.slice(queryIndex);
@@ -79,7 +83,7 @@ app.get(["/clb.html", "/exam.html"], (req, res) => {
 
 app.use(
     express.static(
-        path.join(__dirname, "public")
+        publicDirectory
     )
 );
 
