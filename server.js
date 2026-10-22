@@ -61,6 +61,7 @@ const excelUpload = multer({
 
 app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use(express.json());
+app.get("/present", (req, res) => res.sendFile(path.join(publicDirectory, "present", "index.html"), {dotfiles: "allow"}));
 
 // Public revision addresses. Legacy URLs redirect before static files are served.
 // These fixed filenames live in a hidden build directory. Permit that parent
