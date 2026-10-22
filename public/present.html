@@ -193,10 +193,98 @@ nav{background:#060f20ee;border-bottom:1px solid #35557a55;box-shadow:0 10px 45p
 #visualDialog .visualClose{display:block;margin-left:auto;margin-bottom:10px;background:#2563eb;color:white;border:0;border-radius:8px;padding:9px 15px;cursor:pointer}
 @media(max-width:760px){.studentVisualGrid,.messageShots{grid-template-columns:1fr}.sharePicker{padding:18px}.senderFlow{font-size:12px}}
 
+
+/* Mobile reading layout: compact navigation and uninterrupted vertical flow. */
+.mobileSectionNav{display:none}
+@media(max-width:900px){
+ html{scroll-snap-type:none;scroll-padding-top:132px}
+ nav .nav{height:62px;gap:8px}
+ nav .brand{min-width:0;gap:8px}
+ nav .school-identity img{height:30px;max-width:76px}
+ nav .product-wordmark{font-size:12px;gap:6px}
+ nav .product-icon{display:none}
+ nav .school-brand-divider{display:none}
+ nav .btn{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;font-size:12px;flex-shrink:0;box-shadow:none}
+ .mobileSectionNav{display:block;padding:0 0 10px}
+ .mobileSectionNav select{display:block;width:100%;min-height:44px;padding:10px 35px 10px 12px;border-radius:10px;border:1px solid #375679;background:#10223b;color:#eaf2ff;font:inherit;font-size:14px}
+ .mobileSectionNav label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ .wrap,#interfaces .wrap{width:calc(100% - 32px);max-width:680px}
+ .slide,.learningSlide,.heroLanding{display:block;height:auto;min-height:0;padding:42px 0;overflow:hidden;scroll-snap-align:none}
+ .heroLanding{padding-top:146px;padding-bottom:40px}
+ .heroLandingGrid,.heroGrid,.split,.roles,.adminGrid,.alertShowcase,.teacherAlertShowcase,.remoteShare{grid-template-columns:minmax(0,1fr);gap:24px}
+ .heroCopy h1,.slide h1{font-size:clamp(30px,7.8vw,42px);line-height:1.18;margin:14px 0 18px}
+ .slide h2,.learningSlide h2{font-size:clamp(26px,6.7vw,34px);line-height:1.24;margin:10px 0 16px}
+ .slide h3{line-height:1.4}
+ .slide .eyebrow,.heroCopy .eyebrow{font-size:11px;letter-spacing:.05em;line-height:1.6}
+ .slide .lead,.heroCopy .lead{font-size:16px;line-height:1.75}
+ .heroActions,.studyLinks{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:22px}
+ .slide .btn{min-height:48px;padding:13px 16px;font-size:14px}
+ .heroMetrics{margin-top:24px;padding-top:18px}
+ .heroMetrics b{font-size:22px}.heroMetrics span{font-size:12px;line-height:1.5}
+ .heroVisual{padding:0;perspective:none}.heroBrowser{transform:none}
+ .heroBrowserTop{padding:0 8px;gap:7px}.heroBrowserTop>b{display:none}
+ .heroFloat,.heroScroll,.slideDots,.slideIndex,.ambientOrb{display:none}
+ .slide::before,.slide::after{display:none}
+ .featureGrid,.challengeGrid,.points,.timeline,.flow,.learningSlide .flow,.studentVisualGrid,.messageShots,.realShots{grid-template-columns:minmax(0,1fr);gap:14px;margin-top:22px}
+ .pc,.card,.feature,.step,.challenge,.mile,.teacherAlert{padding:18px}
+ .pc b,.card b,.feature h3,.step b,.challenge b,.mile h3,.teacherAlert b{font-size:17px;line-height:1.45}
+ .pc span,.card p,.feature p,.learningSlide .feature p,.step p,.learningSlide .step p,.challenge p,.mile p,.teacherAlert span,.learningSlide .teacherAlert span,.shareBenefit span,.alertItem span,.shotText span,.previewItem span{font-size:14px;line-height:1.75}
+ .tag,.challenge em,.mile small,.step small{font-size:12px}
+ .caption,.learningNote,.visualSource{font-size:12px;line-height:1.65}
+ .roles .roleLabel{font-size:14px;gap:8px;flex-wrap:wrap}
+ .browser iframe,#interfaces .browser iframe{height:480px}
+ .address{font-size:11px}.browserbar{height:38px}
+ .arch{grid-template-columns:minmax(0,1fr);gap:8px;margin-top:22px}
+ .arch .arrow{font-size:26px;line-height:1.2}
+ .node{padding:18px}.node small{font-size:14px}
+ .realShots .shot{margin:0}.shotText{padding:16px}.shotText b{font-size:16px;line-height:1.5}
+ .studentVisualGrid figcaption{padding:17px}
+ .studentVisualGrid figcaption b{align-items:flex-start;font-size:18px;line-height:1.5}
+ .studentVisualGrid figcaption p,.messageShots figcaption{font-size:15px;line-height:1.7}
+ .studentVisualGrid img,.messageShots img{width:100%;height:auto}
+ .sharePicker{aspect-ratio:auto;min-height:290px;padding:16px}
+ .pickerDialog{padding:16px}.pickerDialog h3{font-size:18px}
+ .pickerTabs{font-size:11px;gap:6px;align-items:flex-start}
+ .entireScreen{padding:18px;margin:14px auto}
+ .senderFlow{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;font-size:14px}
+ .senderFlow span{padding:12px 14px}.senderFlow i{justify-self:center;transform:rotate(90deg);line-height:1.1}
+ .warningMock .studentUi{padding:16px;min-height:0}
+ .warningTop{font-size:11px;gap:10px;flex-wrap:wrap}
+ .warningScreen{display:none}
+ .warningOverlay{position:static;inset:auto;padding:0 16px 16px;background:transparent}
+ .warningCard{width:100%;padding:20px}.warningCard p{font-size:14px;line-height:1.7}
+ .warningButton{font-size:14px;min-height:44px}
+ .alertItem{grid-template-columns:36px minmax(0,1fr);gap:10px;padding:16px}
+ .alertItem .ai{width:36px;height:36px}.alertItem b{font-size:16px}
+ .teacherMock{min-height:0}.tmHead{font-size:12px;gap:10px}
+ .tmGrid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}
+ .tmStudent{font-size:10px;height:100px}
+ .toastStack{position:static;width:auto;padding:0 12px 14px}
+ .toastDemo,.toastDemo b{font-size:13px;line-height:1.6;animation:none}
+ .shareBenefit b{font-size:16px}
+ .cta{padding:24px 18px;margin-top:24px}
+ .cta .btn{display:block;margin:12px 0 0!important}
+ #visualDialog{width:calc(100vw - 16px);max-height:94dvh;padding:8px}
+ #visualDialog .visualClose{min-width:88px;min-height:44px;font-size:14px}
+ #visualDialog img{max-height:calc(94dvh - 75px)}
+ .visualOpen:focus-visible,.mobileSectionNav select:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
+ .reveal{opacity:1;transform:none;transition:none}
+}
+@media(max-width:380px){
+ nav .school-identity img{max-width:58px}
+ nav .product-wordmark{font-size:11px}
+ nav .btn{padding:8px;font-size:11px}
+ .heroMetrics div{padding-right:7px}.heroMetrics div+div{padding-left:9px}
+ .heroMetrics span{font-size:11px}
+ .demoSidebar{width:36px;padding:10px 4px}.demoMainHead>span{display:none}
+ .demoTeacher>span{display:none}
+ .mystery .monitor{width:80px;height:56px}
+}
+
 </style>
 </head>
 <body>
-<nav><div class="wrap nav"><a class="brand" href="#home"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><span class="school-brand-divider" aria-hidden="true"></span><span class="product-wordmark"><span class="product-icon" aria-hidden="true">▣</span><span>FPTBN <em>MONITOR</em></span></span></a><div class="links"><a href="#home">Trang chủ</a><a href="#solution">Giải pháp</a><a href="#interfaces">Giao diện</a><a href="#features">Tính năng</a><a href="#student-journey">HS vào lớp</a><a href="#revision">Ôn tập</a></div><a class="btn" href="/">Trải nghiệm ngay ↗</a></div><div class="navProgress" id="navProgress"></div></nav>
+<nav><div class="wrap nav"><a class="brand" href="#home"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><span class="school-brand-divider" aria-hidden="true"></span><span class="product-wordmark"><span class="product-icon" aria-hidden="true">▣</span><span>FPTBN <em>MONITOR</em></span></span></a><div class="links"><a href="#home">Trang chủ</a><a href="#solution">Giải pháp</a><a href="#interfaces">Giao diện</a><a href="#features">Tính năng</a><a href="#student-journey">HS vào lớp</a><a href="#revision">Ôn tập</a></div><a class="btn" href="/">Trải nghiệm ngay ↗</a></div><div class="wrap mobileSectionNav"><label for="mobileSectionSelect">Chọn nội dung giới thiệu</label><select id="mobileSectionSelect"><option value="">Đi nhanh đến nội dung…</option></select></div><div class="navProgress" id="navProgress"></div></nav>
 
 <section class="slide heroLanding" id="home"><div class="wrap heroLandingGrid"><div class="heroCopy"><div class="eyebrow"><span class="liveDot"></span> NỀN TẢNG HỖ TRỢ LỚP HỌC SỐ · FPT SCHOOLS</div><h1>Giải pháp<br><span class="orangeText">giám sát học tập</span><br>hiện đại<span class="blueText">.</span></h1><p class="lead">Hỗ trợ giáo viên quan sát màn hình học sinh theo thời gian thực, trình chiếu bài giảng tới cả lớp và giao nhiệm vụ và theo dõi tiến độ ôn tập của học sinh.</p><div class="heroActions"><a href="/" class="btn">Trải nghiệm học sinh <span>↗</span></a><a href="/x.html" class="btn secondary">Giao diện giáo viên <span>↗</span></a></div><div class="heroMetrics"><div><b>30</b><span>Màn hình / lớp mục tiêu</span></div><div><b>2 chiều</b><span>Giáo viên ↔ Học sinh</span></div><div><b>Đa môn</b><span>Ứng dụng linh hoạt</span></div></div></div><div class="heroVisual"><div class="heroGlow"></div><div class="heroBrowser"><div class="heroBrowserTop"><div class="heroBrowserDots"><i></i><i></i><i></i></div><span>fptbnmonitor.online/x.html</span><b>● LỚP HỌC ĐANG HOẠT ĐỘNG</b></div><div class="heroDashboard"><aside class="demoSidebar"><div class="demoSidebarLogo">▣</div><div class="demoSideActive">▦ <span>Màn hình lớp học</span></div><div>☷ <span>Danh sách học sinh</span></div><div>◷ <span>Hoạt động</span></div><div>⚙ <span>Cài đặt</span></div></aside><div class="demoMain"><div class="demoMainHead"><strong>Lớp 9A3 <small>● Đang hoạt động</small></strong><span>▦ Lưới &nbsp; ▤ Danh sách</span></div><div class="demoTeacher"><div class="demoTeacherIcon">▣</div><div><b>Màn hình giáo viên</b><small>Chia sẻ bài giảng đến học sinh</small></div><span>TRỰC TIẾP</span></div><div class="demoGrid"><div><i>⌘</i><span>Nguyễn Đức An</span></div><div><i>▤</i><span>Phạm Châu Anh</span></div><div><i>▦</i><span>Nguyễn Gia Bảo</span></div><div><i>⌘</i><span>Nguyễn Văn Cương</span></div><div><i>▤</i><span>Nguyễn Tiến Hải Đăng</span></div><div><i>▥</i><span>Đỗ Linh Giang</span></div><div><i>▦</i><span>Đỗ Đức Hải</span></div><div><i>⌘</i><span>Phạm Minh Hải</span></div><div><i>▤</i><span>Nguyễn Phúc An Khang</span></div></div></div></div></div><div class="heroFloat floatA">✦ <span>Quan sát thời gian thực</span></div><div class="heroFloat floatB">◆ <span>Kết nối lớp học</span></div></div></div><div class="heroScroll">CUỘN ĐỂ KHÁM PHÁ <span>↓</span></div></section>
 <section class="slide" id="problem"><div class="wrap heroGrid"><div><div class="eyebrow">01 · Bài toán thực tế</div><h1>30 máy tính.<br>1 giáo viên.<br><span style="color:#7ce7c8">Cả lớp đang làm gì?</span></h1><p class="lead">Khi mỗi học sinh có một thiết bị riêng, giáo viên cần vừa giảng bài, vừa đảm bảo học sinh đang theo dõi đúng nội dung mà không phải liên tục đi từng bàn.</p><div class="problemCards"><div class="pc"><b>👀 Góc nhìn bị giới hạn</b><span>Phần lớn màn hình học sinh nằm ngoài tầm quan sát trực tiếp.</span></div><div class="pc"><b>🎮 Mất tập trung chỉ trong vài giây</b><span>Một tab mới, trò chơi hay website khác có thể xuất hiện ngay trong giờ học.</span></div><div class="pc"><b>🚶 Đi từng bàn không phải giải pháp</b><span>Mất thời gian và làm gián đoạn nhịp giảng dạy.</span></div></div></div><div class="mystery"><div class="monitor m1">?</div><div class="monitor m2">?</div><div class="monitor m3">?</div><div class="monitor m4">?</div><div class="monitor m5">?</div><div class="q">?</div><div class="person"><div class="head"></div><div class="body"></div></div></div></div></section>
@@ -348,5 +436,18 @@ document.querySelectorAll('.visualOpen').forEach(b=>b.addEventListener('click',(
 d.querySelector('button').addEventListener('click',()=>d.close());
 d.addEventListener('click',e=>{if(e.target===d)d.close()});
 d.addEventListener('close',()=>trigger?.focus());
+})();
+</script><script>
+(()=>{const select=document.getElementById('mobileSectionSelect');if(!select)return;
+document.querySelectorAll('section.slide[id]').forEach(section=>{
+ const label=section.querySelector('.eyebrow')?.textContent.trim()||'Trang chủ';
+ const option=document.createElement('option');option.value=section.id;
+ option.textContent=section.id==='home'?'Trang chủ':label;select.append(option);
+});
+select.addEventListener('change',()=>{if(!select.value)return;
+ const section=document.getElementById(select.value);
+ section?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+ select.value='';
+});
 })();
 </script></body></html>
