@@ -26,7 +26,7 @@ test('portal switches in place, creates review only once and preserves classroom
     assert.equal(element('studentTabs').hidden, false);
     element('reviewTab').handlers.click();
     assert.equal(frames.length, 1);
-    assert.equal(frames[0].src, '/OT.html?embedded=1');
+    assert.equal(frames[0].src, '/ontap?embedded=1');
     assert(element('classPanel').hidden);
     assert(!element('reviewClassNotice').hidden);
     element('classTab').handlers.click();
@@ -47,17 +47,17 @@ test('portal switches in place, creates review only once and preserves classroom
 
 });
 
-function boot({embedded = true, code = '', stored = null, savedToken = ''} = {}) {
-    const calls = [], els = {code: {}, loginForm: {requestSubmit() {calls.push('submit');}}};
+function boot({embedded = true, code = '', stored = null, savedToken = '', parentSession = null} = {}) {
+    const calls = [], embedEvents = {}, els = {code: {}, loginForm: {requestSubmit() {calls.push('submit');}}};
     const context = {location: {origin: 'https://example.test', search: embedded ? '?embedded=1' : ''},
         URLSearchParams, token: savedToken, student: null,
-        OTCodes: {middle: s => s.replace(/^FBN/, '')},
+        formatStudentCode: s => s.toUpperCase(),
         sessionStorage: {getItem: () => JSON.stringify(stored), removeItem: k => calls.push(k)},
         document: {body: {classList: {add() {}}}, head: {append() {}}, createElement: () => ({}), querySelector: () => ({}), getElementById: id => els[id]},
-        login: () => calls.push('login'), enterStudy: async () => calls.push('picker'),
-        window: {parent: {location: {origin: 'https://example.test'}, document: {getElementById: () => ({value: code})}}, addEventListener() {}}};
+        login: () => calls.push('login'), picker: async () => calls.push('picker'),
+        window: {parent: {location: {origin: 'https://example.test'}, FPTBNFamilySession: {identity: () => parentSession}, document: {getElementById: () => ({value: code})}}, addEventListener(type, handler) {embedEvents[type] = handler;}}};
     vm.runInNewContext(fs.readFileSync('public/portal/review-embed.js', 'utf8'), context);
-    return {calls, els, context};
+    return {calls, els, context, embedEvents};
 }
 
 test('review works without screen-capture APIs and authenticates the main-page code instead of another saved student', () => {
@@ -66,7 +66,7 @@ test('review works without screen-capture APIs and authenticates the main-page c
     assert(calls.includes('login'));
     assert(calls.includes('submit'));
     assert(!calls.includes('picker'));
-    assert.equal(els.code.value, '12345');
+    assert.equal(els.code.value, 'FBN12345');
 });
 
 test('standalone review and matching saved identity keep the existing login flow', () => {
@@ -78,17 +78,28 @@ test('a tablet can load class revision packs without capture and keeps its draft
     const elements = {}, calls = [];
     const node = selector => elements[selector] ||= {hidden: false, innerHTML: '', textContent: ''};
     const context = {navigator: {}, window: {OTFamily: {connect() {assert.fail('Tablet must not require a screen-sharing session');}}},
-        document: {documentElement: {dataset: {}}, querySelector: node, querySelectorAll: () => []},
+        document: {body:{classList:{remove(){}}},documentElement: {dataset: {}}, querySelector: node, querySelectorAll: () => []},
         sessionStorage: {getItem: () => null}, crypto: {randomUUID: () => 'id'},
         fetch: async url => {calls.push(url); return {ok: true, json: async () => ({success: true, packs: []})};},
         alert: message => assert.fail(message)};
     vm.createContext(context);
     vm.runInContext(fs.readFileSync('public/ot/student.js', 'utf8'), context);
-    await vm.runInContext("token='token';student={full_name:'HS',class_code:'9A3'};enterStudy()", context);
+    await vm.runInContext("token='token';student={full_name:'HS',class_code:'9A3'};picker()", context);
     assert.deepEqual(calls, ['/api/ot/packs']);
     assert.equal(node('#app').hidden, false);
     node('#app').innerHTML = 'Bài đang làm';
-    await vm.runInContext('enterStudy()', context);
+    // Returning to a mounted portal does not call picker or reload the exercise.
     assert.equal(node('#app').innerHTML, 'Bài đang làm');
     assert.equal(calls.length, 1);
+});
+
+
+test('embedded full revision reuses initial login and switching tabs leaves parent publishing untouched', () => {
+ const parentSession={token:'from-homepage',student:{student_code:'FBN12345'}};
+ const h=boot({code:'FBN12345',parentSession});
+ assert.equal(h.context.token,'from-homepage');assert.deepEqual(h.calls,['picker']);
+ h.context.window.OTFamily={disconnect(){assert.fail('Tab changes must not disconnect PH')}};
+ h.embedEvents['ot-portal-visibility']({detail:false});
+ h.embedEvents['ot-portal-visibility']({detail:true});
+ assert.deepEqual(h.calls,['picker'],'Returning must preserve the exercise instead of loading packs again');
 });

@@ -724,6 +724,7 @@ button.addEventListener(
                     // Stream cũ không còn sử dụng được
                     screenStream = null;
                     window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
+        window.FPTBNFamilySession?.stop();
 
                     // Cập nhật trạng thái cho HS
                     studentStatus.textContent =
@@ -982,6 +983,7 @@ button.addEventListener(
                         screenStream =
                             newStream;
                         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: joinedClass}));
+                        window.FPTBNFamilySession?.start(studentCode, screenStream);
 
 
                         // =============================================
@@ -1034,6 +1036,7 @@ button.addEventListener(
                                 screenStream =
                                     null;
                                 window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
+        window.FPTBNFamilySession?.stop();
 
                                 studentStatus.textContent =
                                     "🔴 ĐÃ DỪNG CHIA SẺ MÀN HÌNH";
@@ -2056,6 +2059,7 @@ socket.on(
         }
 
         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(classroomViewOnly || screenStream?.active)}));
+        window.FPTBNFamilySession?.start(studentCode, screenStream);
 
 
         if (info?.classCode) {
@@ -2154,6 +2158,7 @@ socket.on(
         joinedClass =
             false;
         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
+        window.FPTBNFamilySession?.stop();
 
 
         if (screenStream) {
@@ -2353,6 +2358,7 @@ socket.on(
         joinedClass =
             false;
         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
+        window.FPTBNFamilySession?.stop();
 
 
         // =============================================

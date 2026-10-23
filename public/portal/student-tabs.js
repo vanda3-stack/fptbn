@@ -19,7 +19,7 @@
             frame = document.createElement('iframe');
             frame.id = 'reviewFrame';
             frame.title = 'Ôn tập tại nhà';
-            frame.src = '/OT.html?embedded=1';
+            frame.src = '/ontap?embedded=1';
             frame.allow = 'display-capture; microphone';
             frame.addEventListener('load', () => visibility(!panels[1].hidden));
             document.getElementById('reviewMount').append(frame);

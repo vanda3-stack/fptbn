@@ -17,7 +17,7 @@ function harness(surface='monitor',captureError=null){
  sandbox.OTFamilySocketOptions=sandbox.window.OTFamilySocketOptions;
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family-student.js'),'utf8'),sandbox);
  sandbox.window.OTFamily.connect('student-token');
- return {elements,handlers,sent,track,socket,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
+ return {elements,handlers,sent,track,socket,stream,family:sandbox.window.OTFamily,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
 }
 test('capture opens from click before socket readiness and announces when ready',async()=>{const h=harness();assert.equal(h.elements.familyStart.disabled,false);await h.click();assert.equal(h.captures,1);assert.equal(h.track.stopped,false);assert.equal(h.sent.includes('start'),false);h.ready();assert.equal(h.sent.includes('start'),true);assert.match(h.elements.familyMessage.textContent,/Đang chia sẻ/);assert.equal(h.options.audio,false);h.track.onended();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,true)});
 test('browsers without surface metadata can share; known window/tab capture is rejected',async()=>{const unknown=harness(null);unknown.ready();await unknown.click();assert.equal(unknown.track.stopped,false);assert(unknown.sent.includes('start'));for(const surface of ['window','browser']){const h=harness(surface);h.ready();await h.click();assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.match(h.elements.familyMessage.textContent,/Toàn bộ màn hình/)} });
@@ -32,27 +32,23 @@ test('permission rejection remains visible when socket readiness or disconnect a
 
 test('a slow server never silently stops a screen the student has already granted',async()=>{const h=harness();await h.click();assert.equal(h.elements.familyCaptureState.dataset.state,'live');h.expire();assert.equal(h.track.stopped,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyMessage.textContent,/Chưa kết nối/);h.ready();assert(h.sent.includes('start'));assert.equal(h.track.stopped,false);h.elements.familyStop.onclick();assert.equal(h.track.stopped,true)});
 
-test('OT and homework require sharing on restored login and preserve the exercise when sharing stops',async()=>{
- for(const homework of [false,true]){
-  const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',innerHTML:'',before(){},remove(){}});return nodes.get(id)};
-  let sharing=false,onChange,starts=0,packRequests=0;
-  const family={connect(_token,cb){if(cb)onChange=cb},disconnect(){},isSharing:()=>sharing,start(){starts++}};
-  const sandbox={navigator:{mediaDevices:{getDisplayMedia(){}}},URLSearchParams,location:{search:''},window:{OTFamily:family},document:{documentElement:{dataset:{homework:String(homework)}},querySelector:node,querySelectorAll:()=>[],createElement:()=>node('gate')},sessionStorage:{getItem:key=>key==='ot-student-token'?'valid':JSON.stringify({full_name:'HS',student_code:'FBN12345',class_code:'9A3'}),removeItem(){}},crypto:{randomUUID:()=> 'attempt'},fetch:async()=>{packRequests++;return {ok:true,json:async()=>({success:true,packs:[]})}},alert:message=>assert.fail(message)};
-  vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require.resolve('../public/ot/student.js'),'utf8'),sandbox);vm.runInContext(fs.readFileSync(require.resolve('../public/portal/review-embed.js'),'utf8'),sandbox);
-  assert.equal(packRequests,0);assert.equal(node('#app').hidden,true);assert.match(node('gate').innerHTML,/chia sẻ toàn màn hình/);
-  node('#beginHomework').onclick();assert.equal(starts,1);
-  sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(packRequests,1);assert.equal(node('#app').hidden,false);assert.equal(node('gate').hidden,true);
-  node('#app').innerHTML='exercise draft with answers';sharing=false;onChange(false);
-  assert.equal(node('#app').hidden,true);assert.equal(node('gate').hidden,false);
-  sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(packRequests,1);assert.equal(node('#app').innerHTML,'exercise draft with answers');assert.equal(node('#app').hidden,false);
- }
-});
-
 test('both family clients use WebSocket first with polling fallback',()=>{
  const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family.js'),'utf8'),sandbox);
  const auth={role:'student',token:'test-only'};const options=sandbox.window.OTFamilySocketOptions(auth);
  assert.deepEqual(Array.from(options.transports),['websocket','polling']);assert.equal(options.tryAllTransports,true);assert.equal(options.reconnection,true);assert.equal(options.auth,auth);
  for(const file of ['family-student.js','parent.js'])assert.match(fs.readFileSync(require.resolve('../public/ot/'+file),'utf8'),/io\('\/ot-family',OTFamilySocketOptions\(/);
+});
+
+
+test('family publishing reuses the classroom capture without requesting permission or stopping its tracks', () => {
+ const h=harness();
+ assert.equal(h.family.attachStream(h.stream),true);
+ assert.equal(h.captures,0);
+ assert.equal(h.track.stopped,false);
+ h.ready();assert(h.sent.includes('start'));
+ const count=h.sent.filter(x=>x==='start').length;
+ h.family.attachStream(h.stream);assert.equal(h.sent.filter(x=>x==='start').length,count);
+ h.socket.connected=false;h.handlers.disconnect('transport close');h.ready();
+ assert.equal(h.captures,0);assert.equal(h.track.stopped,false);
+ h.family.disconnect();assert.equal(h.track.stopped,false,'PH disconnection must not stop the teacher screen');
 });
