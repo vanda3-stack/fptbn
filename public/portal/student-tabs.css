@@ -1,12 +1,20 @@
-.student-tabs{display:flex;gap:8px;max-width:1100px;margin:18px auto 0;padding:0 20px}
-.student-tabs button{flex:1;min-height:48px;padding:12px 18px;border:1px solid #38516f;border-radius:12px;background:#101d31;color:#d2e2f7;font-family:inherit;font-size:15px;font-weight:600;line-height:1.4;cursor:pointer}
-.student-tabs button[aria-selected="true"]{background:#1d4ed8;border-color:#60a5fa;color:#fff}
-.student-tabs button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}
+.student-header-tools{display:flex;align-items:center;gap:12px;margin-left:auto;min-width:0}
+.student-tabs{display:flex;align-items:center;gap:4px;flex-shrink:0;margin:0;padding:3px;border:1px solid #38516f;border-radius:11px;background:#101d31}
+.student-tabs button{min-height:32px;padding:6px 12px;border:0;border-radius:8px;background:transparent;color:#d2e2f7;font-family:inherit;font-size:12px;font-weight:600;line-height:1.4;white-space:nowrap;cursor:pointer}
+.student-tabs button[aria-selected="true"]{background:#1d4ed8;color:#fff}
+.student-tabs button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+.header .student-badge{max-width:min(35vw,420px);overflow:hidden;text-overflow:ellipsis}
 #studentTabs[hidden],#classPanel[hidden],#reviewPanel[hidden]{display:none!important}
 #reviewPanel{max-width:1440px;margin:auto;padding:14px 20px 24px}
 .review-intro{color:#b8cbe2;font-size:14px;line-height:1.6;margin:0 0 12px}
-#reviewFrame{display:block;width:100%;height:calc(100dvh - 220px);min-height:560px;border:1px solid #273b56;border-radius:16px;background:#080f1e}
-@media(max-width:650px){.student-tabs{padding:0 12px;margin-top:12px}.student-tabs button{font-size:14px;padding:10px}#reviewPanel{padding:12px}#reviewFrame{min-height:480px;height:calc(100dvh - 240px)}}
-
-#classPanel #joinPage,#classPanel #classroom{min-height:calc(100dvh - 140px)}
-@media(max-width:650px){#classPanel #joinPage,#classPanel #classroom{min-height:calc(100dvh - 128px)}}
+#reviewFrame{display:block;width:100%;height:calc(100dvh - 150px);min-height:480px;border:1px solid #273b56;border-radius:16px;background:#080f1e}
+#classPanel #classroom{min-height:calc(100dvh - 68px)}
+@media(max-width:650px){
+ .header{height:auto;min-height:62px;flex-wrap:wrap;padding:10px 12px;gap:8px}
+ .student-header-tools{width:100%;gap:6px}
+ .student-tabs button{font-size:11px;padding:6px 8px;min-height:30px}
+ .header .student-badge{flex:1;min-width:0;max-width:none;padding:6px 8px;font-size:11px}
+ #reviewPanel{padding:12px}
+ #reviewFrame{min-height:440px;height:calc(100dvh - 190px)}
+ #classPanel #classroom{min-height:calc(100dvh - 110px)}
+}

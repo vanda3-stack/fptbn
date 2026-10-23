@@ -133,6 +133,11 @@ let studentClassName = "";
 let studentSchoolYear = "";
 
 let joinedClass = false;
+let classroomViewOnly = false;
+
+if (typeof navigator.mediaDevices?.getDisplayMedia !== "function") {
+    button.textContent = "Vào lớp học →";
+}
 
 
 // =====================================================
@@ -542,72 +547,82 @@ button.addEventListener(
     // YÊU CẦU CHIA SẺ TOÀN BỘ MÀN HÌNH
     // =========================================
 
-    screenStream =
-        await FPTBNScreenCapture.capture('initial');
-
-
-    const selectedTrack =
-        screenStream.getVideoTracks()[0];
-
-
-    if (!selectedTrack) {
-
-        screenStream
-            .getTracks()
-            .forEach(
-                track => track.stop()
-            );
-
-        screenStream = null;
-
-        throw new Error(
-            "Không lấy được màn hình để chia sẻ."
-        );
-
+    classroomViewOnly = typeof navigator.mediaDevices?.getDisplayMedia !== "function";
+    let selectedTrack = null;
+    if (!classroomViewOnly) {
+        try {
+            screenStream = await FPTBNScreenCapture.capture('initial');
+        } catch (error) {
+            if (error.name !== "NotSupportedError") throw error;
+            classroomViewOnly = true;
+        }
     }
 
-
-    const displaySettings =
-        selectedTrack.getSettings();
-
-
-    console.log(
-        "DISPLAY SETTINGS:",
-        displaySettings
-    );
+    if (!classroomViewOnly) {
+        selectedTrack =
+            screenStream.getVideoTracks()[0];
 
 
-    if (
-        displaySettings.displaySurface !== "monitor"
-    ) {
+        if (!selectedTrack) {
 
-        screenStream
-            .getTracks()
-            .forEach(
-                track => track.stop()
+            screenStream
+                .getTracks()
+                .forEach(
+                    track => track.stop()
+                );
+
+            screenStream = null;
+
+            throw new Error(
+                "Không lấy được màn hình để chia sẻ."
             );
 
-        screenStream = null;
+        }
 
-        alert(
-            "⚠️ BẠN CHƯA CHỌN TOÀN BỘ MÀN HÌNH!\n\n" +
-            "Hãy chọn TOÀN BỘ MÀN HÌNH (Entire Screen).\n" +
-            "Không chọn Tab hoặc Cửa sổ. Nếu trình duyệt không xác định được loại chia sẻ, hãy dùng Chrome phiên bản mới nhất."
+
+        const displaySettings =
+            selectedTrack.getSettings();
+
+
+        console.log(
+            "DISPLAY SETTINGS:",
+            displaySettings
         );
 
-        statusBox.textContent =
-            "🔴 Hãy chia sẻ TOÀN BỘ MÀN HÌNH";
 
-        button.disabled =
-            false;
+        if (
+            displaySettings.displaySurface !== "monitor"
+        ) {
 
-        button.textContent =
-            "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
+            screenStream
+                .getTracks()
+                .forEach(
+                    track => track.stop()
+                );
 
-        return;
+            screenStream = null;
+
+            alert(
+                "⚠️ BẠN CHƯA CHỌN TOÀN BỘ MÀN HÌNH!\n\n" +
+                "Hãy chọn TOÀN BỘ MÀN HÌNH (Entire Screen).\n" +
+                "Không chọn Tab hoặc Cửa sổ. Nếu trình duyệt không xác định được loại chia sẻ, hãy dùng Chrome phiên bản mới nhất."
+            );
+
+            statusBox.textContent =
+                "🔴 Hãy chia sẻ TOÀN BỘ MÀN HÌNH";
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "🖥 Vào lớp & chia sẻ toàn bộ màn hình";
+
+            return;
+
+        }
+
 
     }
-
 
             // =========================================
             // ĐÁNH DẤU ĐÃ VÀO LỚP
@@ -666,7 +681,7 @@ button.addEventListener(
 
 
             studentStatus.textContent =
-                "🟢 GV đang nhận màn hình";
+                classroomViewOnly ? "🟢 Đã vào lớp · Thiết bị không hỗ trợ chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
 
 
             if (studentBadge) {
@@ -690,7 +705,7 @@ button.addEventListener(
             // HS DỪNG SHARE
             // =========================================
 
-            selectedTrack.addEventListener(
+            selectedTrack?.addEventListener(
                 "ended",
                 () => {
 
@@ -1326,7 +1341,7 @@ async function answerStudentScreen(
             ) {
 
                 studentStatus.textContent =
-                    "🟢 GV đang nhận màn hình";
+                    classroomViewOnly ? "🟢 Đã vào lớp · Thiết bị không hỗ trợ chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
 
             }
 
@@ -2040,7 +2055,7 @@ socket.on(
             return;
         }
 
-        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(screenStream?.active)}));
+        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(classroomViewOnly || screenStream?.active)}));
 
 
         if (info?.classCode) {
@@ -2110,6 +2125,10 @@ socket.on(
 
         }
 
+
+        if (classroomViewOnly) {
+            studentStatus.textContent += " • Thiết bị không hỗ trợ chia sẻ màn hình";
+        }
 
         console.log(
             "JOINED CLASS ROOM:",

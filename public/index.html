@@ -950,7 +950,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 @media(max-width:650px) { #classroom #waitingTeacher { font-size:clamp(12px,3.5vw,18px); padding:8px; } }
 </style>
 
-<link rel="stylesheet" href="/portal/student-tabs.css?v=3">
+<link rel="stylesheet" href="/portal/student-tabs.css?v=4">
 </head>
 
 
@@ -966,11 +966,17 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
         <div class="fptbn-product-brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span></div>
 
+        <div class="student-header-tools">
+    <nav id="studentTabs" class="student-tabs" hidden role="tablist" aria-label="Hoạt động học tập">
+        <button id="classTab" role="tab" aria-selected="true" aria-controls="classPanel" type="button">Học tại lớp</button>
+        <button id="reviewTab" role="tab" aria-selected="false" aria-controls="reviewPanel" tabindex="-1" type="button">Ôn tập tại nhà</button>
+    </nav>
         <div
             class="student-badge"
             id="studentBadge"
         >
             👨‍🎓 Học sinh
+        </div>
         </div>
 
 
@@ -1048,10 +1054,6 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
     </main>
 
 
-    <nav id="studentTabs" class="student-tabs" hidden role="tablist" aria-label="Hoạt động học tập">
-        <button id="classTab" role="tab" aria-selected="true" aria-controls="classPanel" type="button">Học tại lớp</button>
-        <button id="reviewTab" role="tab" aria-selected="false" aria-controls="reviewPanel" tabindex="-1" type="button">Ôn tập tại nhà</button>
-    </nav>
     <div id="classPanel" role="tabpanel" aria-labelledby="classTab">
     <!-- ==========================================
          CLASSROOM
@@ -1164,7 +1166,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
     <script src="/js/screen-capture.js?v=20261023d"></script>
     <script
-        src="/js/student.js?v=20261023d"
+        src="/js/student.js?v=20261023mobile"
     ></script>
 
 
