@@ -1,11 +1,11 @@
 'use strict';
 (()=>{
- const el=id=>document.getElementById(id);let socket=null,peer=null,config=null,shareId=null,wanted=false,lastFrames=0,lastAt=0,checkBusy=false;
+ const el=id=>document.getElementById(id);let socket=null,peer=null,config=null,shareId=null,wanted=false,lastFrames=0,lastAt=0,checkBusy=false,earlyCandidates=[];
  const status=text=>el('parentStatus').textContent=text;
- function blank(text){peer?.close();peer=null;el('childScreen').srcObject=null;el('childScreen').hidden=true;el('screenPlaceholder').hidden=false;el('screenPlaceholder').textContent=text;el('expand').disabled=true;lastAt=0;el('lastFrame').textContent=''}
+ function blank(text){earlyCandidates=[];peer?.close();peer=null;el('childScreen').srcObject=null;el('childScreen').hidden=true;el('screenPlaceholder').hidden=false;el('screenPlaceholder').textContent=text;el('expand').disabled=true;lastAt=0;el('lastFrame').textContent=''}
  function unwatch(){wanted=false;socket?.emit('unwatch');blank('Đã dừng xem. Bấm Xem màn hình để kết nối lại.');el('unwatch').hidden=true}
  function logout(){const t=sessionStorage.getItem('ot-parent-token');if(t)fetch('/api/ot/parent/logout',{method:'POST',headers:{Authorization:'Bearer '+t}}).catch(()=>{});socket?.disconnect();socket=null;sessionStorage.removeItem('ot-parent-token');blank('');el('parentLogin').hidden=false;el('parentDashboard').hidden=true;el('parentLogout').hidden=true}
- function connect(token){el('parentLogin').hidden=true;el('parentDashboard').hidden=false;el('parentLogout').hidden=false;status('Đang xác thực và kết nối…');
+ function connect(token){el('parentLogin').hidden=true;el('parentDashboard').hidden=false;el('parentLogout').hidden=false;status('Đang kiểm tra mã và kết nối…');
   socket=io('/ot-family',{auth:{role:'parent',token}});
   socket.on('ready',d=>{config=d.rtcConfig});
   socket.on('status',d=>{
@@ -14,18 +14,21 @@
    if(shareId!==d.shareId){blank('Con đang chia sẻ. Bấm Xem màn hình để theo dõi.');wanted=false;el('unwatch').hidden=true;status('Con đã bắt đầu chia sẻ màn hình.');shareId=d.shareId}
   });
   socket.on('signal',async d=>{if(!wanted||d.shareId!==shareId)return;
-   try{if(d.kind==='offer'){
+   if(d.kind==='candidate'&&!peer){if(earlyCandidates.length<128)earlyCandidates.push(d);return}
+   try{let queued=[];if(d.kind==='offer'){
+    queued=earlyCandidates.filter(c=>c.peer===d.peer);
     blank('Đang kết nối màn hình…');
     peer=new OTFamilyPeer(socket,d.peer,d.shareId,config,{onstream:stream=>{el('childScreen').srcObject=stream;el('childScreen').hidden=false;el('screenPlaceholder').hidden=true;el('expand').disabled=false;lastAt=Date.now();lastFrames=0;el('childScreen').play().catch(()=>status('Chạm vào màn hình để phát.'));},onstate:state=>{if(state==='connected')status('Đang nhận màn hình trực tiếp.');else if(['failed','disconnected','closed'].includes(state)){el('childScreen').hidden=true;el('screenPlaceholder').hidden=false;el('screenPlaceholder').textContent='Kết nối bị gián đoạn. Bấm Kết nối lại.';status('Không nhận được hình trực tiếp.');el('expand').disabled=true;}}});
-   }if(peer?.peer===d.peer)await peer.receive(d.kind,d.data);
+   }if(peer?.peer===d.peer){const current=peer;await current.receive(d.kind,d.data);for(const c of queued)if(peer===current)await current.receive(c.kind,c.data);}
    }catch{blank('Chưa nhận được màn hình. Bấm Kết nối lại.');status('Kết nối chưa thành công.')}
   });
   socket.on('disconnect',()=>{shareId=null;wanted=false;blank('Mất kết nối máy chủ. Đang thử kết nối lại…');el('watch').disabled=true;el('unwatch').hidden=true;status('Mất kết nối máy chủ.')});
   socket.on('connect_error',e=>{blank('Không thể kết nối.');status(e.message);if(/hết hạn|mật khẩu|xác thực|Mã HS/.test(e.message)){logout();el('parentError').textContent=e.message}});
   socket.on('family-error',text=>{logout();el('parentError').textContent=text});
  }
+ OTCodes.bind(el('parentUsername'),true);
  el('parentForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;el('parentError').textContent='';try{
-  const res=await fetch('/api/ot/parent/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:el('parentUsername').value,password:el('parentPassword').value})});const d=await res.json();if(!res.ok||!d.success)throw Error(d.message||'Không thể đăng nhập.');el('parentPassword').value='';sessionStorage.setItem('ot-parent-token',d.token);connect(d.token);
+  const res=await fetch('/api/ot/parent/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:OTCodes.full(el('parentUsername').value,true)})});const d=await res.json();if(!res.ok||!d.success)throw Error(d.message||'Chưa thể mở theo dõi. Em hãy kiểm tra mã.');sessionStorage.setItem('ot-parent-token',d.token);connect(d.token);
  }catch(e){el('parentError').textContent=e.message}finally{b.disabled=false}};
  el('parentLogout').onclick=logout;
  el('watch').onclick=()=>{if(!socket?.connected||!shareId)return;blank('Đang kết nối màn hình…');wanted=true;el('watch').textContent='Kết nối lại';el('unwatch').hidden=false;status('Đang kết nối màn hình…');socket.emit('watch')};

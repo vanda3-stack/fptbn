@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "parent:account": "node scripts/parent-account.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
