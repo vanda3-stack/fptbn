@@ -3,7 +3,7 @@
  let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map();
  const el=id=>document.getElementById(id);
  const captureState=(state,text)=>{const node=el('familyCaptureState');if(node){node.dataset.state=state;node.textContent=text}};
- const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text};
+ const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text;if(el('studyCaptureHelp'))el('studyCaptureHelp').textContent=text};
  function closePeers(){for(const p of peers.values())p.close();peers.clear()}
  function stop(notify=true){const hadCapture=Boolean(stream||starting);generation++;clearInterval(previewTimer);previewTimer=null;currentShare=null;clearTimeout(waitTimer);waitTimer=null;if(notify&&socket?.connected)socket.emit('stop');closePeers();earlyIce.clear();if(stream){for(const t of stream.getTracks()){t.onended=null;t.stop()}stream=null}starting=false;announced=false;if(el('familyStart')){el('familyStart').disabled=false;el('familyStart').textContent='Chia sẻ toàn màn hình cho PH';el('familyStop').hidden=false;el('familyStop').disabled=true;el('familyStop').textContent='Dừng chia sẻ'}const video=el('familyLocalVideo');if(video){video.srcObject=null;video.hidden=true}if(hadCapture)captureState('idle','Chưa chia sẻ màn hình. PH chưa thể xem.');message('Chưa chia sẻ màn hình cho PH.');onSharingChange?.(false)}
  function previews(count){clearInterval(previewTimer);previewTimer=null;if(!count||!stream)return;
@@ -23,7 +23,7 @@
  async function start(){if(starting)return;if(stream){announced=false;if(socket?.connected&&config)announce();else{socket?.connect();message('Màn hình đã được cấp quyền. Đang chờ kết nối lại tới PH.')}return;}starting=true;el('familyStart').disabled=true;const ticket=++generation;let capture;el('familyStop').hidden=false;el('familyStop').disabled=false;el('familyStop').textContent='Hủy yêu cầu chia sẻ';captureState('requesting','Đang chờ em chọn màn hình và bấm Chia sẻ trong hộp thoại trình duyệt.');message('Đang chờ chọn màn hình: chọn Toàn bộ màn hình, bấm vào ảnh màn hình rồi bấm Chia sẻ trong hộp thoại trình duyệt.');
   try{
    if(!window.isSecureContext)throw Error('Em cần mở trang bằng HTTPS để chia sẻ màn hình.');
-   if(!navigator.mediaDevices?.getDisplayMedia)throw Error('Thiết bị này chưa hỗ trợ chia sẻ toàn màn hình trên trình duyệt. Em có thể ôn tập bình thường hoặc dùng máy tính để chia sẻ.');
+   if(!navigator.mediaDevices?.getDisplayMedia)throw Error('Thiết bị này chưa hỗ trợ chia sẻ toàn màn hình trên trình duyệt. Em cần dùng máy tính có hỗ trợ chia sẻ màn hình để vào phiên ôn tập cùng PH.');
    // Keep this call in the click handler, before waiting for any network activity.
    capture=await FPTBNScreenCapture.capture();
    if(ticket!==generation){capture.getTracks().forEach(t=>t.stop());return}

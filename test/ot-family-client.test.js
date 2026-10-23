@@ -28,3 +28,21 @@ test('homework and classroom load the same screen capture helper with the origin
 test('permission rejection remains visible when socket readiness or disconnect arrives',async()=>{const h=harness('monitor',Object.assign(Error('denied'),{name:'NotAllowedError'}));await h.click();assert.equal(h.elements.familyCaptureState.dataset.state,'error');const notice=h.elements.familyCaptureState.textContent;h.ready();assert.equal(h.elements.familyCaptureState.textContent,notice);h.handlers.disconnect();assert.equal(h.elements.familyCaptureState.textContent,notice);assert(!h.sent.includes('start'))});
 
 test('a slow server never silently stops a screen the student has already granted',async()=>{const h=harness();await h.click();assert.equal(h.elements.familyCaptureState.dataset.state,'live');h.expire();assert.equal(h.track.stopped,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyMessage.textContent,/Chưa kết nối/);h.ready();assert(h.sent.includes('start'));assert.equal(h.track.stopped,false);h.elements.familyStop.onclick();assert.equal(h.track.stopped,true)});
+
+test('OT and homework require sharing on restored login and preserve the exercise when sharing stops',async()=>{
+ for(const homework of [false,true]){
+  const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',innerHTML:'',before(){},remove(){}});return nodes.get(id)};
+  let sharing=false,onChange,starts=0,packRequests=0;
+  const family={connect(_token,cb){if(cb)onChange=cb},disconnect(){},isSharing:()=>sharing,start(){starts++}};
+  const sandbox={window:{OTFamily:family},document:{documentElement:{dataset:{homework:String(homework)}},querySelector:node,querySelectorAll:()=>[],createElement:()=>node('gate')},sessionStorage:{getItem:key=>key==='ot-student-token'?'valid':JSON.stringify({full_name:'HS',student_code:'FBN12345',class_code:'9A3'}),removeItem(){}},crypto:{randomUUID:()=> 'attempt'},fetch:async()=>{packRequests++;return {ok:true,json:async()=>({success:true,packs:[]})}},alert:message=>assert.fail(message)};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/student.js'),'utf8'),sandbox);
+  assert.equal(packRequests,0);assert.equal(node('#app').hidden,true);assert.match(node('gate').innerHTML,/chia sẻ toàn màn hình/);
+  node('#beginHomework').onclick();assert.equal(starts,1);
+  sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(packRequests,1);assert.equal(node('#app').hidden,false);assert.equal(node('gate').hidden,true);
+  node('#app').innerHTML='exercise draft with answers';sharing=false;onChange(false);
+  assert.equal(node('#app').hidden,true);assert.equal(node('gate').hidden,false);
+  sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(packRequests,1);assert.equal(node('#app').innerHTML,'exercise draft with answers');assert.equal(node('#app').hidden,false);
+ }
+});
