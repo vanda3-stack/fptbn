@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-const codes=require('../public/ot/codes');
+const codes=require('../public/ot/codes'),capture=require('../public/js/screen-capture');
 test('fixed FBN/PH affixes normalize lowercase, full pasted codes and whitespace',()=>{
  assert.equal(codes.full('12345'),'FBN12345');assert.equal(codes.full(' fbn12345 '),'FBN12345');
  assert.equal(codes.full('fbn12345ph',true),'FBN12345PH');assert.equal(codes.full('12345ph',true),'FBN12345PH');
@@ -12,6 +12,7 @@ function harness(surface='monitor'){
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};let captures=0,options,active=false;
  const socket={connected:false,on:(name,fn)=>handlers[name]=fn,emit:(name)=>sent.push(name),timeout(){return {emit:(name,cb)=>{sent.push(name);cb(null,{shareId:'share-1'})}}},disconnect(){this.connected=false}};
  const sandbox={window:{isSecureContext:true,addEventListener(){}},document:{getElementById:id=>elements[id],querySelector:()=>({after(){}}),createElement:()=>({remove(){}})},navigator:{mediaDevices:{getDisplayMedia:async o=>{assert(active,'capture must be called directly from click');captures++;options=o;return stream}}},io:()=>socket,setTimeout:()=>1,clearTimeout(){},setInterval:()=>2,clearInterval(){}};
+ sandbox.FPTBNScreenCapture={capture:()=>sandbox.navigator.mediaDevices.getDisplayMedia(capture.constraints())};
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family-student.js'),'utf8'),sandbox);
  sandbox.window.OTFamily.connect('student-token');
  return {elements,handlers,sent,track,socket,get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
@@ -21,3 +22,5 @@ test('browsers without surface metadata can share; known window/tab capture is r
 test('disconnect stops capture and clears the sharing state',async()=>{const h=harness();h.ready();await h.click();h.socket.connected=false;h.handlers.disconnect();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.match(h.elements.familyMessage.textContent,/mất kết nối/)});
 
 test('stop remains available while choosing a screen and cancels late capture',async()=>{const h=harness();const pending=h.click();assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyStop.textContent,/Hủy/);h.elements.familyStop.onclick();await pending;assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.equal(h.elements.familyStop.disabled,true)});
+
+test('homework and classroom load the same screen capture helper with the original classroom constraints',()=>{const c=capture.constraints();assert.equal(c.video.frameRate.max,3);assert.equal(c.video.width.max,960);assert.equal(c.video.height.max,540);assert.equal(c.video.displaySurface,'monitor');assert.equal(c.selfBrowserSurface,'exclude');assert.equal(c.audio,false);assert.equal(capture.constraints('retry').video.frameRate.max,6);for(const name of ['index.html','exam.html','baitap.html','OT.html']){const html=fs.readFileSync(require('node:path').join(__dirname,'../public',name),'utf8');assert(html.indexOf('/js/screen-capture.js')<html.indexOf(name==='index.html'||name==='exam.html'?'/js/student.js':'/ot/family-student.js'))}});

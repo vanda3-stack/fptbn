@@ -543,38 +543,7 @@ button.addEventListener(
     // =========================================
 
     screenStream =
-        await navigator.mediaDevices.getDisplayMedia({
-
-            video: {
-
-                displaySurface: "monitor",
-
-                frameRate: {
-                    ideal: 3,
-                    max: 3
-                },
-
-                width: {
-                    ideal: 854,
-                    max: 960
-                },
-
-                height: {
-                    ideal: 480,
-                    max: 540
-                }
-
-            },
-
-            audio: false,
-
-            preferCurrentTab: false,
-
-            selfBrowserSurface: "exclude",
-
-            surfaceSwitching: "exclude"
-
-        });
+        await FPTBNScreenCapture.capture('initial');
 
 
     const selectedTrack =
@@ -923,28 +892,7 @@ button.addEventListener(
                         // =============================================
 
                         const newStream =
-                            await navigator.mediaDevices.getDisplayMedia({
-
-                                video: {
-
-                                    displaySurface: "monitor",
-
-                                    frameRate: {
-                                        ideal: 5,
-                                        max: 6
-                                    }
-
-                                },
-
-                                audio: false,
-
-                                preferCurrentTab: false,
-
-                                selfBrowserSurface: "exclude",
-
-                                surfaceSwitching: "exclude"
-
-                            });
+                            await FPTBNScreenCapture.capture('retry');
 
 
                         // =============================================

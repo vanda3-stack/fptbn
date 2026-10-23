@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),http=require('node:http'),express=require('express'),{Server}=require('socket.io');
 const {io:client}=require(require('node:path').join(require.resolve('socket.io'), '../../client-dist/socket.io.js'));
-function event(socket,name){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{socket.off(name,done);reject(Error('Timeout: '+name))},2000);function done(data){clearTimeout(timer);resolve(data)}socket.once(name,done)})}
+function event(socket,name,predicate=()=>true){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{socket.off(name,done);reject(Error('Timeout: '+name))},2000);function done(data){if(!predicate(data))return;socket.off(name,done);clearTimeout(timer);resolve(data)}socket.on(name,done)})}
 const pause=()=>new Promise(r=>setTimeout(r,60));
 test('family API and signaling bind parents to their child and revoke ended shares',async()=>{
  const app=express(),server=http.createServer(app),io=new Server(server);app.use(express.json());
@@ -23,21 +23,23 @@ test('family API and signaling bind parents to their child and revoke ended shar
   const image='data:image/jpeg;base64,YQ==';
   sa.emit('preview',{shareId:started.shareId,image});await pause();assert.equal(previewsA,0);
   let receivedA=0,receivedB=0;pa.on('signal',()=>receivedA++);pb.on('signal',()=>receivedB++);
-  sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'before watch'}});await pause();assert.equal(receivedA,0);
-  const watching=event(sa,'watch');pa.emit('watch');const w=await watching;assert.equal(w.peer,pa.id);
-  const needed=event(sa,'preview-needed');pa.emit('request-preview',true);assert.equal((await needed).count,1);
+  let offers=0,otherOffers=0;sa.on('signal',()=>offers++);sb.on('signal',()=>otherOffers++);
+  pa.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'before watch'}});await pause();assert.equal(offers,0);
+  const watching=event(pa,'watch');pa.emit('watch');const w=await watching;assert.equal(w.peer,sa.id);
+  const needed=event(sa,'preview-needed',d=>d.count===1);pa.emit('request-preview',true);assert.equal((await needed).count,1);
   const receivedImage=event(pa,'preview');sa.emit('preview',{shareId:started.shareId,image});assert.equal((await receivedImage).image,image);await pause();assert.equal(previewsA,1);assert.equal(previewsB,0);
   sb.emit('preview',{shareId:started.shareId,image});await pause();assert.equal(previewsA,1);
-  sa.emit('signal',{peer:pb.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'other child'}});
-  const delivered=event(pa,'signal');sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'correct child'}});assert.equal((await delivered).data.sdp,'correct child');await pause();assert.equal(receivedB,0);
-  let answerCount=0;sa.on('signal',()=>answerCount++);pb.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'answer',data:{sdp:'attack'}});await pause();assert.equal(answerCount,0);
+  pa.emit('signal',{peer:sb.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'other child'}});
+  const delivered=event(sa,'signal');pa.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'correct child'}});assert.equal((await delivered).data.sdp,'correct child');await pause();assert.equal(otherOffers,0);
+  const answered=event(pa,'signal');sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'answer',data:{type:'answer',sdp:'student screen'}});assert.equal((await answered).data.sdp,'student screen');assert.equal(receivedA,1);assert.equal(receivedB,0);
+  pb.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'offer',data:{sdp:'attack'}});await pause();assert.equal(offers,1);
   sa.emit('stop');await pause();assert.equal(states.at(-1).sharing,false);
-  sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'offer',data:{sdp:'old'}});await pause();assert.equal(receivedA,1);
+  sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'answer',data:{sdp:'old'}});await pause();assert.equal(receivedA,1);
   const again=await new Promise(r=>sa.emit('start',r));assert.notEqual(again.shareId,started.shareId);
   const sa2=await connect('student','FBN001');await pause();assert.equal(states.at(-1).shareId,again.shareId);
   const replaced=event(sa,'share-replaced'),newShare=await new Promise(r=>sa2.emit('start',r));await replaced;await pause();assert.equal(states.at(-1).shareId,newShare.shareId);
   sa.disconnect();await pause();assert.equal(states.at(-1).sharing,true);
-  const activeWatch=event(sa2,'watch');pa.emit('watch');await activeWatch;pa.emit('request-preview',true);await pause();
+  const activeWatch=event(pa,'watch');pa.emit('watch');await activeWatch;pa.emit('request-preview',true);await pause();
   sa2.emit('preview',{shareId:again.shareId,image});await pause();assert.equal(previewsA,1);
   const newImage=event(pa,'preview');sa2.emit('preview',{shareId:newShare.shareId,image});await newImage;assert.equal(previewsA,2);
   const left=event(sa2,'peer-left');pa.emit('unwatch');await left;

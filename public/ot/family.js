@@ -1,10 +1,11 @@
 'use strict';
 // Both clients queue trickled ICE until the remote SDP is applied.
 window.OTFamilyPeer=class {
- constructor(socket,peer,shareId,config,{stream,onstream,onstate}={}){
+ constructor(socket,peer,shareId,config,{stream,receiveOnly,onstream,onstate}={}){
   this.socket=socket;this.peer=peer;this.shareId=shareId;this.pending=[];this.closed=false;
   this.pc=new RTCPeerConnection(config);
   if(stream)for(const track of stream.getTracks())this.pc.addTrack(track,stream);
+  if(receiveOnly)this.pc.addTransceiver('video',{direction:'recvonly'});
   this.pc.onicecandidate=e=>{if(e.candidate)this.send('candidate',e.candidate.toJSON())};
   this.pc.ontrack=e=>onstream?.(e.streams[0]||new MediaStream([e.track]));
   this.pc.onconnectionstatechange=()=>onstate?.(this.pc.connectionState);
