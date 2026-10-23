@@ -37,8 +37,8 @@ test('OT and homework require sharing on restored login and preserve the exercis
   const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',innerHTML:'',before(){},remove(){}});return nodes.get(id)};
   let sharing=false,onChange,starts=0,packRequests=0;
   const family={connect(_token,cb){if(cb)onChange=cb},disconnect(){},isSharing:()=>sharing,start(){starts++}};
-  const sandbox={window:{OTFamily:family},document:{documentElement:{dataset:{homework:String(homework)}},querySelector:node,querySelectorAll:()=>[],createElement:()=>node('gate')},sessionStorage:{getItem:key=>key==='ot-student-token'?'valid':JSON.stringify({full_name:'HS',student_code:'FBN12345',class_code:'9A3'}),removeItem(){}},crypto:{randomUUID:()=> 'attempt'},fetch:async()=>{packRequests++;return {ok:true,json:async()=>({success:true,packs:[]})}},alert:message=>assert.fail(message)};
-  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/student.js'),'utf8'),sandbox);
+  const sandbox={navigator:{mediaDevices:{getDisplayMedia(){}}},URLSearchParams,location:{search:''},window:{OTFamily:family},document:{documentElement:{dataset:{homework:String(homework)}},querySelector:node,querySelectorAll:()=>[],createElement:()=>node('gate')},sessionStorage:{getItem:key=>key==='ot-student-token'?'valid':JSON.stringify({full_name:'HS',student_code:'FBN12345',class_code:'9A3'}),removeItem(){}},crypto:{randomUUID:()=> 'attempt'},fetch:async()=>{packRequests++;return {ok:true,json:async()=>({success:true,packs:[]})}},alert:message=>assert.fail(message)};
+  vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require.resolve('../public/ot/student.js'),'utf8'),sandbox);vm.runInContext(fs.readFileSync(require.resolve('../public/portal/review-embed.js'),'utf8'),sandbox);
   assert.equal(packRequests,0);assert.equal(node('#app').hidden,true);assert.match(node('gate').innerHTML,/chia sẻ toàn màn hình/);
   node('#beginHomework').onclick();assert.equal(starts,1);
   sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
