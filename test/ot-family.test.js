@@ -47,3 +47,32 @@ test('family API and signaling bind parents to their child and revoke ended shar
   const secondStates=[];pb.on('status',s=>secondStates.push(s));await new Promise(r=>sb.emit('start',r));await pause();sb.disconnect();await pause();assert.equal(secondStates.at(-1).sharing,false);
  }finally{for(const s of sockets)s.disconnect();mounted.close();await new Promise(r=>io.close(r));server.close()}
 });
+
+test('teacher presence revokes active parent viewing and denies signaling and previews until the class is free', async () => {
+ const app=express(),server=http.createServer(app),io=new Server(server);app.use(express.json());
+ const child={id:1,student_code:'FBN12345',full_name:'HS',class_code:'9A3'};
+ let teacherPresent=false;
+ const mounted=require('../lib/ot-family')(app,{io,db:{},lookup:async code=>{assert.equal(code,child.student_code);return child},authenticateStudent:async()=>child,isParentViewingBlocked:()=>teacherPresent});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port,sockets=[];
+ async function connect(role,token){const s=client(url+'/ot-family',{auth:{role,token},transports:['websocket'],autoConnect:false,reconnection:false});sockets.push(s);const ready=event(s,'ready');s.connect();await ready;return s}
+ try{
+  const response=await fetch(url+'/api/ot/parent/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'FBN12345PH'})});
+  const login=await response.json(),student=await connect('student','student'),parent=await connect('parent',login.token);
+  const started=await new Promise(r=>student.emit('start',r));
+  const watching=event(parent,'watch');parent.emit('watch');await watching;
+  let offers=0,images=0,watches=0;student.on('signal',()=>offers++);parent.on('preview',()=>images++);parent.on('watch',()=>watches++);
+  const denied=event(parent,'status',d=>d.blocked===true),closePeer=event(student,'parent-access',d=>d.blocked===true);
+  teacherPresent=true;mounted.refreshAccess();
+  const state=await denied;await closePeer;assert.equal(state.sharing,false);assert.equal(state.shareId,null);assert.match(state.message,/đang học trên lớp/);
+  parent.emit('watch');parent.emit('request-preview',true);
+  parent.emit('signal',{peer:student.id,shareId:started.shareId,kind:'offer',data:{sdp:'blocked'}});
+  student.emit('preview',{shareId:started.shareId,image:'data:image/jpeg;base64,YQ=='});
+  await pause();assert.equal(offers,0);assert.equal(images,0);assert.equal(watches,0);
+  const resumed=event(parent,'status',d=>d.blocked===false&&d.sharing===true);
+  teacherPresent=false;mounted.refreshAccess();await resumed;
+  // Old viewing authorization was cleared even though the original capture remains available.
+  parent.emit('signal',{peer:student.id,shareId:started.shareId,kind:'offer',data:{sdp:'not reauthorized'}});await pause();assert.equal(offers,0);
+  const watchingAgain=event(parent,'watch');parent.emit('watch');await watchingAgain;
+  const offered=event(student,'signal');parent.emit('signal',{peer:student.id,shareId:started.shareId,kind:'offer',data:{sdp:'resumed'}});assert.equal((await offered).data.sdp,'resumed');
+ }finally{for(const s of sockets)s.disconnect();mounted.close();await new Promise(r=>io.close(r));server.close()}
+});

@@ -1,12 +1,12 @@
 'use strict';
 (()=>{
- let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0,streamOwned=true,externalEndedCleanup=null;
+ let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0,streamOwned=true,externalEndedCleanup=null,accessBlocked=false;
  const el=id=>document.getElementById(id);
  const captureState=(state,text)=>{const node=el('familyCaptureState');if(node){node.dataset.state=state;node.textContent=text}};
  const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text;if(el('studyCaptureHelp'))el('studyCaptureHelp').textContent=text};
  function closePeers(){for(const p of peers.values())p.close();peers.clear()}
  function stop(notify=true){const hadCapture=Boolean(stream||starting);generation++;clearInterval(previewTimer);previewTimer=null;currentShare=null;clearTimeout(waitTimer);waitTimer=null;if(notify&&socket?.connected)socket.emit('stop');closePeers();earlyIce.clear();externalEndedCleanup?.();externalEndedCleanup=null;if(stream){if(streamOwned)for(const t of stream.getTracks()){t.onended=null;t.stop()}stream=null}streamOwned=true;starting=false;announced=false;if(el('familyStart')){el('familyStart').disabled=false;el('familyStart').textContent='Chia sẻ toàn màn hình cho PH';el('familyStop').hidden=false;el('familyStop').disabled=true;el('familyStop').textContent='Dừng chia sẻ'}const video=el('familyLocalVideo');if(video){video.srcObject=null;video.hidden=true}if(hadCapture)captureState('idle','Chưa chia sẻ màn hình. PH chưa thể xem.');message('Chưa chia sẻ màn hình cho PH.');onSharingChange?.(false)}
- function previews(count){clearInterval(previewTimer);previewTimer=null;if(!count||!stream)return;
+ function previews(count){clearInterval(previewTimer);previewTimer=null;if(accessBlocked||!count||!stream)return;
   const frame=()=>{const video=el('familyLocalVideo');if(!stream||!currentShare||!socket?.connected||!video?.videoWidth)return;try{const canvas=document.createElement('canvas'),scale=Math.min(1,960/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);let image=canvas.toDataURL('image/jpeg',.45);if(image.length>80000)image=canvas.toDataURL('image/jpeg',.2);if(image.length<=80000)socket.volatile.emit('preview',{shareId:currentShare,image})}catch{}};
   frame();previewTimer=setInterval(frame,2000);
  }
@@ -45,11 +45,12 @@
   if(typeof io!=='function'){message('Chưa tải được chức năng chia sẻ. Em hãy tải lại trang.');return}
   socket=io('/ot-family',OTFamilySocketOptions({role:'student',token}));
   socket.on('ready',d=>{config=d.rtcConfig;if(stream)announce();else{el('familyStart').disabled=starting;message('Sẵn sàng. Em bấm chia sẻ và chọn Toàn bộ màn hình.')}});
+  socket.on('parent-access',d=>{accessBlocked=d.blocked===true;if(accessBlocked){clearInterval(previewTimer);previewTimer=null;closePeers();earlyIce.clear();message(d.message)}else if(stream){message('Đang chia sẻ màn hình tới PH.')}});
   socket.on('preview-needed',d=>previews(d.count));
   socket.on('share-replaced',()=>{stop(false);message('Đã dừng chia sẻ vì em bắt đầu chia sẻ ở một tab khác.')});
   socket.on('viewers',d=>{if(stream)message('Đang chia sẻ màn hình · '+d.count+' thiết bị đang yêu cầu xem.')});
   socket.on('signal',async d=>{
-   if(!stream)return;if(!currentShare&&announced)currentShare=d.shareId;if(d.shareId!==currentShare)return;
+   if(accessBlocked||!stream)return;if(!currentShare&&announced)currentShare=d.shareId;if(d.shareId!==currentShare)return;
    let p=peers.get(d.peer);
    if(d.kind==='candidate'&&!p){const queue=earlyIce.get(d.peer)||[];if(queue.length<128)queue.push(d.data);earlyIce.set(d.peer,queue);return}
    try{

@@ -951,7 +951,9 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 </style>
 
 <link rel="stylesheet" href="/portal/student-tabs.css?v=7">
-<link rel="stylesheet" href="/ot/family.css?v=unified1"></head>
+<link rel="stylesheet" href="/ot/family.css?v=unified1"><style>
+.student-code-input{display:flex;align-items:stretch;background:#091526;border:1px solid #38516f;border-radius:12px;overflow:hidden}.student-code-input>span{display:flex;align-items:center;padding:0 15px;color:#cfe2ff;font-weight:700;border-right:1px solid #38516f}.student-code-input:focus-within{outline:2px solid #60a5fa;outline-offset:2px}#joinPage .student-code-input #studentCode{flex:1;min-width:0;width:0;margin:0;border:0;border-radius:0;box-shadow:none}#status[hidden]{display:none!important}
+</style></head>
 
 
 <body>
@@ -1012,16 +1014,10 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
                 Mã học sinh
             </label>
 
-            <input
-                id="studentCode"
-                type="text"
-                placeholder="FBN12345"
-                autocomplete="off"
-                autocapitalize="characters"
-                spellcheck="false"
-                maxlength="8"
-                inputmode="text"
-            >
+            <div class="student-code-input">
+                <span aria-hidden="true">FBN</span>
+                <input id="studentCode" type="text" placeholder="12345" autocomplete="off" spellcheck="false" maxlength="5" inputmode="numeric" pattern="[0-9]{5}" aria-label="Năm chữ số của mã học sinh">
+            </div>
 
             <!-- ==================================
                  JOIN BUTTON
@@ -1039,8 +1035,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
                  SERVER STATUS
             =================================== -->
 
-            <p class="family-consent">Khi chia sẻ toàn màn hình, PH có mã truy cập của em cũng có thể xem trực tiếp, kể cả khi em đang ở tab Học tại lớp.</p>
-            <div id="status">
+            <div id="status" hidden role="status">
                 🟡 Đang kết nối máy chủ...
             </div>
 
@@ -1167,10 +1162,10 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
     <script src="/js/screen-capture.js?v=20261023d"></script>
     <script src="/ot/family.js?v=20261023g"></script>
-    <script src="/ot/family-student.js?v=unified1"></script>
+    <script src="/ot/family-student.js?v=access8"></script>
     <script src="/portal/family-session.js?v=1"></script>
     <script
-        src="/js/student.js?v=devices1"
+        src="/js/student.js?v=login8"
     ></script>
 
 

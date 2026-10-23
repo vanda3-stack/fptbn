@@ -4,20 +4,21 @@ const codes=require('../public/ot/codes'),capture=require('../public/js/screen-c
 test('fixed FBN/PH affixes normalize lowercase, full pasted codes and whitespace',()=>{
  assert.equal(codes.full('12345'),'FBN12345');assert.equal(codes.full(' fbn12345 '),'FBN12345');
  assert.equal(codes.full('fbn12345ph',true),'FBN12345PH');assert.equal(codes.full('12345ph',true),'FBN12345PH');
- const handlers={},input={value:'fbn12abph',addEventListener:(name,fn)=>handlers[name]=fn};codes.bind(input,true);assert.equal(input.value,'12AB');input.value='fbn12345ph';handlers.input();assert.equal(input.value,'12345');
+ const handlers={},input={value:'fbn12abph',addEventListener:(name,fn)=>handlers[name]=fn};codes.bind(input,true);assert.equal(input.value,'12');input.value='fbn12345ph';handlers.input();assert.equal(input.value,'12345');
 });
 function harness(surface='monitor',captureError=null){
  const elements=Object.fromEntries(['familyStart','familyStop','familyMessage','familyCaptureState'].map(id=>[id,{disabled:false,hidden:true,textContent:'',dataset:{}}]));
- const handlers={},sent=[],track={stopped:false,stop(){this.stopped=true},getSettings:()=>surface===null?{}:{displaySurface:surface}};
+ const createdPeers=[];const handlers={},sent=[],track={stopped:false,stop(){this.stopped=true},getSettings:()=>surface===null?{}:{displaySurface:surface}};
  const stream={getTracks:()=>[track],getVideoTracks:()=>[track]};let captures=0,options,active=false;const timers=[];
  const socket={connected:false,on:(name,fn)=>handlers[name]=fn,emit:(name)=>sent.push(name),timeout(){return {emit:(name,cb)=>{sent.push(name);cb(null,{shareId:'share-1'})}}},disconnect(){this.connected=false}};
  const sandbox={window:{isSecureContext:true,addEventListener(){}},document:{getElementById:id=>elements[id],querySelector:()=>({after(){}}),createElement:()=>({remove(){}})},navigator:{mediaDevices:{getDisplayMedia:async o=>{assert(active,'capture must be called directly from click');captures++;options=o;if(captureError)throw captureError;return stream}}},io:()=>socket,setTimeout:fn=>{timers.push(fn);return timers.length},clearTimeout(){},setInterval:()=>2,clearInterval(){}};
+ sandbox.OTFamilyPeer=class {constructor(_socket,_peer,shareId){this.shareId=shareId;createdPeers.push(this)}async receive(){}close(){this.closed=true}};
  sandbox.FPTBNScreenCapture={capture:()=>sandbox.navigator.mediaDevices.getDisplayMedia(capture.constraints())};
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family.js'),'utf8'),sandbox);
  sandbox.OTFamilySocketOptions=sandbox.window.OTFamilySocketOptions;
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family-student.js'),'utf8'),sandbox);
  sandbox.window.OTFamily.connect('student-token');
- return {elements,handlers,sent,track,socket,stream,family:sandbox.window.OTFamily,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
+ return {elements,handlers,sent,track,socket,stream,createdPeers,family:sandbox.window.OTFamily,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
 }
 test('capture opens from click before socket readiness and announces when ready',async()=>{const h=harness();assert.equal(h.elements.familyStart.disabled,false);await h.click();assert.equal(h.captures,1);assert.equal(h.track.stopped,false);assert.equal(h.sent.includes('start'),false);h.ready();assert.equal(h.sent.includes('start'),true);assert.match(h.elements.familyMessage.textContent,/Đang chia sẻ/);assert.equal(h.options.audio,false);h.track.onended();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,true)});
 test('browsers without surface metadata can share; known window/tab capture is rejected',async()=>{const unknown=harness(null);unknown.ready();await unknown.click();assert.equal(unknown.track.stopped,false);assert(unknown.sent.includes('start'));for(const surface of ['window','browser']){const h=harness(surface);h.ready();await h.click();assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.match(h.elements.familyMessage.textContent,/Toàn bộ màn hình/)} });
@@ -51,4 +52,18 @@ test('family publishing reuses the classroom capture without requesting permissi
  h.socket.connected=false;h.handlers.disconnect('transport close');h.ready();
  assert.equal(h.captures,0);assert.equal(h.track.stopped,false);
  h.family.disconnect();assert.equal(h.track.stopped,false,'PH disconnection must not stop the teacher screen');
+});
+
+
+test('teacher access block closes existing PH peers without stopping the classroom capture', async () => {
+ const h=harness();h.family.attachStream(h.stream);h.ready();
+ await h.handlers.signal({peer:'parent',shareId:'share-1',kind:'offer',data:{}});
+ assert.equal(h.createdPeers.length,1);
+ h.handlers['parent-access']({blocked:true,message:'Con đang học trên lớp'});
+ assert.equal(h.createdPeers[0].closed,true);assert.equal(h.track.stopped,false);
+ await h.handlers.signal({peer:'parent',shareId:'share-1',kind:'offer',data:{}});
+ assert.equal(h.createdPeers.length,1);
+ h.handlers['parent-access']({blocked:false});
+ await h.handlers.signal({peer:'parent',shareId:'share-1',kind:'offer',data:{}});
+ assert.equal(h.createdPeers.length,2);assert.equal(h.captures,0);
 });

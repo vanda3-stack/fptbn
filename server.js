@@ -4572,7 +4572,12 @@ app.patch(
 // =====================================================
 
 const teacherLoginTokens = new Map();
-require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io });
+const revisionModule = require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io,
+    isParentViewingBlocked: child => {
+        if (teachersByClass.has(normalizeClassCode(child.class_code))) return true;
+        return examTeachers.size > 0 && Array.from(students.values()).some(s => Number(s.studentId) === Number(child.id) && s.classCode === "EXAM");
+    }
+});
 
 
 app.post("/api/teacher/login", async (req, res) => {
@@ -5210,6 +5215,7 @@ io.on(
                     } else {
                         teachersByClass.set(classCode, socket.id);
                     }
+                    revisionModule.refreshFamilyAccess();
 
 
                     console.log(
@@ -5458,6 +5464,7 @@ io.on(
                     );
 
 
+                    revisionModule.refreshFamilyAccess();
                     console.log(
                         "Student joined class:",
                         dbStudent.full_name,
@@ -5994,6 +6001,7 @@ io.on(
                         io.to(getClassRoom("EXAM")).emit("class-resources", []);
                     }
                     examTeachers.delete(socket.id);
+                    revisionModule.refreshFamilyAccess();
                     socket.leave(getClassRoom("EXAM"));
                     socket.data.classCode = null;
                     socket.data.role = null;
@@ -6050,6 +6058,7 @@ io.on(
                 teachersByClass.delete(
                     classCode
                 );
+                revisionModule.refreshFamilyAccess();
 
             }
         );
@@ -6086,6 +6095,7 @@ io.on(
                         students.delete(
                             socket.id
                         );
+                        revisionModule.refreshFamilyAccess();
 
 
                         socket.to(
@@ -6134,6 +6144,7 @@ io.on(
                     // Other EXAM proctors and students stay online when one teacher disconnects.
                     if (socket.data.classCode === "EXAM") {
                         examTeachers.delete(socket.id);
+                        revisionModule.refreshFamilyAccess();
                         console.log("Exam proctor disconnected:", socket.id, "remaining:", examTeachers.size);
                         return;
                     }
@@ -6154,6 +6165,7 @@ io.on(
                         teachersByClass.delete(
                             classCode
                         );
+                        revisionModule.refreshFamilyAccess();
 
 
                         socket.to(
