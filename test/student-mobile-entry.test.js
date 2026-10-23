@@ -11,7 +11,7 @@ function setup({capture = 'unsupported', duplicate = false} = {}) {
     const track = {getSettings: () => ({displaySurface: 'monitor'}), addEventListener() {}};
     const stream = {active: true, getVideoTracks: () => [track], getTracks: () => [track]};
     const socket = {connected: true, on(name, fn) {handlers[name] = fn;}, emit(name, data) {sent.push({name, data});}};
-    const context = {io: () => socket, navigator: capture === 'unsupported' ? {} : {mediaDevices: {getDisplayMedia() {}}},
+    const context = {io: () => socket, navigator: capture === 'unsupported' ? {maxTouchPoints: 5} : {mediaDevices: {getDisplayMedia() {}}},
         FPTBNScreenCapture: {async capture() {captures++; if (capture === 'not-supported') throw Object.assign(new Error('Unsupported'), {name: 'NotSupportedError'}); if (capture === 'denied') throw Object.assign(new Error('Permission denied'), {name: 'NotAllowedError'}); return stream;}},
         document: {getElementById: element},
         window: {addEventListener() {}, dispatchEvent(event) {events.push(event);}},
@@ -66,4 +66,15 @@ test('a browser exposing an unavailable capture API can still enter without a st
     assert(h.sent.some(event => event.name === 'student-join'));
     assert(!h.sent.some(event => event.name === 'screen-ready'));
     assert(h.events.some(event => event.type === 'student-portal-access' && event.detail === true));
+});
+
+
+test('view-only tablets rejoin after a transport reconnect and resend device hints', async () => {
+ const h=setup();await h.element('shareButton').click();
+ h.handlers.connect();
+ const joins=h.sent.filter(event=>event.name==='student-join');
+ assert.equal(joins.length,2);
+ assert.equal(joins[0].data.device.maxTouchPoints,5);
+ assert.equal(joins[1].data.device.maxTouchPoints,5);
+ assert.equal(h.captures,0);
 });

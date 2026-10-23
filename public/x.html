@@ -1071,6 +1071,7 @@
 @media(max-width:480px) { #teacherLoginPage .teacher-login-card h1 { font-size:24px; } #teacherLoginPage .teacher-login-eyebrow { font-size:9px; } }
 </style>
 
+<style>.rosterPerson{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}.rosterItem .rosterDevice{color:#93c5fd;font-size:11px}.rosterItem>small{flex-shrink:0}</style>
 </head>
 
 
@@ -1294,7 +1295,7 @@ document.getElementById("rosterMissing").textContent=(total-online)+" chưa vào
 const q=document.getElementById("rosterSearch").value.toLocaleLowerCase("vi");
 list.replaceChildren();
 const visible=students.filter(s=>(filter==="all"||(filter==="online"?s.online:!s.online))&&(s.full_name+" "+s.student_code).toLocaleLowerCase("vi").includes(q));
-for(const s of visible){const item=document.createElement("div");item.className="rosterItem";const name=document.createElement("span");name.textContent=s.full_name;const state=document.createElement("small");state.className=s.online?"online":"missing";state.textContent=s.online?"● Đã vào":"○ Chưa vào";item.append(name,state);list.append(item)}
+for(const s of visible){const item=document.createElement("div");item.className="rosterItem";const name=document.createElement("span");name.className="rosterPerson";const fullName=document.createElement("span");fullName.textContent=s.full_name;name.append(fullName);if(s.online&&s.device){const device=document.createElement("small");device.className="rosterDevice";device.textContent=s.device;name.append(device)}const state=document.createElement("small");state.className=s.online?"online":"missing";state.textContent=s.online?"● Đã vào":"○ Chưa vào";item.append(name,state);list.append(item)}
 if(!visible.length){const empty=document.createElement("p");empty.textContent="Không có học sinh phù hợp.";empty.style.color="#94a3b8";list.append(empty)}
 }
 document.querySelectorAll("[data-roster-filter]").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.rosterFilter;document.querySelectorAll("[data-roster-filter]").forEach(x=>x.classList.toggle("selected",x===b));render()}));

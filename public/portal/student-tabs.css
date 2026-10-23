@@ -21,3 +21,12 @@
 
 /* Keep publishing nodes mounted for WebRTC and preview fallback, without showing extra UI. */
 .family-panel-compact,.review-intro{display:none!important}
+
+@media(max-width:1024px){
+ #reviewPanel{padding:8px;min-width:0}
+ #reviewFrame{height:calc(100dvh - 92px);min-height:0;border-radius:10px}
+}
+@media(max-width:650px){
+ #reviewPanel{padding:4px 6px}
+ #reviewFrame{height:calc(100dvh - 120px);min-height:0;border-radius:8px}
+}

@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { Server } = require("socket.io");
+const identifyStudentDevice = require("./lib/student-device");
 
 const app = express();
 const server = http.createServer(app);
@@ -4720,7 +4721,7 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         if (classCode === "EXAM") {
             const examStudents = Array.from(students.values())
                 .filter(x => x.classCode === "EXAM")
-                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true}));
+                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true,device:x.device || ""}));
             return res.json({success:true,students:examStudents});
         }
 
@@ -4729,14 +4730,14 @@ app.get("/api/teacher/class-roster", async (req, res) => {
             [classCode]
         );
         if (!classes.length) return res.status(404).json({success:false,message:"Không tìm thấy lớp"});
-        const [students] = await db.execute(
+        const [rosterStudents] = await db.execute(
             "SELECT s.id, s.student_code, s.full_name FROM students s INNER JOIN student_enrollments se ON se.student_id=s.id WHERE se.class_id=? AND s.is_active=1 ORDER BY s.full_name",
             [classes[0].id]
         );
         const room = getClassRoom(classCode);
         const sockets = await io.in(room).fetchSockets();
-        const onlineIds = new Set(sockets.filter(x=>x.data.role==="student" && x.data.classCode===classCode).map(x=>Number(x.data.studentId)));
-        res.json({success:true,students:students.map(x=>({...x,online:onlineIds.has(Number(x.id))}))});
+        const onlineDevices = new Map(sockets.filter(x=>x.data.role==="student" && x.data.classCode===classCode).map(x=>[Number(x.data.studentId),x.data.device || ""]));
+        res.json({success:true,students:rosterStudents.map(x=>({...x,online:onlineDevices.has(Number(x.id)),device:onlineDevices.get(Number(x.id)) || ""}))});
     } catch (error) {
         console.error("CLASS ROSTER ERROR:",error);
         res.status(500).json({success:false,message:"Không tải được sĩ số"});
@@ -5418,6 +5419,7 @@ io.on(
 
                     socket.data.classCode =
                         classCode;
+                    socket.data.device = identifyStudentDevice(socket.handshake.headers, data?.device);
 
 
                     socket.join(
@@ -5449,6 +5451,7 @@ io.on(
                             schoolYear:
                                 dbStudent.school_year,
 
+                            device: socket.data.device,
                             screenReady:
                                 false
                         }
