@@ -4,7 +4,9 @@
   "description": "FPT School Bac Ninh Classroom Screen Monitoring",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "parent:account": "node scripts/parent-account.js",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "dotenv": "^18.0.5",
