@@ -9,7 +9,7 @@
                 parentSession = window.parent.FPTBNFamilySession?.identity();
                 document.body.classList.add('portal-embedded');
                 const style = document.createElement('style');
-                style.textContent = '.portal-embedded header .wordmark,.portal-embedded #otStudentBadge,.portal-embedded #logout{display:none}.portal-embedded header{min-height:48px;padding:10px 16px}.portal-embedded .ot-login-page{min-height:0;padding:20px 0}';
+                style.textContent = '.portal-embedded header .wordmark,.portal-embedded #otStudentBadge,.portal-embedded #logout{display:none}.portal-embedded>header{display:none!important}.portal-embedded .ot-login-page{min-height:0;padding:20px 0}';
                 document.head.append(style);
                 window.addEventListener('ot-portal-visibility', event => {
                     globalThis.OTStudy?.setVisible(event.detail);

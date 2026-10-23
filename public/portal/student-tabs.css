@@ -18,3 +18,6 @@
  #reviewFrame{min-height:440px;height:calc(100dvh - 190px)}
  #classPanel #classroom{min-height:calc(100dvh - 110px)}
 }
+
+/* Keep publishing nodes mounted for WebRTC and preview fallback, without showing extra UI. */
+.family-panel-compact,.review-intro{display:none!important}
