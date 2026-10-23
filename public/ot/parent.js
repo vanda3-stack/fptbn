@@ -15,7 +15,7 @@
   if(['failed','disconnected','closed'].includes(state)){if(!previewMode){el('childScreen').hidden=true;el('screenPlaceholder').hidden=false;el('screenPlaceholder').textContent='Đang thử kết nối lại màn hình…';el('expand').disabled=true}fallback()}
  }
  function connect(token){paused=false;el('parentLogin').hidden=true;el('parentDashboard').hidden=false;el('parentLogout').hidden=false;status('Đang kiểm tra mã và kết nối…');
-  socket=io('/ot-family',{auth:{role:'parent',token}});
+  socket=io('/ot-family',OTFamilySocketOptions({role:'parent',token}));
   socket.on('ready',d=>{config=d.rtcConfig});
   socket.on('status',d=>{
    el('childName').textContent=d.studentName;el('childClass').textContent='Lớp '+d.classCode;el('watch').disabled=!d.sharing;el('watch').textContent=wanted?'Kết nối lại':'Xem màn hình';

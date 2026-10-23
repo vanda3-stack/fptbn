@@ -1,4 +1,7 @@
 'use strict';
+// Match the classroom: start with WebSocket, then fall back to polling if needed.
+// Polling-first can lose its engine session behind a proxy with multiple workers.
+window.OTFamilySocketOptions=auth=>({auth,transports:['websocket','polling'],tryAllTransports:true,reconnection:true});
 // Both clients queue trickled ICE until the remote SDP is applied.
 window.OTFamilyPeer=class {
  constructor(socket,peer,shareId,config,{stream,receiveOnly,onstream,onstate}={}){

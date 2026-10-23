@@ -13,13 +13,16 @@ function harness(surface='monitor',captureError=null){
  const socket={connected:false,on:(name,fn)=>handlers[name]=fn,emit:(name)=>sent.push(name),timeout(){return {emit:(name,cb)=>{sent.push(name);cb(null,{shareId:'share-1'})}}},disconnect(){this.connected=false}};
  const sandbox={window:{isSecureContext:true,addEventListener(){}},document:{getElementById:id=>elements[id],querySelector:()=>({after(){}}),createElement:()=>({remove(){}})},navigator:{mediaDevices:{getDisplayMedia:async o=>{assert(active,'capture must be called directly from click');captures++;options=o;if(captureError)throw captureError;return stream}}},io:()=>socket,setTimeout:fn=>{timers.push(fn);return timers.length},clearTimeout(){},setInterval:()=>2,clearInterval(){}};
  sandbox.FPTBNScreenCapture={capture:()=>sandbox.navigator.mediaDevices.getDisplayMedia(capture.constraints())};
+ vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family.js'),'utf8'),sandbox);
+ sandbox.OTFamilySocketOptions=sandbox.window.OTFamilySocketOptions;
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family-student.js'),'utf8'),sandbox);
  sandbox.window.OTFamily.connect('student-token');
  return {elements,handlers,sent,track,socket,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
 }
 test('capture opens from click before socket readiness and announces when ready',async()=>{const h=harness();assert.equal(h.elements.familyStart.disabled,false);await h.click();assert.equal(h.captures,1);assert.equal(h.track.stopped,false);assert.equal(h.sent.includes('start'),false);h.ready();assert.equal(h.sent.includes('start'),true);assert.match(h.elements.familyMessage.textContent,/Đang chia sẻ/);assert.equal(h.options.audio,false);h.track.onended();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,true)});
 test('browsers without surface metadata can share; known window/tab capture is rejected',async()=>{const unknown=harness(null);unknown.ready();await unknown.click();assert.equal(unknown.track.stopped,false);assert(unknown.sent.includes('start'));for(const surface of ['window','browser']){const h=harness(surface);h.ready();await h.click();assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.match(h.elements.familyMessage.textContent,/Toàn bộ màn hình/)} });
-test('disconnect stops capture and clears the sharing state',async()=>{const h=harness();h.ready();await h.click();h.socket.connected=false;h.handlers.disconnect();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.match(h.elements.familyMessage.textContent,/mất kết nối/)});
+test('transport disconnect preserves capture and automatically announces a fresh share on reconnect',async()=>{const h=harness();h.ready();await h.click();const starts=h.sent.filter(x=>x==='start').length;h.socket.connected=false;h.handlers.disconnect('transport close');assert.equal(h.track.stopped,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyMessage.textContent,/không cần chọn lại/);h.ready();assert.equal(h.captures,1);assert.equal(h.sent.filter(x=>x==='start').length,starts+1);h.elements.familyStop.onclick();assert.equal(h.track.stopped,true)});
+test('server revocation still stops capture instead of reconnecting an unauthorized share',async()=>{const h=harness();h.ready();await h.click();h.socket.connected=false;h.handlers.disconnect('io server disconnect');assert.equal(h.track.stopped,true);assert.match(h.elements.familyMessage.textContent,/đăng xuất/)});
 
 test('stop remains available while choosing a screen and cancels late capture',async()=>{const h=harness();const pending=h.click();assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyStop.textContent,/Hủy/);h.elements.familyStop.onclick();await pending;assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.equal(h.elements.familyStop.disabled,true)});
 
@@ -45,4 +48,11 @@ test('OT and homework require sharing on restored login and preserve the exercis
   sharing=true;onChange(true);await new Promise(resolve=>setImmediate(resolve));
   assert.equal(packRequests,1);assert.equal(node('#app').innerHTML,'exercise draft with answers');assert.equal(node('#app').hidden,false);
  }
+});
+
+test('both family clients use WebSocket first with polling fallback',()=>{
+ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family.js'),'utf8'),sandbox);
+ const auth={role:'student',token:'test-only'};const options=sandbox.window.OTFamilySocketOptions(auth);
+ assert.deepEqual(Array.from(options.transports),['websocket','polling']);assert.equal(options.tryAllTransports,true);assert.equal(options.reconnection,true);assert.equal(options.auth,auth);
+ for(const file of ['family-student.js','parent.js'])assert.match(fs.readFileSync(require.resolve('../public/ot/'+file),'utf8'),/io\('\/ot-family',OTFamilySocketOptions\(/);
 });

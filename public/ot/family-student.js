@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map();
+ let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0;
  const el=id=>document.getElementById(id);
  const captureState=(state,text)=>{const node=el('familyCaptureState');if(node){node.dataset.state=state;node.textContent=text}};
  const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text;if(el('studyCaptureHelp'))el('studyCaptureHelp').textContent=text};
@@ -12,9 +12,9 @@
  }
  function announce(){
   if(!stream||!socket?.connected||!config||announced)return;
-  announced=true;starting=true;el('familyStart').disabled=true;const ticket=generation;
+  announced=true;starting=true;el('familyStart').disabled=true;const ticket=generation,epoch=connectionEpoch;
   socket.timeout(10000).emit('start',(err,result)=>{
-   if(ticket!==generation)return;
+   if(ticket!==generation||epoch!==connectionEpoch)return;
    if(err||!result?.shareId){announced=false;starting=false;el('familyStart').disabled=false;el('familyStart').textContent='Kết nối lại tới PH';message('Máy đã cấp quyền màn hình, nhưng máy chủ chưa xác nhận kết nối tới PH. Bấm Kết nối lại tới PH; em vẫn có thể dừng chia sẻ.');return}
    clearTimeout(waitTimer);waitTimer=null;starting=false;currentShare=result.shareId;
    message('Đang chia sẻ toàn màn hình · Chưa có PH xem.');onSharingChange?.(true);
@@ -43,7 +43,7 @@
   panel=document.createElement('section');panel.className='family-panel';panel.innerHTML='<h2>PH đồng hành cùng em</h2><p>Chọn Toàn bộ màn hình để chia sẻ phiên ôn tập. Người nhập đúng Mã HS + PH có thể xem màn hình em chia sẻ, kể cả nội dung ngoài trang này. Hệ thống không ghi video.</p><p id="familyCaptureState" class="capture-state" data-state="idle" role="status">Chưa chia sẻ màn hình. PH chưa thể xem.</p><p id="familyMessage" role="status">Em bấm chia sẻ và chọn Toàn bộ màn hình.</p><div class="toolbar"><button id="familyStart" class="primary">Chia sẻ toàn màn hình cho PH</button><button id="familyStop" disabled>Dừng chia sẻ</button></div><video id="familyLocalVideo" autoplay muted playsinline hidden aria-label="Màn hình máy HS đang chia sẻ"></video><p><a href="/PH.html" target="_blank" rel="noopener">Trang theo dõi dành cho PH ↗</a></p>';
   document.querySelector('header').after(panel);el('familyStart').onclick=start;el('familyStop').onclick=()=>stop();
   if(typeof io!=='function'){message('Chưa tải được chức năng chia sẻ. Em hãy tải lại trang.');return}
-  socket=io('/ot-family',{auth:{role:'student',token},reconnection:true});
+  socket=io('/ot-family',OTFamilySocketOptions({role:'student',token}));
   socket.on('ready',d=>{config=d.rtcConfig;if(stream)announce();else{el('familyStart').disabled=starting;message('Sẵn sàng. Em bấm chia sẻ và chọn Toàn bộ màn hình.')}});
   socket.on('preview-needed',d=>previews(d.count));
   socket.on('share-replaced',()=>{stop(false);message('Đã dừng chia sẻ vì em bắt đầu chia sẻ ở một tab khác.')});
@@ -60,8 +60,18 @@
    }catch{p?.close();peers.delete(d.peer);message('Chưa kết nối được video với PH. PH có thể bấm Kết nối lại.')}
   });
   socket.on('peer-left',d=>{peers.get(d.peer)?.close();peers.delete(d.peer)});
-  socket.on('disconnect',()=>{config=null;stop(false);message('Đã ngừng chia sẻ do mất kết nối. Khi kết nối lại, em cần bấm chia sẻ lại.')});
-  socket.on('connect_error',()=>{if(!stream)message('Chưa kết nối được chức năng chia sẻ. Em hãy tải lại trang hoặc báo giáo viên.')});
+  socket.on('disconnect',reason=>{
+   connectionEpoch++;config=null;announced=false;currentShare=null;clearTimeout(waitTimer);waitTimer=null;
+   clearInterval(previewTimer);previewTimer=null;closePeers();earlyIce.clear();
+   if(reason==='io server disconnect'){stop(false);message('Máy chủ đã đóng phiên chia sẻ. Em hãy đăng xuất rồi nhập lại mã HS.');return}
+   // A transport failure must not revoke screen permission already granted.
+   if(stream){starting=false;el('familyStart').disabled=false;el('familyStart').textContent='Kết nối lại tới PH';captureState('live','Màn hình vẫn đang được cấp quyền trên máy HS. Đang nối lại tới PH.');onSharingChange?.(false);message('Mất kết nối máy chủ ('+reason+'). Đang tự kết nối lại tới PH; không cần chọn lại màn hình. Em vẫn có thể Dừng chia sẻ.')}
+   else message('Mất kết nối máy chủ ('+reason+'). Đang thử kết nối lại…');
+  });
+  socket.on('connect_error',e=>{
+   if(/hết hạn|xác thực|Mã HS|Vai trò/.test(e.message||'')){stop(false);message('Phiên chia sẻ không hợp lệ: '+e.message+'. Em hãy đăng xuất và nhập lại mã HS.');return}
+   message((stream?'Màn hình vẫn được cấp quyền. ':'')+'Chưa nối được tới PH: '+(e.message||'lỗi mạng')+'. Hệ thống đang thử lại.');
+  });
   socket.on('family-error',text=>{stop(false);message(text)});
  }
  window.OTFamily={connect,disconnect,start,isSharing:()=>Boolean(stream&&currentShare)};
