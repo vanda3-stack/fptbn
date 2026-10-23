@@ -25,7 +25,7 @@ Nhánh `feature/on-tap-phu-huynh` sao chép từ `feature/on-tap`. Chỉ cập n
 2. PH nhập mã tại `/PH.html`, bấm **Vào theo dõi**, sau đó **Xem màn hình** khi HS bắt đầu chia sẻ.
 3. Trong lúc chọn màn hình, nút **Hủy yêu cầu chia sẻ** hiện ở góc dưới phải. Khi đã nhận luồng, nút chuyển thành **Dừng chia sẻ** và luôn nổi khi cuộn trang; có video xem trước nhỏ để HS biết máy đã nhận hình. HS dừng chia sẻ/đóng trang/đăng xuất/mất kết nối thì ngừng truyền; màn hình PH xóa hình cũ. Phiên chia sẻ mới cần HS cấp quyền lại, PH bấm xem lại.
 
-Nút HS gọi trình chọn màn hình trực tiếp từ thao tác bấm, không bị khóa vì chờ máy chủ sẵn sàng. Nếu bắt được màn hình trước kết nối, chỉ công bố chia sẻ sau khi máy chủ xác nhận; quá thời gian chờ thì dừng luồng. Nếu trình duyệt báo rõ đã chọn cửa sổ/thẻ, hệ thống từ chối và yêu cầu chọn lại; nếu trình duyệt không cung cấp `displaySurface`, vẫn cho phép truyền và nhắc HS tự bảo đảm đã chọn toàn màn hình.
+Nút HS gọi trình chọn màn hình trực tiếp từ thao tác bấm, không bị khóa vì chờ máy chủ sẵn sàng. Nếu bắt được màn hình trước kết nối, chỉ công bố chia sẻ sau khi máy chủ xác nhận; quá thời gian chờ thì giữ màn hình đã được cấp quyền, thông báo chưa nối được tới PH và cho bấm **Kết nối lại tới PH** hoặc **Dừng chia sẻ**. Trạng thái cấp quyền màn hình hiển thị riêng với trạng thái mạng; lỗi quyền không bị sự kiện máy chủ sẵn sàng ghi đè. Nếu trình duyệt báo rõ đã chọn cửa sổ/thẻ, hệ thống từ chối và yêu cầu chọn lại; nếu trình duyệt không cung cấp `displaySurface`, vẫn cho phép truyền và nhắc HS tự bảo đảm đã chọn toàn màn hình.
 
 Cần HTTPS trên môi trường thực tế. Thiết bị/trình duyệt không hỗ trợ getDisplayMedia vẫn ôn tập bình thường; không có tính năng tự cấp quyền. Trên Mac cần quyền Ghi màn hình của trình duyệt trong Cài đặt hệ thống. Khi có lỗi, giao diện hiển thị hướng xử lý tương ứng.
 
@@ -62,3 +62,5 @@ TURN dùng cấu hình cùng dịch vụ với phân hệ giám sát ở nhánh 
 Trước khi sử dụng rộng: thử một HS trên máy tính và PH trên điện thoại qua 4G/5G; cấp quyền Ghi màn hình; đóng tab; dừng từ nút trình duyệt; ngắt mạng; chọn nhầm loại chia sẻ; gõ/dán mã chữ thường; kiểm tra xoay ngang và Safari iPhone.
 
 Đã chạy thử luồng mới bằng Chromium với nguồn màn hình canvas giả lập: HS nhập mã → chia sẻ → mở bộ bài → hoàn thành trắc nghiệm; PH nhập mã từ trước, tự kết nối khi HS chia sẻ; xác nhận PH tạo offer recvonly và HS trả answer; nhận ảnh dự phòng trên giao diện điện thoại; dừng HS xóa hình phía PH. Không có lỗi JavaScript hoặc tràn ngang. Kết quả này chưa xác nhận quyền ghi màn hình OS và video/TURN trên mạng Internet thực tế.
+
+Đã thử API getDisplayMedia gốc của Chromium với thiết bị giả lập và cơ chế cấp quyền tự động dành cho kiểm thử (không thay hàm bằng canvas): nhận luồng màn hình, mở bài tập, PH tự kết nối, hiển thị ảnh dự phòng và dừng chia sẻ. Đây vẫn chưa phải kiểm chứng quyền Ghi màn hình trên máy Mac/Windows của HS.
