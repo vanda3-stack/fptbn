@@ -76,3 +76,25 @@ test('teacher presence revokes active parent viewing and denies signaling and pr
   const offered=event(student,'signal');parent.emit('signal',{peer:student.id,shareId:started.shareId,kind:'offer',data:{sdp:'resumed'}});assert.equal((await offered).data.sdp,'resumed');
  }finally{for(const s of sockets)s.disconnect();mounted.close();await new Promise(r=>io.close(r));server.close()}
 });
+
+test('FBN20310 demo allows many parent sessions while ordinary children keep the two-device limit', async () => {
+ const app=express(),server=http.createServer(app),io=new Server(server);app.use(express.json());
+ const lookup=async code=>({id:code==='FBN20310'?1:2,student_code:code,full_name:'Demo',class_code:'9A3'});
+ const mounted=require('../lib/ot-family')(app,{io,lookup,authenticateStudent:lookup});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port,sockets=[];
+ const login=async username=>{const r=await fetch(url+'/api/ot/parent/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});return {status:r.status,...await r.json()}};
+ const open=(token)=>{const s=client(url+'/ot-family',{auth:{role:'parent',token},transports:['websocket'],autoConnect:false,reconnection:false});sockets.push(s);return s};
+ try{
+  // A shared event Wi-Fi must allow more than ten demo logins in a minute.
+  const tokens=[];for(let i=0;i<12;i++){const r=await login('FBN20310PH');assert.equal(r.status,200);tokens.push(r.token)}
+  for(const token of tokens){const s=open(token),ready=event(s,'ready');s.connect();await ready}
+  assert.equal(sockets.filter(s=>s.connected).length,12);
+  // Signing out one session does not revoke the other audience members.
+  await fetch(url+'/api/ot/parent/logout',{method:'POST',headers:{Authorization:'Bearer '+tokens[0]}});await pause();
+  assert.equal(sockets.filter(s=>s.connected).length,11);
+  for(let i=0;i<3;i++){const r=await login('FBN12345PH'),s=open(r.token);const result=event(s,i<2?'ready':'family-error');s.connect();const message=await result;if(i===2)assert.match(message,/hai thiết bị/)}
+  // Demo traffic has a separate bucket and cannot exhaust ordinary PH logins.
+  for(let i=0;i<7;i++)assert.equal((await login('FBN12345PH')).status,200);
+  assert.equal((await login('FBN12345PH')).status,429);
+ }finally{for(const s of sockets)s.disconnect();mounted.close();await new Promise(r=>io.close(r));server.close()}
+});

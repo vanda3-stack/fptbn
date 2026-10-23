@@ -40,5 +40,7 @@
   try{const stats=await current.pc.getStats();if(blocked||peer!==current)return;for(const r of stats.values())if(r.type==='inbound-rtp'&&(r.kind==='video'||r.mediaType==='video')){const frames=r.framesDecoded||0;if(frames>lastFrames){lastFrames=frames;lastAt=Date.now();previewMode=false;clearTimeout(fallbackTimer);socket.emit('request-preview',false);el('childPreview').hidden=true;el('childScreen').hidden=false;el('screenPlaceholder').hidden=true;status('Đang xem màn hình trực tiếp')}if(!previewMode&&lastAt&&Date.now()-lastAt>20000)fallback()}}catch{}finally{checkBusy=false}
  },3000);
  window.addEventListener('pagehide',()=>{wanted=false;socket?.disconnect();blank('Đã ngừng xem.')});window.addEventListener('pageshow',event=>{if(event.persisted)socket?.connect()});
- const token=sessionStorage.getItem('ot-parent-token');if(token)connect(token);
+ const demo=new URLSearchParams(location.search).get('demo')==='20310';
+ if(demo){el('parentUsername').value='20310';el('parentForm').requestSubmit(el('parentForm').querySelector('button[type=submit]'))}
+ else {const token=sessionStorage.getItem('ot-parent-token');if(token)connect(token);}
 })();
