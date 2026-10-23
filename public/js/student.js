@@ -708,6 +708,7 @@ button.addEventListener(
 
                     // Stream cũ không còn sử dụng được
                     screenStream = null;
+                    window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
 
                     // Cập nhật trạng thái cho HS
                     studentStatus.textContent =
@@ -965,6 +966,7 @@ button.addEventListener(
 
                         screenStream =
                             newStream;
+                        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: joinedClass}));
 
 
                         // =============================================
@@ -1016,6 +1018,7 @@ button.addEventListener(
 
                                 screenStream =
                                     null;
+                                window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
 
                                 studentStatus.textContent =
                                     "🔴 ĐÃ DỪNG CHIA SẺ MÀN HÌNH";
@@ -2037,6 +2040,8 @@ socket.on(
             return;
         }
 
+        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(screenStream?.active)}));
+
 
         if (info?.classCode) {
 
@@ -2129,6 +2134,7 @@ socket.on(
 
         joinedClass =
             false;
+        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
 
 
         if (screenStream) {
@@ -2327,6 +2333,7 @@ socket.on(
 
         joinedClass =
             false;
+        window.dispatchEvent(new CustomEvent("student-portal-access", {detail: false}));
 
 
         // =============================================

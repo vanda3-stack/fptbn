@@ -3,11 +3,13 @@
 (() => {
     const tabs = [document.getElementById('classTab'), document.getElementById('reviewTab')];
     const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel')];
-    let frame = null;
+    const navigation = document.getElementById('studentTabs');
+    let frame = null, ready = false;
     function visibility(visible) {
         if (frame?.contentWindow) frame.contentWindow.dispatchEvent(new CustomEvent('ot-portal-visibility', {detail: visible}));
     }
     function select(index) {
+        if (!ready && index !== 0) return;
         tabs.forEach((tab, i) => {
             tab.setAttribute('aria-selected', String(i === index));
             tab.tabIndex = i === index ? 0 : -1;
@@ -25,6 +27,12 @@
         document.getElementById('reviewClassNotice').hidden = !(index === 1 && typeof joinedClass !== 'undefined' && joinedClass);
         visibility(index === 1);
     }
+    window.addEventListener('student-portal-access', event => {
+        ready = event.detail === true;
+        navigation.hidden = !ready;
+        if (!ready) select(0);
+    });
+    navigation.hidden = true;
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index));
         tab.addEventListener('keydown', event => {
