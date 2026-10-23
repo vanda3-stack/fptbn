@@ -15,13 +15,15 @@ Nhánh `feature/on-tap-phu-huynh` sao chép từ `feature/on-tap`. Chỉ cập n
 
 1. HS vào ôn tập, bấm **Chia sẻ toàn màn hình cho PH** trên máy tính, cấp quyền và chọn **Toàn bộ màn hình / Entire Screen**.
 2. PH nhập mã tại `/PH.html`, bấm **Vào theo dõi**, sau đó **Xem màn hình** khi HS bắt đầu chia sẻ.
-3. HS dừng chia sẻ/đóng trang/đăng xuất/mất kết nối thì ngừng truyền; màn hình PH xóa hình cũ. Phiên chia sẻ mới cần HS cấp quyền lại, PH bấm xem lại.
+3. Trong lúc chọn màn hình, nút **Hủy yêu cầu chia sẻ** hiện ở góc dưới phải. Khi đã nhận luồng, nút chuyển thành **Dừng chia sẻ** và luôn nổi khi cuộn trang; có video xem trước nhỏ để HS biết máy đã nhận hình. HS dừng chia sẻ/đóng trang/đăng xuất/mất kết nối thì ngừng truyền; màn hình PH xóa hình cũ. Phiên chia sẻ mới cần HS cấp quyền lại, PH bấm xem lại.
 
 Nút HS gọi trình chọn màn hình trực tiếp từ thao tác bấm, không bị khóa vì chờ máy chủ sẵn sàng. Nếu bắt được màn hình trước kết nối, chỉ công bố chia sẻ sau khi máy chủ xác nhận; quá thời gian chờ thì dừng luồng. Nếu trình duyệt báo rõ đã chọn cửa sổ/thẻ, hệ thống từ chối và yêu cầu chọn lại; nếu trình duyệt không cung cấp `displaySurface`, vẫn cho phép truyền và nhắc HS tự bảo đảm đã chọn toàn màn hình.
 
 Cần HTTPS trên môi trường thực tế. Thiết bị/trình duyệt không hỗ trợ getDisplayMedia vẫn ôn tập bình thường; không có tính năng tự cấp quyền. Trên Mac cần quyền Ghi màn hình của trình duyệt trong Cài đặt hệ thống. Khi có lỗi, giao diện hiển thị hướng xử lý tương ứng.
 
-PH có thể xem trên điện thoại với giao diện co giãn, video giữ tỉ lệ và nút phóng to; có thể xoay ngang để xem rõ. Tối đa hai thiết bị PH cùng theo dõi mỗi HS. Số thiết bị yêu cầu xem không bảo đảm video đã truyền thành công. Không điều khiển máy, không camera/microphone, không ghi video/lưu ảnh, không gửi lời nhắc trong bản này. Chia sẻ gồm mọi nội dung trên màn hình HS đã chọn, kể cả ngoài trang ôn tập.
+PH có thể xem trên điện thoại với giao diện co giãn, video giữ tỉ lệ và nút phóng to; có thể xoay ngang để xem rõ. Tối đa hai thiết bị PH cùng theo dõi mỗi HS. Mở nhiều tab HS không chiếm sẵn phiên chia sẻ; chỉ tab chủ động bắt đầu chia sẻ mới giữ quyền phát. Nếu bắt đầu ở tab mới, tab cũ dừng phát và được thông báo. Số thiết bị yêu cầu xem không bảo đảm video đã truyền thành công. Nếu video chưa có hình sau khoảng 8 giây, PH tự chuyển sang ảnh màn hình cập nhật khoảng 2 giây/lần qua HTTPS/Socket.IO. Ảnh lấy từ đúng luồng HS đã cấp quyền, tối đa 960px chiều ngang và 80.000 ký tự mỗi khung; chỉ truyền khi PH đã bấm xem và cần chế độ dự phòng. Không giữ ảnh trên máy chủ; khi HS dừng, mất kết nối hoặc PH dừng xem thì ngừng truyền và xóa hình trên trang. Không có ảnh mới trong 12 giây thì ẩn ảnh cũ. Nếu video hoạt động lại, PH trở về xem video. Chế độ ảnh kém mượt hơn video và tốn băng thông máy chủ; không dùng ảnh như video liên tục.
+
+Không điều khiển máy, không camera/microphone, không ghi video/lưu ảnh, không gửi lời nhắc trong bản này. Chia sẻ gồm mọi nội dung trên màn hình HS đã chọn, kể cả ngoài trang ôn tập.
 
 Khi không nhận thêm khung hình trong 20 giây, trang PH che hình và báo chờ: có thể màn hình đứng yên hoặc kết nối gián đoạn, không kết luận HS làm việc riêng. Có nút kết nối lại. Bộ đệm ICE hỗ trợ tín hiệu kết nối đến trước SDP.
 
@@ -47,6 +49,6 @@ TURN dùng cấu hình cùng dịch vụ với phân hệ giám sát ở nhánh 
 
 ## Kiểm tra
 
-`npm test` kiểm tra ôn tập cũ; mã có FBN/PH cố định và tự viết hoa; PH vào bằng mã không cần mật khẩu/bảng DB phụ; ràng buộc theo HS, dừng và thu hồi phiên; mô phỏng phía HS với máy chủ sẵn sàng muộn, trình duyệt thiếu displaySurface, chọn sai cửa sổ/thẻ, mất kết nối. Không thay thế kiểm thử trình duyệt, MySQL và TURN thực tế.
+`npm test` kiểm tra ôn tập cũ; mã có FBN/PH cố định và tự viết hoa; PH vào bằng mã không cần mật khẩu/bảng DB phụ; ràng buộc theo HS, dừng và thu hồi phiên; mô phỏng phía HS với máy chủ sẵn sàng muộn, trình duyệt thiếu displaySurface, chọn sai cửa sổ/thẻ, mất kết nối. Đã thử Chromium với nguồn màn hình canvas giả lập và giao diện PH 390×844: tự chuyển sang ảnh khi WebRTC không có hình, nhận ảnh JPEG hiển thị được, không tràn ngang, dừng HS xóa ảnh phía PH, không lỗi JavaScript. Đây không phải thử quyền ghi màn hình OS hay Safari/iPhone vật lý; MySQL và TURN qua Internet vẫn cần kiểm tra trên thiết bị thực tế.
 
 Trước khi sử dụng rộng: thử một HS trên máy tính và PH trên điện thoại qua 4G/5G; cấp quyền Ghi màn hình; đóng tab; dừng từ nút trình duyệt; ngắt mạng; chọn nhầm loại chia sẻ; gõ/dán mã chữ thường; kiểm tra xoay ngang và Safari iPhone.
