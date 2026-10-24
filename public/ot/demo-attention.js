@@ -19,7 +19,7 @@
         body.replaceChildren();
         el('demoHistory').hidden = data.mode === 'paused';
         el('demoHistoryEmpty').hidden = rows.length > 0;
-        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký trên máy chủ. Các mốc hiện tại chưa được bảo đảm lưu lại.' : 'Mốc ghi nhận theo giờ Việt Nam · Hiển thị 100 lần gần nhất.';
+        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký trên máy chủ. Các mốc hiện tại chưa được bảo đảm lưu lại.' : `Thống kê chốt lúc ${stamp(data.historyCapturedAt)} (giờ Việt Nam) · 100 lần gần nhất. Đăng xuất và đăng nhập lại để cập nhật.`;
         for (const row of rows) {
             const tr = document.createElement('tr');
             const kind = row.kind === 'away' ? 'Trang ôn tập bị ẩn' : 'Mất tín hiệu thiết bị';
