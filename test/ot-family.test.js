@@ -80,7 +80,7 @@ test('teacher presence revokes active parent viewing and denies signaling and pr
 test('FBN20310 demo allows many parent sessions while ordinary children keep the two-device limit', async () => {
  const app=express(),server=http.createServer(app),io=new Server(server);app.use(express.json());
  const lookup=async code=>({id:code==='FBN20310'?1:2,student_code:code,full_name:'Demo',class_code:'9A3'});
- const mounted=require('../lib/ot-family')(app,{io,lookup,authenticateStudent:lookup});
+ const mounted=require('../lib/ot-family')(app,{io,lookup,authenticateStudent:lookup,attentionHistory:require('../lib/family-attention-history')()});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port,sockets=[];
  const login=async username=>{const r=await fetch(url+'/api/ot/parent/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});return {status:r.status,...await r.json()}};
  const open=(token)=>{const s=client(url+'/ot-family',{auth:{role:'parent',token},transports:['websocket'],autoConnect:false,reconnection:false});sockets.push(s);return s};
@@ -98,3 +98,4 @@ test('FBN20310 demo allows many parent sessions while ordinary children keep the
   assert.equal((await login('FBN12345PH')).status,429);
  }finally{for(const s of sockets)s.disconnect();mounted.close();await new Promise(r=>io.close(r));server.close()}
 });
+

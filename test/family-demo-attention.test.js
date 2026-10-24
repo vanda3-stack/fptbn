@@ -98,7 +98,7 @@ test('real Socket.IO broadcasts demo state to three parents and HTTP fallback re
     const app = express(), server = http.createServer(app), io = new Server(server), sockets = [];
     const child = {id: 1, student_code: 'FBN20310', full_name: 'Demo', class_code: '9A3'};
     app.use(express.json());
-    const mounted = require('../lib/ot-family')(app, {io, lookup: async () => child,
+    const mounted = require('../lib/ot-family')(app, {io, attentionHistory: require('../lib/family-attention-history')(), lookup: async () => child,
         authenticateStudent: async token => {if (token !== 'valid') throw Error('invalid');return child;}});
     await new Promise(r => server.listen(0, '127.0.0.1', r));
     const url = 'http://127.0.0.1:' + server.address().port;
