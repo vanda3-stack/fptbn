@@ -7,11 +7,12 @@
  function fallback(){if(blocked||!wanted||!shareId||!socket?.connected)return;previewMode=true;socket.emit('request-preview',true);status('Đang kết nối màn hình…')}
  function scheduleFallback(){clearTimeout(fallbackTimer);fallbackTimer=setTimeout(fallback,8000)}
  function watch(){if(blocked||!socket?.connected||!shareId)return;blank('Đang kết nối màn hình…');wanted=true;socket.emit('watch');scheduleFallback()}
- function logout(){wanted=false;shareId=null;blocked=false;const token=sessionStorage.getItem('ot-parent-token');if(token)fetch('/api/ot/parent/logout',{method:'POST',headers:{Authorization:'Bearer '+token}}).catch(()=>{});socket?.disconnect();socket=null;sessionStorage.removeItem('ot-parent-token');blank('');el('parentLogin').hidden=false;el('parentDashboard').hidden=true;el('parentLogout').hidden=true}
+ function logout(){window.OTDemoAttention?.reset();wanted=false;shareId=null;blocked=false;const token=sessionStorage.getItem('ot-parent-token');if(token)fetch('/api/ot/parent/logout',{method:'POST',headers:{Authorization:'Bearer '+token}}).catch(()=>{});socket?.disconnect();socket=null;sessionStorage.removeItem('ot-parent-token');blank('');el('parentLogin').hidden=false;el('parentDashboard').hidden=true;el('parentLogout').hidden=true}
  function videoReceived(stream){if(blocked)return;el('childScreen').srcObject=stream;lastAt=Date.now();lastFrames=0;el('childScreen').play().catch(()=>status('Chạm vào màn hình để phát.'))}
  function connectionChanged(state){if(blocked)return;if(['failed','disconnected','closed'].includes(state))fallback()}
  function connect(token){socket?.disconnect();blocked=false;wanted=false;shareId=null;el('parentLogin').hidden=true;el('parentDashboard').hidden=false;el('parentLogout').hidden=false;status('Đang kết nối…');
   socket=io('/ot-family',OTFamilySocketOptions({role:'parent',token}));
+  window.OTDemoAttention?.bind(socket);
   socket.on('ready',d=>{config=d.rtcConfig});
   socket.on('status',d=>{
    el('childName').textContent=d.studentName;el('childClass').textContent='Lớp '+d.classCode;

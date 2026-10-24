@@ -1,0 +1,128 @@
+'use strict';
+const test = require('node:test'), assert = require('node:assert/strict');
+const create = require('../lib/family-demo-attention');
+function harness() {
+    let time = 100000, denied = false;
+    const viewers = [], child = {id: 1, student_code: 'FBN20310'};
+    const tracker = create({parents: id => viewers.filter(p => p.data.child.id === id), blocked: () => denied, now: () => time});
+    function socket(id, role = 'student', info = child) {
+        const handlers = {}, received = [];
+        const s = {id, data: {role, child: info, token: id + '-token'},
+            on: (name, fn) => handlers[name] = fn, emit: (name, data) => received.push({name, data}),
+            fire: (name, data) => handlers[name]?.(data), get last() {return received.at(-1)?.data;}, received};
+        if (role === 'parent') viewers.push(s);
+        tracker.connect(s); return s;
+    }
+    return {tracker, socket, advance: ms => {time += ms; tracker.tick();}, block: value => {denied = value; tracker.refresh();}};
+}
+
+test('all demo parents receive server thresholds; late viewers get the same timestamp and other accounts get nothing', () => {
+    const h = harness(), student = h.socket('student'), parents = Array.from({length: 12}, (_, i) => h.socket('p' + i, 'parent'));
+    const other = h.socket('other', 'parent', {id: 2, student_code: 'FBN12345'});
+    student.fire('study-visibility', {visibility: 'hidden', sequence: 1});
+    assert(parents.every(p => p.last.level === 'pending'));
+    h.advance(9999); assert.equal(parents[0].last.level, 'pending');
+    h.advance(1); assert(parents.every(p => p.last.level === 'warning' && p.last.since === 100000));
+    const late = h.socket('late', 'parent'); assert.equal(late.last.since, parents[0].last.since);
+    const count = parents[0].received.length;
+    h.advance(1000); assert.equal(parents[0].received.length, count, 'no per-second notification flooding');
+    h.advance(19000); assert(parents.every(p => p.last.level === 'urgent'));
+    student.fire('study-visibility', {visibility: 'visible', sequence: 2});
+    assert(parents.every(p => p.last.mode === 'active' && p.last.lastDuration === 30000));
+    assert.equal(other.received.length, 0);
+});
+
+test('mobile suspension and disconnect stay distinct from known hidden-page events', () => {
+    const h = harness(), student = h.socket('student'), parent = h.socket('p', 'parent');
+    h.advance(20000); assert.equal(parent.last.mode, 'disconnected');
+    student.fire('study-visibility', {visibility: 'visible', sequence: 1}); assert.equal(parent.last.mode, 'active');
+    student.fire('study-visibility', {visibility: 'hidden', sequence: 2});
+    h.advance(5000); student.fire('disconnect'); h.advance(5000);
+    assert.equal(parent.last.mode, 'away'); assert.equal(parent.last.level, 'warning');
+    const next = h.socket('new');
+    next.fire('study-visibility', {visibility: 'hidden', sequence: 1});
+    assert.equal(parent.last.since, 120000, 'reconnection in the background keeps the original departure');
+    student.fire('study-visibility', {visibility: 'visible', sequence: 3}); assert.equal(parent.last.mode, 'away');
+    next.fire('study-visibility', {visibility: 'visible', sequence: 2}); assert.equal(parent.last.lastDuration, 10000);
+});
+
+test('HTTP fallback authenticates ownership, ignores delayed duplicates, and respects teacher suppression', () => {
+    const h = harness(), s = h.socket('student'), p = h.socket('p', 'parent');
+    assert.equal(h.tracker.reportHttp({token: 'wrong', socketId: s.id, visibility: 'hidden', sequence: 1}), false);
+    assert.equal(h.tracker.reportHttp({token: s.data.token, socketId: s.id, visibility: 'hidden', sequence: 1}), true);
+    s.fire('study-visibility', {visibility: 'visible', sequence: 2});
+    h.tracker.reportHttp({token: s.data.token, socketId: s.id, visibility: 'hidden', sequence: 1});
+    assert.equal(p.last.mode, 'active');
+    assert.doesNotThrow(() => {s.fire('study-visibility', null);s.fire('study-visibility', 'hidden');s.fire('study-visibility', {visibility: 'hidden', sequence: Infinity});});
+    h.block(true); s.fire('study-visibility', {visibility: 'hidden', sequence: 3}); h.advance(30000);
+    assert.equal(p.last.mode, 'paused'); h.block(false); assert.equal(p.last.level, 'urgent');
+});
+
+test('demo tablet establishes the family connection without requesting screen capture', async () => {
+    const vm = require('node:vm'), fs = require('node:fs'), calls = [];
+    const context = {window: {OTFamily: {connect: (...args) => calls.push(['connect', ...args]), attachStream: () => calls.push(['capture']), disconnect() {}}},
+        document: {getElementById: () => null}, sessionStorage: {setItem() {}},
+        fetch: async () => ({ok: true, json: async () => ({success: true, token: 'demo-token', student: {student_code: 'FBN20310'}})})};
+    vm.runInNewContext(fs.readFileSync('public/portal/family-session.js', 'utf8'), context);
+    await context.window.FPTBNFamilySession.start('FBN20310', null);
+    assert.equal(calls.length, 1); assert.equal(calls[0][0], 'connect'); assert.equal(calls[0][1], 'demo-token');
+});
+
+test('mobile visibility adapter sends ordered events and a durable hidden-page beacon without capturing', () => {
+    const vm = require('node:vm'), fs = require('node:fs');
+    const handlers = {}, events = {}, emitted = [], beacons = [], intervals = [];
+    const elements = Object.fromEntries(['familyStart', 'familyStop', 'familyMessage'].map(id => [id, {}]));
+    const socket = {id: 'demo-socket', connected: true, emit: (...args) => emitted.push(args),
+        on: (name, fn) => handlers[name] = fn, disconnect() {}};
+    const context = {window: {addEventListener() {}}, document: {visibilityState: 'visible',
+        addEventListener: (name, fn) => events[name] = fn, getElementById: id => elements[id],
+        querySelector: () => ({after() {}}), createElement: () => ({remove() {}})},
+        navigator: {sendBeacon: (...args) => {beacons.push(args); return true;}}, Blob,
+        io: () => socket, OTFamilySocketOptions: value => value,
+        setInterval: fn => {intervals.push(fn); return intervals.length;}, clearInterval() {}, clearTimeout() {}};
+    vm.runInNewContext(fs.readFileSync('public/ot/family-student.js', 'utf8'), context);
+    context.window.OTFamily.connect('demo-token');
+    handlers.ready({rtcConfig: {}, demoAttention: true});
+    assert.equal(emitted.at(-1)[1].visibility, 'visible');
+    context.document.visibilityState = 'hidden'; events.visibilitychange();
+    assert.equal(emitted.at(-1)[1].visibility, 'hidden'); assert.equal(beacons.length, 1);
+    const previous = emitted.at(-1)[1].sequence;
+    context.document.visibilityState = 'visible'; events.visibilitychange();
+    assert(emitted.at(-1)[1].sequence > previous);
+    assert(!emitted.some(([name]) => name === 'start'), 'no nonexistent mobile video share');
+});
+
+test('real Socket.IO broadcasts demo state to three parents and HTTP fallback rejects invalid tokens', async () => {
+    const express = require('express'), http = require('node:http'), {Server} = require('socket.io');
+    const {io: client} = require(require('node:path').join(require.resolve('socket.io'), '../../client-dist/socket.io.js'));
+    const app = express(), server = http.createServer(app), io = new Server(server), sockets = [];
+    const child = {id: 1, student_code: 'FBN20310', full_name: 'Demo', class_code: '9A3'};
+    app.use(express.json());
+    const mounted = require('../lib/ot-family')(app, {io, lookup: async () => child,
+        authenticateStudent: async token => {if (token !== 'valid') throw Error('invalid');return child;}});
+    await new Promise(r => server.listen(0, '127.0.0.1', r));
+    const url = 'http://127.0.0.1:' + server.address().port;
+    function event(socket, name, predicate = () => true) {return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {socket.off(name, done);reject(Error('Timeout ' + name));}, 2000);
+        function done(data) {if (!predicate(data)) return;clearTimeout(timer);socket.off(name, done);resolve(data);}
+        socket.on(name, done);
+    });}
+    async function connect(role, token) {
+        const s = client(url + '/ot-family', {auth: {role, token}, transports: ['websocket'], autoConnect: false, reconnection: false});
+        sockets.push(s); const ready = event(s, 'ready');s.connect();assert.equal((await ready).demoAttention, true);return s;
+    }
+    try {
+        const student = await connect('student', 'valid'), parents = [];
+        for (let i = 0; i < 3; i++) {
+            const response = await fetch(url + '/api/ot/parent/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: 'FBN20310PH'})});
+            parents.push(await connect('parent', (await response.json()).token));
+        }
+        const hidden = parents.map(s => event(s, 'study-status', d => d.mode === 'away'));
+        student.emit('study-visibility', {visibility: 'hidden', sequence: 1});
+        const data = await Promise.all(hidden);assert(data.every(d => d.since === data[0].since));
+        const returned = parents.map(s => event(s, 'study-status', d => d.mode === 'active'));
+        const post = token => fetch(url + '/api/ot/demo-attention', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token, socketId: student.id, visibility: 'visible', sequence: 2})});
+        assert.equal((await post('invalid')).status, 403);assert.equal((await post('valid')).status, 204);
+        await Promise.all(returned);
+    } finally {for (const s of sockets) s.disconnect();mounted.close();await new Promise(r => io.close(r));server.close();}
+});

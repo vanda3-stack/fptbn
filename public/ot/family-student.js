@@ -1,6 +1,21 @@
 'use strict';
 (()=>{
  let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0,streamOwned=true,externalEndedCleanup=null,accessBlocked=false;
+ let attentionEnabled=false,attentionTimer=null,attentionSequence=0;
+ function reportVisibility(durable=false){
+  if(!attentionEnabled||!socket?.connected)return;
+  const visibility=document.visibilityState==='hidden'?'hidden':'visible';
+  const report={visibility,sequence:++attentionSequence};
+  socket.emit('study-visibility',report);
+  // Flush the last mobile visibility transition before the browser suspends us.
+  if(durable){
+   const body=JSON.stringify({token:currentToken,socketId:socket.id,...report});
+   try{if(navigator.sendBeacon?.('/api/ot/demo-attention',new Blob([body],{type:'application/json'})))return}catch{}
+   try{fetch('/api/ot/demo-attention',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{})}catch{}
+  }
+ }
+ document.addEventListener?.('visibilitychange',()=>reportVisibility(true));
+ window.addEventListener('pageshow',()=>reportVisibility());
  const el=id=>document.getElementById(id);
  const captureState=(state,text)=>{const node=el('familyCaptureState');if(node){node.dataset.state=state;node.textContent=text}};
  const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text;if(el('studyCaptureHelp'))el('studyCaptureHelp').textContent=text};
@@ -38,13 +53,13 @@
    announce();
   }catch(e){if(ticket!==generation)return;stop();const notices={NotAllowedError:'Em chưa cấp quyền chia sẻ. Nếu dùng Mac, hãy kiểm tra quyền Ghi màn hình dành cho trình duyệt trong Cài đặt hệ thống.',NotReadableError:'Không đọc được màn hình. Em hãy kiểm tra quyền Ghi màn hình của trình duyệt rồi thử lại.',InvalidStateError:'Em hãy bấm trực tiếp nút Chia sẻ khi đang mở trang ôn tập.',AbortError:'Đã hủy chia sẻ. Em có thể bấm chia sẻ lại.'};const reason=notices[e.name]||e.message;captureState('error','Chưa chia sẻ được màn hình: '+reason);message(reason)}
  }
- function disconnect(){stop();socket?.disconnect();socket=null;currentToken='';config=null;panel?.remove();panel=null}
+ function disconnect(){clearInterval(attentionTimer);attentionTimer=null;attentionEnabled=false;stop();socket?.disconnect();socket=null;currentToken='';config=null;panel?.remove();panel=null}
  function connect(token,onChange,options={}){if(socket&&currentToken===token){if(onChange)onSharingChange=onChange;return}disconnect();onSharingChange=onChange||null;currentToken=token;
   panel=document.createElement('section');panel.className='family-panel'+(options.compact?' family-panel-compact':'');panel.innerHTML='<h2>PH đồng hành cùng em</h2><p>Chọn Toàn bộ màn hình để chia sẻ phiên ôn tập. Người nhập đúng Mã HS + PH có thể xem màn hình em chia sẻ, kể cả nội dung ngoài trang này. Hệ thống không ghi video.</p><p id="familyCaptureState" class="capture-state" data-state="idle" role="status">Chưa chia sẻ màn hình. PH chưa thể xem.</p><p id="familyMessage" role="status">Em bấm chia sẻ và chọn Toàn bộ màn hình.</p><div class="toolbar"><button id="familyStart" class="primary">Chia sẻ toàn màn hình cho PH</button><button id="familyStop" disabled>Dừng chia sẻ</button></div><video id="familyLocalVideo" autoplay muted playsinline hidden aria-label="Màn hình máy HS đang chia sẻ"></video><p><a href="/PH.html" target="_blank" rel="noopener">Trang theo dõi dành cho PH ↗</a></p>';
   document.querySelector('header').after(panel);el('familyStart').onclick=options.getStream?()=>{if(!attachStream(options.getStream()))message('Màn hình đăng nhập không còn được chia sẻ. Em hãy chia sẻ lại ở trang chính.')}:start;el('familyStop').onclick=()=>stop();
   if(typeof io!=='function'){message('Chưa tải được chức năng chia sẻ. Em hãy tải lại trang.');return}
   socket=io('/ot-family',OTFamilySocketOptions({role:'student',token}));
-  socket.on('ready',d=>{config=d.rtcConfig;if(stream)announce();else{el('familyStart').disabled=starting;message('Sẵn sàng. Em bấm chia sẻ và chọn Toàn bộ màn hình.')}});
+  socket.on('ready',d=>{config=d.rtcConfig;attentionEnabled=d.demoAttention===true;clearInterval(attentionTimer);attentionTimer=null;if(attentionEnabled){reportVisibility();attentionTimer=setInterval(()=>reportVisibility(),5000);}if(stream)announce();else{el('familyStart').disabled=starting;message('Sẵn sàng. Em bấm chia sẻ và chọn Toàn bộ màn hình.')}});
   socket.on('parent-access',d=>{accessBlocked=d.blocked===true;if(accessBlocked){clearInterval(previewTimer);previewTimer=null;closePeers();earlyIce.clear();message(d.message)}else if(stream){message('Đang chia sẻ màn hình tới PH.')}});
   socket.on('preview-needed',d=>previews(d.count));
   socket.on('share-replaced',()=>{stop(false);message('Đã dừng chia sẻ vì em bắt đầu chia sẻ ở một tab khác.')});
