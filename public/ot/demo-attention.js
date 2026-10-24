@@ -19,7 +19,7 @@
         body.replaceChildren();
         el('demoHistory').hidden = data.mode === 'paused';
         el('demoHistoryEmpty').hidden = rows.length > 0;
-        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký trên máy chủ. Các mốc hiện tại chưa được bảo đảm lưu lại.' : `Thống kê chốt lúc ${stamp(data.historyCapturedAt)} (giờ Việt Nam) · 100 lần gần nhất. Đăng xuất và đăng nhập lại để cập nhật.`;
+        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký trên máy chủ. Các mốc hiện tại chưa được bảo đảm lưu lại.' : `Phiên theo dõi từ ${stamp(data.historyCapturedAt)} (giờ Việt Nam) · Chỉ ghi nhận sự kiện từ lúc PH đăng nhập.`;
         for (const row of rows) {
             const tr = document.createElement('tr');
             const kind = row.kind === 'away' ? 'Trang ôn tập bị ẩn' : 'Mất tín hiệu thiết bị';
@@ -45,7 +45,7 @@
         el('demoAttentionMessage').textContent = message;
         el('demoAttentionClock').textContent = data.mode === 'active' && data.returnedAt
             ? `Quay lại lúc ${stamp(data.returnedAt)} · Thời gian vắng: ${duration(data.lastDuration)}`
-            : ['away', 'disconnected'].includes(data.mode) ? `Ghi nhận lúc ${stamp(data.since)}` : '';
+            : data.priorToLogin ? 'Trạng thái đã có trước phiên theo dõi hiện tại.' : ['away', 'disconnected'].includes(data.mode) ? `Ghi nhận lúc ${stamp(data.since)}` : '';
         renderHistory(data);
         const key = [data.mode, data.level, data.since, data.returnedAt].join(':');
         if (key !== lastSound && ['warning', 'urgent'].includes(data.level)) beep();

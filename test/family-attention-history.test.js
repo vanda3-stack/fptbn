@@ -14,6 +14,7 @@ test('journal persists departure, return and duration across reloads without ove
         assert.equal(rows[1].durationMs, 15000);assert.equal(rows[1].endReason, 'returned');
         assert.equal(rows[0].kind, 'disconnected');assert.equal(restored.saved, true);
         rows[1].startedAt = 0;assert.equal(restored.recent()[1].startedAt, 1000);
+        restored.clear();assert.equal(createHistory(file).recent().length, 0);assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), []);
     } finally {fs.rmSync(folder, {recursive: true, force: true});}
 });
 
@@ -28,12 +29,12 @@ test('restart preserves an unfinished incident without inventing a return or a d
     } finally {fs.rmSync(folder, {recursive: true, force: true});}
 });
 
-test('a parent reconnect receives retained incidents even before the student reconnects', () => {
+test('a new parent login starts empty even if older incidents exist', () => {
     const history = createHistory();history.begin('away', 1000);history.finish(11000);
     const tracker = require('../lib/family-demo-attention')({parents: () => [], blocked: () => false, now: () => 20000, history});
     let snapshot;
     tracker.connect({data: {role: 'parent', child: {id: 1, student_code: 'FBN20310'}}, emit: (_, data) => snapshot = data});
-    assert.equal(snapshot.mode, 'waiting');assert.equal(snapshot.history[0].durationMs, 10000);assert.equal(snapshot.historySaved, true);
+    assert.equal(snapshot.mode, 'waiting');assert.equal(snapshot.history.length, 0);assert.equal(snapshot.historySaved, true);
 });
 
 test('malformed existing journal remains intact and reports a save failure', () => {

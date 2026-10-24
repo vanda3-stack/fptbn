@@ -16,14 +16,14 @@ function harness() {
     return {tracker, socket, advance: ms => {time += ms; tracker.tick();}, block: value => {denied = value; tracker.refresh();}};
 }
 
-test('all demo parents receive server thresholds; late viewers get the same timestamp and other accounts get nothing', () => {
+test('demo parents receive thresholds while late logins exclude old incidents and other accounts get nothing', () => {
     const h = harness(), student = h.socket('student'), parents = Array.from({length: 12}, (_, i) => h.socket('p' + i, 'parent'));
     const other = h.socket('other', 'parent', {id: 2, student_code: 'FBN12345'});
     student.fire('study-visibility', {visibility: 'hidden', sequence: 1});
     assert(parents.every(p => p.last.level === 'pending'));
     h.advance(9999); assert.equal(parents[0].last.level, 'pending');
     h.advance(1); assert(parents.every(p => p.last.level === 'warning' && p.last.since === 100000));
-    const late = h.socket('late', 'parent'); assert.equal(late.last.since, parents[0].last.since);
+    const late = h.socket('late', 'parent'); assert.equal(late.last.since, null);assert.equal(late.last.priorToLogin, true);assert.equal(late.last.history.length, 0);
     const count = parents[0].received.length;
     h.advance(1000); assert.equal(parents[0].received.length, count, 'no per-second notification flooding');
     h.advance(19000); assert(parents.every(p => p.last.level === 'urgent'));
