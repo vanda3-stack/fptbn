@@ -10,7 +10,9 @@
     }
     let previous=0;
     function select(index) {
-        if (!ready && index !== 0) return;
+        if (!ready && index === 1) index = 0;
+        const join=document.getElementById('joinPage');
+        join.hidden=index!==0||ready;
         if(previous===2&&index!==2)window.dispatchEvent(new Event('mock-tab-hidden'));
         if(index===2)window.dispatchEvent(new Event('mock-tab-show'));
         previous=index;
@@ -33,10 +35,10 @@
     }
     window.addEventListener('student-portal-access', event => {
         ready = event.detail === true;
-        navigation.hidden = !ready;
+        navigation.hidden = false;
         if (!ready) select(0);
     });
-    navigation.hidden = true;
+    navigation.hidden = false;
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index));
         tab.addEventListener('keydown', event => {
@@ -48,3 +50,4 @@
         });
     });
 })();
+

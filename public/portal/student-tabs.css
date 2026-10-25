@@ -33,3 +33,6 @@
 
 
 .student-exit{min-height:36px;padding:6px 12px;border:1px solid #fb7185;border-radius:9px;color:#fecdd3;background:#481b25;font:inherit;font-size:12px;cursor:pointer}.student-exit[hidden]{display:none!important}.student-exit:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+
+#joinPage[hidden]{display:none!important}.student-header-tools{flex-wrap:wrap}.student-tabs{max-width:100%;overflow-x:auto}
+
