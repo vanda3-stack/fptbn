@@ -951,6 +951,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 </style>
 
 <link rel="stylesheet" href="/portal/student-tabs.css?v=1">
+<link rel="stylesheet" href="/portal/mock-exams.css?v=1">
 </head>
 
 
@@ -980,6 +981,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
     <nav class="student-tabs" role="tablist" aria-label="Hoạt động học tập">
         <button id="classTab" role="tab" aria-selected="true" aria-controls="classPanel" type="button">Học tại lớp</button>
         <button id="reviewTab" role="tab" aria-selected="false" aria-controls="reviewPanel" tabindex="-1" type="button">Ôn tập tại nhà</button>
+        <button id="examTab" role="tab" aria-selected="false" aria-controls="examPanel" tabindex="-1" type="button">Thi thử</button>
     </nav>
     <div id="classPanel" role="tabpanel" aria-labelledby="classTab">
     <!-- ==========================================
@@ -1149,6 +1151,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
         <p id="reviewClassNotice" class="review-intro" hidden>Phiên chia sẻ màn hình trên lớp vẫn đang hoạt động khi em ôn tập.</p>
         <div id="reviewMount"></div>
     </section>
+    <section id="examPanel" role="tabpanel" aria-labelledby="examTab" hidden></section>
     <!-- ==========================================
          SOCKET.IO
     =========================================== -->
@@ -1168,7 +1171,8 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 
 
 <script src="/js/class-resources.js"></script>
-<script src="/portal/student-tabs.js?v=1"></script>
+<script src="/portal/mock-exams.js?v=1"></script>
+<script src="/portal/student-tabs.js?v=2"></script>
 </body>
 
 </html>

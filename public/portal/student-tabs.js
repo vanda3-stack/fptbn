@@ -1,13 +1,17 @@
 'use strict';
 // Keep the existing classroom document and its WebRTC session alive on tab changes.
 (() => {
-    const tabs = [document.getElementById('classTab'), document.getElementById('reviewTab')];
-    const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel')];
+    const tabs = [document.getElementById('classTab'), document.getElementById('reviewTab'), document.getElementById('examTab')];
+    const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel'), document.getElementById('examPanel')];
     let frame = null;
     function visibility(visible) {
         if (frame?.contentWindow) frame.contentWindow.dispatchEvent(new CustomEvent('ot-portal-visibility', {detail: visible}));
     }
+    let previous=0;
     function select(index) {
+        if(previous===2&&index!==2)window.dispatchEvent(new Event('mock-tab-hidden'));
+        if(index===2)window.dispatchEvent(new Event('mock-tab-show'));
+        previous=index;
         tabs.forEach((tab, i) => {
             tab.setAttribute('aria-selected', String(i === index));
             tab.tabIndex = i === index ? 0 : -1;
@@ -30,9 +34,10 @@
         tab.addEventListener('keydown', event => {
             if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
             event.preventDefault();
-            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 1 : 1 - index;
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (index + (event.key === 'ArrowLeft' ? 2 : 1)) % 3;
             select(next);
             tabs[next].focus();
         });
     });
 })();
+
