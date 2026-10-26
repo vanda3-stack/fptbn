@@ -21,6 +21,7 @@
   const alert=el('demoAttention');mirror.alert.hidden=alert.hidden;
   mirror.alert.dataset.level=alert.dataset.level||'waiting';
   mirror.alert.textContent=el('demoAttentionMessage').textContent+' '+el('demoAttentionClock').textContent;
+  if(el('screenSharingStatus')&&!el('screenSharingStatus').hidden)mirror.alert.textContent+=' · '+el('screenSharingMessage').textContent+' '+el('screenSharingTime').textContent;
   const live=!video.hidden&&video.srcObject;
   if(mirror.video.srcObject!==(live?video.srcObject:null)){mirror.video.srcObject=live?video.srcObject:null;if(live)mirror.video.play().catch(()=>{})}
   mirror.video.hidden=!live;
