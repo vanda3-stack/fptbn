@@ -84,7 +84,17 @@
    if(stream){starting=false;el('familyStart').disabled=false;el('familyStart').textContent='Kết nối lại tới PH';captureState('live','Màn hình vẫn đang được cấp quyền trên máy HS. Đang nối lại tới PH.');onSharingChange?.(false);message('Mất kết nối máy chủ ('+reason+'). Đang tự kết nối lại tới PH; không cần chọn lại màn hình. Em vẫn có thể Dừng chia sẻ.')}
    else message('Mất kết nối máy chủ ('+reason+'). Đang thử kết nối lại…');
   });
-  socket.on('connect_error',e=>{
+  socket.on('connect_error',async e=>{
+   if(/hết hạn/.test(e.message||'')&&globalThis.FPTBNConnection){
+    const connection=socket;
+    try{
+     const code=JSON.parse(sessionStorage.getItem('ot-student-info')||'null')?.student_code;
+     const data=await FPTBNConnection.refresh(code);
+     if(socket!==connection)return;
+     currentToken=data.token;connection.auth={...connection.auth,token:data.token};connection.connect();
+    }catch(error){if(socket===connection)message(error.message)}
+    return;
+   }
    if(/hết hạn|xác thực|Mã HS|Vai trò/.test(e.message||'')){stop(false);message('Phiên chia sẻ không hợp lệ: '+e.message+'. Em hãy đăng xuất và nhập lại mã HS.');return}
    message((stream?'Màn hình vẫn được cấp quyền. ':'')+'Chưa nối được tới PH: '+(e.message||'lỗi mạng')+'. Hệ thống đang thử lại.');
   });

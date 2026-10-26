@@ -17,14 +17,14 @@
    if(!/^FBN\d{5}$/.test(code))throw Error('Em hãy đăng nhập trang chính trước.');
    let auth=documentSession?.student?.student_code===code?documentSession.token:identity?.student?.student_code===code?identity.token:stored?.student_code===code?sessionStorage.getItem('ot-student-token'):'';
    async function login(){
-    const r=await fetch('/api/ot/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_code:code}),cache:'no-store'}),d=await r.json();
+    const r=globalThis.FPTBNConnection?{ok:true,json:()=>FPTBNConnection.refresh(code)}:await fetch('/api/ot/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_code:code}),cache:'no-store'}),d=await r.json();
     if(!r.ok||!d.success||!d.token||d.student?.student_code!==code)throw Error(d.message||'Phiên đăng nhập chưa sẵn sàng.');
     if(ticket!==generation)return '';
     documentSession={token:d.token,student:d.student};return d.token;
    }
    if(!auth)auth=await login();
    if(ticket!==generation)return;
-   const load=token=>fetch('/api/ot/documents',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+   const load=async token=>{if(globalThis.FPTBNConnection){const result=await FPTBNConnection.ot('/documents',undefined,undefined,token,code);return {ok:true,json:async()=>result.data}}return fetch('/api/ot/documents',{headers:{Authorization:'Bearer '+token},cache:'no-store'})};
    let r=await load(auth);
    if(r.status===401){auth=await login();if(ticket!==generation)return;r=await load(auth)}
    const d=await r.json();

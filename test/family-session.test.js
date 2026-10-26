@@ -24,8 +24,9 @@ test('initial class confirmation authenticates PH publishing and attaches the ex
     h.session.stop();
     assert.equal(h.calls.at(-1)[0], 'disconnect');
     const next = {active: true};
+    assert.equal(h.session.identity(), null);
     await h.session.start('FBN12345', next);
-    assert.equal(h.calls.filter(x => x[0] === 'login').length, 1);
+    assert.equal(h.calls.filter(x => x[0] === 'login').length, 2);
     assert.equal(h.calls.at(-1)[1], next);
 });
 

@@ -3,7 +3,7 @@
  const host=document.getElementById('examPanel'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let auth='',a=null,pos=0,events=[],saving=false,pending=false,active=false,offset=0;
  const message=s=>{const n=host.querySelector('[data-status]');if(n){n.textContent=s;n.hidden=!s}};
- const request=async(path,body)=>{const r=await fetch('/api/ot'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Không thể kết nối.');return d};
+ const request=async(path,body)=>{if(globalThis.FPTBNConnection){const result=await FPTBNConnection.ot(path,body,undefined,auth);auth=result.token;return result.data}const r=await fetch('/api/ot'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Không thể kết nối.');return d};
  const event=kind=>{if(active)events.push({id:crypto.randomUUID(),kind})};
  globalThis.ExamInputGuard.install(host,()=>active);
  async function login(){host.innerHTML='<div class="exam-card"><h1>Thi thử</h1><p>Nhập mã học sinh để xem đề thi của lớp.</p><form><label>FBN <input name="code" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" required aria-label="5 số mã học sinh"></label><button>Vào thi thử</button><p data-status role="status"></p></form></div>';host.querySelector('form').onsubmit=async e=>{e.preventDefault();try{await authenticate('FBN'+e.target.elements.code.value);await list()}catch(e){message(e.message)}}}

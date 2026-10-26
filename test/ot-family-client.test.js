@@ -18,7 +18,7 @@ function harness(surface='monitor',captureError=null){
  sandbox.OTFamilySocketOptions=sandbox.window.OTFamilySocketOptions;
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/ot/family-student.js'),'utf8'),sandbox);
  sandbox.window.OTFamily.connect('student-token');
- return {elements,handlers,sent,track,socket,stream,createdPeers,family:sandbox.window.OTFamily,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
+ return {sandbox,elements,handlers,sent,track,socket,stream,createdPeers,family:sandbox.window.OTFamily,expire:()=>timers.forEach(fn=>fn()),get captures(){return captures},get options(){return options},async click(){active=true;const promise=elements.familyStart.onclick();active=false;await promise},ready(){socket.connected=true;handlers.ready({rtcConfig:{iceServers:[]}})}};
 }
 test('capture opens from click before socket readiness and announces when ready',async()=>{const h=harness();assert.equal(h.elements.familyStart.disabled,false);await h.click();assert.equal(h.captures,1);assert.equal(h.track.stopped,false);assert.equal(h.sent.includes('start'),false);h.ready();assert.equal(h.sent.includes('start'),true);assert.match(h.elements.familyMessage.textContent,/Đang chia sẻ/);assert.equal(h.options.audio,false);h.track.onended();assert.equal(h.track.stopped,true);assert.equal(h.elements.familyStart.disabled,false);assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,true)});
 test('browsers without surface metadata can share; known window/tab capture is rejected',async()=>{const unknown=harness(null);unknown.ready();await unknown.click();assert.equal(unknown.track.stopped,false);assert(unknown.sent.includes('start'));for(const surface of ['window','browser']){const h=harness(surface);h.ready();await h.click();assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.match(h.elements.familyMessage.textContent,/Toàn bộ màn hình/)} });
@@ -27,7 +27,7 @@ test('server revocation still stops capture instead of reconnecting an unauthori
 
 test('stop remains available while choosing a screen and cancels late capture',async()=>{const h=harness();const pending=h.click();assert.equal(h.elements.familyStop.hidden,false);assert.equal(h.elements.familyStop.disabled,false);assert.match(h.elements.familyStop.textContent,/Hủy/);h.elements.familyStop.onclick();await pending;assert.equal(h.track.stopped,true);assert(!h.sent.includes('start'));assert.equal(h.elements.familyStop.disabled,true)});
 
-test('homework and classroom load the same screen capture helper with the original classroom constraints',()=>{const c=capture.constraints();assert.equal(c.video.frameRate.max,3);assert.equal(c.video.width.max,960);assert.equal(c.video.height.max,540);assert.equal(c.video.displaySurface,'monitor');assert.equal(c.selfBrowserSurface,'exclude');assert.equal(c.audio,false);assert.equal(capture.constraints('retry').video.frameRate.max,6);for(const name of ['index.html','exam.html','baitap.html','OT.html']){const html=fs.readFileSync(require('node:path').join(__dirname,'../public',name),'utf8');assert(html.indexOf('/js/screen-capture.js')<html.indexOf(name==='index.html'||name==='exam.html'?'/js/student.js':'/ot/family-student.js'))}});
+test('homework and classroom load the same screen capture helper with the original classroom constraints',()=>{const c=capture.constraints();assert.equal(c.video.frameRate.max,3);assert.equal(c.video.width.max,960);assert.equal(c.video.height.max,540);assert.equal(c.video.displaySurface,'monitor');assert.equal(c.selfBrowserSurface,'exclude');assert.equal(c.audio,false);assert.equal(capture.constraints('retry').video.frameRate.max,6);for(const name of ['public/index.html','views/review.html']){const html=fs.readFileSync(require('node:path').join(__dirname,'..',name),'utf8');assert(html.indexOf('/js/screen-capture.js')<html.indexOf(name==='public/index.html'?'/js/student.js':'/ot/family-student.js'))}});
 
 test('permission rejection remains visible when socket readiness or disconnect arrives',async()=>{const h=harness('monitor',Object.assign(Error('denied'),{name:'NotAllowedError'}));await h.click();assert.equal(h.elements.familyCaptureState.dataset.state,'error');const notice=h.elements.familyCaptureState.textContent;h.ready();assert.equal(h.elements.familyCaptureState.textContent,notice);h.handlers.disconnect();assert.equal(h.elements.familyCaptureState.textContent,notice);assert(!h.sent.includes('start'))});
 
@@ -66,4 +66,14 @@ test('teacher access block closes existing PH peers without stopping the classro
  h.handlers['parent-access']({blocked:false});
  await h.handlers.signal({peer:'parent',shareId:'share-1',kind:'offer',data:{}});
  assert.equal(h.createdPeers.length,2);assert.equal(h.captures,0);
+});
+
+
+test('expired family token after a server restart refreshes authentication without stopping capture',async()=>{
+ const h=harness();h.ready();await h.click();let connections=0;
+ h.socket.auth={role:'student',token:'old'};h.socket.connect=()=>connections++;
+ h.sandbox.sessionStorage={getItem:()=>JSON.stringify({student_code:'FBN12345'})};
+ h.sandbox.FPTBNConnection={refresh:async code=>{assert.equal(code,'FBN12345');return {token:'new'}}};
+ await h.handlers.connect_error(Error('Phiên học sinh hết hạn.'));
+ assert.equal(h.socket.auth.token,'new');assert.equal(connections,1);assert.equal(h.track.stopped,false);
 });

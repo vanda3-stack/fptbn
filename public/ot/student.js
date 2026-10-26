@@ -1,7 +1,7 @@
 'use strict';
 const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let token=sessionStorage.getItem('ot-student-token')||'',student=null,pack=null,attempt=null,mode='flashcard',essayIndex=0,level=2,custom=false,busy=false;
-async function api(path,body,method){let res=await fetch('/api/ot'+path,{method:method||(body?'POST':'GET'),headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body?JSON.stringify(body):undefined});let d;try{d=await res.json()}catch{throw Error('Máy chủ chưa bật phân hệ ôn tập hoặc đang lỗi.')}if(!res.ok||!d.success){if(res.status===401){token='';sessionStorage.removeItem('ot-student-token');login()}throw Error(d.message||'Không thể xử lý yêu cầu.')}return d}
+async function api(path,body,method){if(globalThis.FPTBNConnection){const result=await FPTBNConnection.ot(path,body,method,token,student?.student_code);token=result.token;return result.data}let res=await fetch('/api/ot'+path,{method:method||(body?'POST':'GET'),headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body?JSON.stringify(body):undefined});let d;try{d=await res.json()}catch{throw Error('Máy chủ chưa bật phân hệ ôn tập hoặc đang lỗi.')}if(!res.ok||!d.success){if(res.status===401){token='';sessionStorage.removeItem('ot-student-token');login()}throw Error(d.message||'Không thể xử lý yêu cầu.')}return d}
 function error(e){alert(e.message||e)}
 function formatStudentCode(value){
  value=String(value).toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9]/g,'');

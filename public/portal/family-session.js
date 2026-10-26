@@ -8,7 +8,9 @@
         const ticket = ++generation;
         try {
             if (!session || session.student.student_code !== code) {
-                const response = await fetch('/api/ot/login', {
+                const response = globalThis.FPTBNConnection
+                    ? {ok:true,json:()=>FPTBNConnection.refresh(code)}
+                    : await fetch('/api/ot/login', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({student_code: code})
                 });
@@ -34,6 +36,7 @@
         generation++;
         requestedCode = '';
         requestedStream = null;
+        session = null;
         window.OTFamily?.disconnect();
     }
     window.FPTBNFamilySession = {start, stop, identity: () => session};

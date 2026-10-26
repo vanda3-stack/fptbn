@@ -78,3 +78,26 @@ test('view-only tablets rejoin after a transport reconnect and resend device hin
  assert.equal(joins[1].data.device.maxTouchPoints,5);
  assert.equal(h.captures,0);
 });
+
+
+test('first login waits for socket startup and then proceeds without a server-error alert',async()=>{
+ const h=setup();let waited=0;
+ vm.runInContext('socket.connected=false',h.context);
+ h.context.FPTBNConnection={waitForSocket:async()=>{waited++;vm.runInContext('socket.connected=true',h.context)},json:async(url,opts)=>(await h.context.fetch(url,opts)).json()};
+ await h.element('shareButton').click();
+ assert.equal(waited,1);assert(h.sent.some(e=>e.name==='student-join'));assert.equal(h.alerts.length,0);
+});
+
+test('a delayed desktop login requests a fresh click before capture when activation has expired',async()=>{
+ const h=setup({capture:'supported'});let next;
+ h.context.navigator.userActivation={isActive:false};
+ h.context.document.createElement=()=>({remove(){}});
+ h.element('status').append=b=>next=b;
+ // Use the actual status element id from the student document.
+ vm.runInContext('statusBox.append=b=>globalThis.continueCapture=b',h.context);
+ const pending=h.element('shareButton').click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(h.captures,0);assert(h.context.continueCapture);
+ h.context.continueCapture.onclick();await pending;
+ assert.equal(h.captures,1);assert(h.sent.some(e=>e.name==='student-join'));assert.equal(h.alerts.length,0);
+});

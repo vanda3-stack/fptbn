@@ -4938,7 +4938,9 @@ app.post("/api/student/login", async (req, res) => {
             error
         );
 
-        res.status(500).json({
+        const temporary = require("./lib/transient-db-error")(error);
+        if (temporary) res.set("Retry-After", "2");
+        res.status(temporary ? 503 : 500).json({
             success: false,
             message:
                 "Không thể đăng nhập học sinh"

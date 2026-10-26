@@ -257,7 +257,7 @@ socket.on(
         if (!joinedClass) {
 
             statusBox.textContent =
-                "🔴 Không kết nối được máy chủ";
+                "🟡 Đang kết nối máy chủ…";
 
         } else {
 
@@ -356,14 +356,17 @@ button.addEventListener(
         // =============================================
 
         if (!socket.connected) {
-
-            alert(
-                "Chưa kết nối được máy chủ.\n\n" +
-                "Hãy kiểm tra mạng và tải lại trang."
-            );
-
-            return;
-
+            button.disabled = true;
+            button.textContent = "Đang kết nối máy chủ…";
+            try {
+                await FPTBNConnection.waitForSocket(socket);
+            } catch (error) {
+                alert(error.message);
+                return;
+            } finally {
+                button.disabled = false;
+                button.textContent = "Vào lớp học →";
+            }
         }
 
 
@@ -376,7 +379,7 @@ button.addEventListener(
 
 
         button.textContent =
-            "Đang yêu cầu chia sẻ màn hình...";
+            "Đang xác nhận mã học sinh…";
 
 
         try {
@@ -385,8 +388,9 @@ button.addEventListener(
     // TRA THÔNG TIN HỌC SINH
     // =========================================
 
-    const loginResponse =
-        await fetch(
+    const loginResponse = globalThis.FPTBNConnection
+        ? {ok:true,json:async()=>FPTBNConnection.json("/api/student/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({student_code:code})},true)}
+        : await fetch(
             "/api/student/login",
             {
                 method: "POST",
@@ -464,7 +468,9 @@ button.addEventListener(
 
 
     // Kiểm tra mã đang được dùng TRƯỚC khi mở hộp thoại chia sẻ màn hình.
-    const sessionResponse = await fetch("/api/student/session-check", {
+    const sessionResponse = globalThis.FPTBNConnection
+        ? {ok:true,json:async()=>FPTBNConnection.json("/api/student/session-check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({student_code:studentCode})},true)}
+        : await fetch("/api/student/session-check", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({student_code:studentCode}),
@@ -494,7 +500,24 @@ button.addEventListener(
     let selectedTrack = null;
     if (!classroomViewOnly) {
         try {
-            screenStream = await FPTBNScreenCapture.capture('initial');
+            // A long reconnect can consume the browser's original click permission.
+            // Request a fresh click rather than turning that into a capture error.
+            if (navigator.userActivation?.isActive === false) {
+                statusBox.hidden = false;
+                statusBox.textContent = "Đã kết nối máy chủ. Bấm tiếp tục để chọn màn hình.";
+                const continueButton = document.createElement("button");
+                continueButton.textContent = "Tiếp tục chia sẻ màn hình";
+                statusBox.append(continueButton);
+                screenStream = await new Promise((resolve, reject) => {
+                    continueButton.onclick = () => {
+                        FPTBNScreenCapture.capture('initial').then(resolve, reject);
+                        continueButton.remove();
+                        statusBox.hidden = true;
+                    };
+                });
+            } else {
+                screenStream = await FPTBNScreenCapture.capture('initial');
+            }
         } catch (error) {
             if (error.name !== "NotSupportedError") throw error;
             classroomViewOnly = true;
