@@ -141,3 +141,17 @@ test('ordinary children have separate live states, histories and HTTP ownership'
  assert.equal(h.tracker.reportHttp({token:b.data.token,socketId:b.id,visibility:'visible',sequence:2},childB),true);
  assert.equal(pb.last.mode,'active');assert.equal(pa.last.mode,'away');
 });
+
+test('screen stop has its own timestamp, stays separate from tab status, and ignores other owners', () => {
+ const h=harness(), s=h.socket('s'), p=h.socket('p','parent');
+ assert.equal(p.last.screen,null,'devices without a shared screen have no screen warning');
+ h.tracker.sharing(s,'stopped');assert.equal(p.last.screen,null);
+ h.tracker.sharing(s,'live');assert.equal(p.last.screen.state,'live');
+ h.advance(5000);h.tracker.sharing(s,'stopped');
+ assert.equal(p.last.mode,'active');assert.equal(p.last.screen.state,'stopped');assert.equal(p.last.screen.since,105000);
+ s.fire('study-visibility',{visibility:'hidden',sequence:1});h.advance(10000);
+ assert.equal(p.last.mode,'away');assert.equal(p.last.since,105000);assert.equal(p.last.screen.since,105000);
+ const next=h.socket('next');h.tracker.sharing(next,'live');h.tracker.sharing(s,'stopped');assert.equal(p.last.screen.state,'live');
+ h.tracker.sharing(next,'disconnected');assert.equal(p.last.screen.state,'disconnected');
+ h.block(true);assert.equal(p.last.mode,'paused');assert.equal(p.last.screen,undefined);
+});
