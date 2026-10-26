@@ -38,15 +38,17 @@
     function render(data) {
         if (!data?.enabled) return reset();
         state = data;
-        const tablet = /iPad|Máy tính bảng/.test(data.device || '') && data.mode !== 'paused';
+        const tablet = /iPad|Máy tính bảng/.test(data.device || '');
+        const phone = /iPhone|Điện thoại/.test(data.device || '');
+        const activityOnly = (tablet || phone) && data.mode !== 'paused';
         if(el('tabletNotice')) {
-            el('tabletNotice').hidden = !tablet;
-            el('tabletNotice').textContent = tablet ? 'Con đang ôn tập bằng máy tính bảng. Hệ thống chỉ ghi nhận khi con rời trang ôn tập.' : '';
-            el('parentMonitor').dataset.device = tablet ? 'tablet' : '';
-            el('parentFloating').hidden = tablet;
-            if(tablet)window.OTParentFloating?.close();
+            el('tabletNotice').hidden = !activityOnly;
+            el('tabletNotice').textContent = activityOnly ? `Con đang ôn tập bằng ${phone ? 'điện thoại' : 'máy tính bảng'}. Hệ thống chỉ ghi nhận khi con rời trang ôn tập.` : '';
+            el('parentMonitor').dataset.device = activityOnly ? (phone ? 'phone' : 'tablet') : '';
+            el('parentFloating').hidden = activityOnly;
+            if(activityOnly)window.OTParentFloating?.close();
         }
-        const screen = tablet ? null : data.screen;
+        const screen = activityOnly ? null : data.screen;
         const box = el('demoAttention'); box.hidden = false; box.dataset.level = !['paused','waiting'].includes(data.mode) && (['left','disconnected'].includes(data.mode) || data.connected === false || screen?.state === 'stopped') ? 'urgent' : data.mode === 'away' ? (data.level === 'urgent' ? 'urgent' : 'warning') : data.level;
         const message = data.mode === 'paused' ? 'Con đang học trên lớp.'
             : data.mode === 'waiting' ? 'Con chưa đăng nhập.'
@@ -58,7 +60,7 @@
             : data.priorToLogin ? '' : ['away', 'disconnected', 'left'].includes(data.mode) && data.since != null ? `Từ ${clock(data.since)}` : '';
         const screenRow = el('screenSharingStatus');
         if (screenRow) {
-            screenRow.hidden = tablet || !screen || ['paused', 'waiting'].includes(data.mode);
+            screenRow.hidden = activityOnly || !screen || ['paused', 'waiting'].includes(data.mode);
             screenRow.dataset.state = screen?.state || '';
             el('screenSharingMessage').textContent = !screen ? '' : screen.state === 'live' ? 'Đang chia sẻ màn hình.' : screen.state === 'stopped' ? 'Đã dừng chia sẻ màn hình.' : 'Mất kết nối màn hình.';
             el('screenSharingTime').textContent = !screen || data.mode === 'paused' || screen.since == null ? '' : `Từ ${clock(screen.since)}`;
