@@ -37,23 +37,29 @@
     function render(data) {
         if (!data?.enabled) return reset();
         state = data;
-        const box = el('demoAttention'); box.hidden = false; box.dataset.level = data.level;
-        const message = data.mode === 'paused' ? 'Con đang học trên lớp. Theo dõi PH tạm dừng.'
-            : data.mode === 'waiting' ? 'Đang chờ con đăng nhập.'
-            : data.mode === 'active' ? (data.returnedAt ? 'Con đã quay lại ôn tập.' : 'Con đang ở trang ôn tập.')
-            : data.mode === 'disconnected' ? 'Mất kết nối với thiết bị của con.'
-            : data.level === 'pending' ? 'Con vừa rời trang ôn tập.'
-            : data.level === 'urgent' ? 'Con rời trang ôn tập quá 30 giây.' : 'Con rời trang ôn tập từ 10 giây.';
+        const box = el('demoAttention'); box.hidden = false; box.dataset.level = data.screen?.state === 'stopped' && !['paused', 'waiting', 'urgent', 'warning'].includes(data.level) ? 'warning' : data.level;
+        const message = data.mode === 'paused' ? 'Con đang học trên lớp.'
+            : data.mode === 'waiting' ? 'Con chưa đăng nhập.'
+            : data.mode === 'active' ? 'Con đang ở trang ôn tập.'
+            : data.mode === 'disconnected' ? 'Mất kết nối thiết bị.' : 'Con đã rời tab ôn tập.';
         el('demoAttentionMessage').textContent = message;
         el('demoAttentionClock').textContent = data.mode === 'active' && data.returnedAt
-            ? `Quay lại lúc ${stamp(data.returnedAt)} · Thời gian vắng: ${duration(data.lastDuration)}`
-            : data.priorToLogin ? '' : ['away', 'disconnected'].includes(data.mode) ? `Ghi nhận lúc ${stamp(data.since)}` : '';
+            ? `Quay lại ${stamp(data.returnedAt)}`
+            : data.priorToLogin ? '' : ['away', 'disconnected'].includes(data.mode) && data.since != null ? `Từ ${stamp(data.since)}` : '';
+        const screenRow = el('screenSharingStatus');
+        if (screenRow) {
+            const screen = data.screen;
+            screenRow.hidden = !screen || ['paused', 'waiting'].includes(data.mode);
+            screenRow.dataset.state = screen?.state || '';
+            el('screenSharingMessage').textContent = !screen ? '' : screen.state === 'live' ? 'Đang chia sẻ màn hình.' : screen.state === 'stopped' ? 'Đã dừng chia sẻ màn hình.' : 'Mất kết nối màn hình.';
+            el('screenSharingTime').textContent = !screen || data.mode === 'paused' || screen.since == null ? '' : `Từ ${stamp(screen.since)}`;
+        }
         renderHistory(data);
-        const key = [data.mode, data.level, data.since, data.returnedAt].join(':');
-        if (key !== lastSound && ['warning', 'urgent'].includes(data.level)) beep();
+        const key = [data.mode, data.level, data.since, data.returnedAt, data.screen?.state, data.screen?.since].join(':');
+        if (key !== lastSound && (['warning', 'urgent'].includes(data.level) || data.screen?.state === 'stopped')) beep();
         lastSound = key;
     }
-    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();}
+    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();if(el('screenSharingStatus'))el('screenSharingStatus').hidden=true;}
     el('demoAttentionSound').onclick = async () => {
         try {
             if (sound) {sound = false; el('demoAttentionSound').textContent = 'Bật âm báo'; el('demoAttentionSound').setAttribute?.('aria-pressed', 'false'); return;}
@@ -66,7 +72,7 @@
     window.OTDemoAttention = {reset, bind(socket) {
         reset(); socket.on('study-status', render);
         socket.on('disconnect', () => {
-            if (state) {el('demoAttentionMessage').textContent = 'Máy PH mất kết nối máy chủ. Đang kết nối lại…'; state = null; el('demoAttention').dataset.level = 'waiting';}
+            if (state) {el('demoAttentionMessage').textContent = 'Máy PH mất kết nối máy chủ. Đang kết nối lại…'; state = null; el('demoAttention').dataset.level = 'waiting';if(el('screenSharingMessage'))el('screenSharingMessage').textContent='Chưa cập nhật được màn hình.';}
         });
     }};
 })();
