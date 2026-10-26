@@ -33,7 +33,9 @@ test('family API and signaling bind parents to their child and revoke ended shar
   const delivered=event(sa,'signal');pa.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'offer',data:{type:'offer',sdp:'correct child'}});assert.equal((await delivered).data.sdp,'correct child');await pause();assert.equal(otherOffers,0);
   const answered=event(pa,'signal');sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'answer',data:{type:'answer',sdp:'student screen'}});assert.equal((await answered).data.sdp,'student screen');assert.equal(receivedA,1);assert.equal(receivedB,0);
   pb.emit('signal',{peer:sa.id,shareId:started.shareId,kind:'offer',data:{sdp:'attack'}});await pause();assert.equal(offers,1);
-  sa.emit('stop');await pause();assert.equal(states.at(-1).sharing,false);
+  const stoppedScreen=event(pa,'study-status',d=>d.screen?.state==='stopped');
+  sa.emit('stop');const stopped=await stoppedScreen;await pause();assert.equal(states.at(-1).sharing,false);
+  assert.equal(stopped.mode,'active');assert.equal(typeof stopped.screen.since,'number');
   sa.emit('signal',{peer:pa.id,shareId:started.shareId,kind:'answer',data:{sdp:'old'}});await pause();assert.equal(receivedA,1);
   const again=await new Promise(r=>sa.emit('start',r));assert.notEqual(again.shareId,started.shareId);
   const sa2=await connect('student','FBN001');await pause();assert.equal(states.at(-1).shareId,again.shareId);
