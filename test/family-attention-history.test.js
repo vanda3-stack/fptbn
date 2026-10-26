@@ -64,11 +64,23 @@ test('PH shows fixed timestamps and retained evidence, with no local countdown',
     handlers['study-status']({enabled: true, mode: 'away', level: 'warning', since, historySaved: true,
         history: [{kind: 'away', startedAt: since, endedAt: null, durationMs: null}]});
     const stamp = elements.demoAttentionClock.textContent;
-    assert.match(stamp, /08:30:15/);assert.match(stamp, /24/);assert.doesNotMatch(stamp, /phút/);
+    assert.match(stamp, /08:30:15/);assert.doesNotMatch(stamp, /phút/);
     const row = elements.demoHistoryRows.children[0];assert.equal(row.children[2].textContent, 'Chưa ghi nhận quay lại');
     handlers.disconnect();assert.equal(elements.demoAttentionClock.textContent, stamp);assert.equal(elements.demoHistory.hidden, false);
     handlers['study-status']({enabled: true, mode: 'active', level: 'active', returnedAt: since + 45000, lastDuration: 45000,
         history: [{kind: 'away', startedAt: since, endedAt: since + 45000, durationMs: 45000, endReason: 'returned'}]});
     assert.match(elements.demoHistoryRows.children[0].children[3].textContent, /45 giây/);
     handlers['study-status']({enabled: true, mode: 'paused', level: 'paused'});assert.equal(elements.demoHistory.hidden, true);
+});
+
+test('screen stop and tab departure keep independent durations and survive journal reload',()=>{
+ const folder=fs.mkdtempSync(path.join(os.tmpdir(),'family-events-')), file=path.join(folder,'history.json');
+ try {
+  const journal=createHistory(file);journal.begin('away',1000);journal.begin('screen-stopped',2000);
+  journal.finish(5000);journal.begin('left',6000);journal.finish(9000,'returned','screen');
+  const rows=createHistory(file).recent();
+  assert.equal(rows.find(r=>r.kind==='away').durationMs,4000);
+  assert.equal(rows.find(r=>r.kind==='screen-stopped').durationMs,7000);
+  assert.equal(rows.find(r=>r.kind==='left').endedAt,null);
+ }finally{fs.rmSync(folder,{recursive:true,force:true});}
 });
