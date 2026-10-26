@@ -67,6 +67,11 @@ test('PH shows fixed timestamps and retained evidence, with no local countdown',
     assert.equal(elements.tabletNotice.hidden,false);assert.match(elements.tabletNotice.textContent,/máy tính bảng/);
     assert.equal(elements.parentMonitor.dataset.device,'tablet');assert.equal(elements.screenSharingStatus.hidden,true);assert.equal(elements.parentFloating.hidden,true);
     handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device:'Máy tính bảng Android',history:[]});assert.equal(elements.tabletNotice.hidden,false);
+    for(const device of ['iPhone','Điện thoại Android','Điện thoại']) {
+        handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device,screen:{state:'stopped',since},history:[]});
+        assert.equal(elements.tabletNotice.hidden,false);assert.match(elements.tabletNotice.textContent,/bằng điện thoại/);
+        assert.equal(elements.parentMonitor.dataset.device,'phone');assert.equal(elements.screenSharingStatus.hidden,true);assert.equal(elements.parentFloating.hidden,true);
+    }
     handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device:'',history:[{kind:'away',startedAt:since,endedAt:null,durationMs:null}]});
     assert.equal(elements.tabletNotice.hidden,true);assert.equal(elements.parentMonitor.dataset.device,'');assert.equal(elements.parentFloating.hidden,false);
     const stamp = elements.demoAttentionClock.textContent;
