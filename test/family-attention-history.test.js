@@ -48,12 +48,19 @@ test('malformed existing journal remains intact and reports a save failure', () 
 
 test('PH shows fixed timestamps and retained evidence, with no local countdown', () => {
     function node() {return {hidden: true, textContent: '', dataset: {}, children: [], append(child) {this.children.push(child);}, replaceChildren() {this.children = [];}};}
-    const ids = ['demoAttention', 'demoAttentionClock', 'demoAttentionMessage', 'demoAttentionSound', 'demoHistory', 'demoHistoryRows', 'demoHistoryEmpty', 'demoHistorySave'];
+    const ids = ['demoAttention', 'demoAttentionClock', 'demoAttentionMessage', 'demoAttentionSound', 'demoHistory', 'demoHistoryRows', 'demoHistoryEmpty', 'demoHistorySave', 'screenSharingStatus', 'screenSharingMessage', 'screenSharingTime'];
     const elements = Object.fromEntries(ids.map(id => [id, node()])), handlers = {};
     const context = {window: {}, document: {getElementById: id => elements[id], createElement: node}, setInterval() {throw Error('No live countdown should be installed');}};
     vm.runInNewContext(fs.readFileSync('public/ot/demo-attention.js', 'utf8'), context);
     context.window.OTDemoAttention.bind({on: (event, fn) => handlers[event] = fn});
     const since = Date.UTC(2026, 9, 24, 1, 30, 15);
+    handlers['study-status']({enabled: true, mode: 'away', level: 'warning', since, historySaved: true,
+        history: [{kind: 'away', startedAt: since, endedAt: null, durationMs: null}]});
+    assert.equal(elements.screenSharingStatus.hidden,true);
+    handlers['study-status']({enabled:true,mode:'away',level:'warning',since,screen:{state:'stopped',since},history:[]});
+    assert.equal(elements.screenSharingStatus.hidden,false);
+    assert.match(elements.screenSharingMessage.textContent,/Đã dừng chia sẻ/);
+    assert.match(elements.screenSharingTime.textContent,/08:30:15/);
     handlers['study-status']({enabled: true, mode: 'away', level: 'warning', since, historySaved: true,
         history: [{kind: 'away', startedAt: since, endedAt: null, durationMs: null}]});
     const stamp = elements.demoAttentionClock.textContent;
