@@ -16,6 +16,7 @@
     const duration = ms => {const seconds = Math.floor(ms / 1000);return `${Math.floor(seconds / 60)} phút ${seconds % 60} giây`;};
     function renderHistory(data) {
         const rows = data.history || [], body = el('demoHistoryRows');
+        if (el('demoHistoryCount')) el('demoHistoryCount').textContent = rows.length ? '(' + rows.length + ')' : '';
         body.replaceChildren();
         el('demoHistory').hidden = data.mode === 'paused';
         el('demoHistoryEmpty').hidden = rows.length > 0;
@@ -27,7 +28,7 @@
                 : row.endReason === 'state-change' ? 'Đổi trạng thái lúc ' + stamp(row.endedAt)
                 : row.endReason === 'server-restart' ? 'Chưa xác định (máy chủ khởi động lại)' : 'Chưa ghi nhận quay lại';
             for (const text of [kind, stamp(row.startedAt), ended, row.durationMs == null ? 'Chưa xác định' : duration(row.durationMs)]) {
-                const td = document.createElement('td'); td.textContent = text; tr.append(td);
+                const td = document.createElement('td'); td.textContent = text; td.dataset.label = ['Sự kiện', 'Ghi nhận lúc', 'Quay lại / cập nhật', 'Thời gian vắng'][tr.children.length]; tr.append(td);
             }
             body.append(tr);
         }
@@ -35,6 +36,7 @@
     function render(data) {
         if (!data?.enabled) return reset();
         state = data;
+        if (el('attentionUnavailable')) el('attentionUnavailable').hidden = true;
         const box = el('demoAttention'); box.hidden = false; box.dataset.level = data.level;
         const message = data.mode === 'paused' ? 'Con đang học trên lớp. Theo dõi PH tạm dừng.'
             : data.mode === 'waiting' ? 'Đang chờ HS 20310 đăng nhập.'
@@ -51,20 +53,20 @@
         if (key !== lastSound && ['warning', 'urgent'].includes(data.level)) beep();
         lastSound = key;
     }
-    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();}
+    function reset() {state = null; lastSound = ''; if (el('attentionUnavailable')) el('attentionUnavailable').hidden = false; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();}
     el('demoAttentionSound').onclick = async () => {
         try {
-            if (sound) {sound = false; el('demoAttentionSound').textContent = 'Bật âm báo'; return;}
+            if (sound) {sound = false; el('demoAttentionSound').textContent = 'Bật âm báo'; el('demoAttentionSound').setAttribute?.('aria-pressed', 'false'); return;}
             const Audio = window.AudioContext || window.webkitAudioContext;
             if (!Audio) throw Error('unavailable');
             audio ||= new Audio(); await audio.resume(); sound = true; beep();
-            el('demoAttentionSound').textContent = 'Tắt âm báo';
+            el('demoAttentionSound').textContent = 'Tắt âm báo'; el('demoAttentionSound').setAttribute?.('aria-pressed', 'true');
         } catch {sound = false; el('demoAttentionSound').textContent = 'Âm báo chưa khả dụng';}
     };
     window.OTDemoAttention = {reset, bind(socket) {
         reset(); socket.on('study-status', render);
         socket.on('disconnect', () => {
-            if (state) {el('demoAttentionMessage').textContent = 'Máy PH mất kết nối máy chủ. Đang kết nối lại…'; state = null;}
+            if (state) {el('demoAttentionMessage').textContent = 'Máy PH mất kết nối máy chủ. Đang kết nối lại…'; state = null; el('demoAttention').dataset.level = 'waiting';}
         });
     }};
 })();
