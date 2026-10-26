@@ -17,7 +17,7 @@ const paperReply=(data,status=200)=>({ok:status<400,status,json:async()=>data});
 const exampleDocument={id:'paper',title:'Giữa kỳ 1 - Tin học 9',document_url:'https://example.com/tin9.pdf'};
 test('Paper tab loads on first visit with numeric homepage code before family login finishes',async()=>{
  const c=documentClient({respond:(path,options)=>path.endsWith('/login')?(assert.equal(JSON.parse(options.body).student_code,'FBN20310'),paperReply({success:true,token:'fresh',student:{student_code:'FBN20310'}})):paperReply({success:true,documents:[exampleDocument]})});
- await c.fire('paper-tab-show');assert(c.host.innerHTML.includes('ĐỀ CƯƠNG GIỮA KỲ 1 TIN 9'));assert(c.host.innerHTML.includes('Tải về'));assert(!c.host.innerHTML.includes('<iframe'));assert.equal(c.calls[1].options.headers.Authorization,'Bearer fresh');
+ await c.fire('paper-tab-show');assert(c.host.innerHTML.includes('ĐỀ CƯƠNG GIỮA KỲ 1 TIN 9'));assert(c.host.innerHTML.includes('Tải về'));assert(c.host.innerHTML.includes('<iframe'));assert(c.host.innerHTML.includes('src="https://example.com/tin9.pdf"'));assert.equal(c.calls[1].options.headers.Authorization,'Bearer fresh');
 });
 test('Expired paper session renews once and renders documents instead of remaining blank after server restart',async()=>{
  const c=documentClient({identity:{token:'expired',student:{student_code:'FBN20310'}},respond:(path,options)=>path.endsWith('/login')?paperReply({success:true,token:'renewed',student:{student_code:'FBN20310'}}):options.headers.Authorization==='Bearer expired'?paperReply({success:false,message:'Hết hạn'},401):paperReply({success:true,documents:[exampleDocument]})});

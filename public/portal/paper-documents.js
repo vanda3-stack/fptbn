@@ -33,7 +33,7 @@
    const packs=d.documents.filter(p=>sourceURL(p.document_url)),signature=JSON.stringify(packs);
    if(quiet&&signature===lastSignature)return;
    lastSignature=signature;
-   host.innerHTML=packs.length?packs.map(p=>{const title='ĐỀ CƯƠNG '+String(p.title).replace(/^ĐỀ CƯƠNG\s*/i,'').replace(/tin học/gi,'TIN').replace(/\s*[-–—·]\s*/g,' ').toLocaleUpperCase('vi-VN');return '<div class="paper-viewer-top"><h2>'+esc(title)+'</h2><a class="paper-download" href="'+esc(downloadURL(p.document_url))+'" download target="_blank" rel="noopener noreferrer">Tải về</a></div>'}).join(''):'<p role="status">Chưa có đề cương được gửi cho lớp em.</p>';
+   host.innerHTML=packs.length?packs.map(p=>{const title='ĐỀ CƯƠNG '+String(p.title).replace(/^ĐỀ CƯƠNG\s*/i,'').replace(/tin học/gi,'TIN').replace(/\s*[-–—·]\s*/g,' ').toLocaleUpperCase('vi-VN');return '<article class="paper-document"><div class="paper-viewer-top"><h2>'+esc(title)+'</h2><a class="paper-download" href="'+esc(downloadURL(p.document_url))+'" download target="_blank" rel="noopener noreferrer">Tải về</a></div><iframe class="paper-preview" title="'+esc(title)+'" src="'+esc(previewURL(p.document_url))+'" loading="lazy" allow="fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe></article>'}).join(''):'<p role="status">Chưa có đề cương được gửi cho lớp em.</p>';
   }catch(e){
    if(ticket!==generation||quiet)return;
    lastSignature='';host.innerHTML='<p role="alert">'+esc(e.message)+'</p><button id="paperRetry">Thử lại</button>';host.querySelector('button').onclick=()=>show();
