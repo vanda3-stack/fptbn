@@ -19,8 +19,9 @@
         if (el('demoHistoryCount')) el('demoHistoryCount').textContent = rows.length ? '(' + rows.length + ')' : '';
         body.replaceChildren();
         el('demoHistory').hidden = data.mode === 'paused';
+        el('demoHistorySave').hidden = data.historySaved !== false;
         el('demoHistoryEmpty').hidden = rows.length > 0;
-        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký trên máy chủ. Các mốc hiện tại chưa được bảo đảm lưu lại.' : `Phiên theo dõi từ ${stamp(data.historyCapturedAt)} (giờ Việt Nam) · Chỉ ghi nhận sự kiện từ lúc PH đăng nhập.`;
+        el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký.' : `Phiên theo dõi từ ${stamp(data.historyCapturedAt)}`;
         for (const row of rows) {
             const tr = document.createElement('tr');
             const kind = row.kind === 'away' ? 'Trang ôn tập bị ẩn' : 'Mất tín hiệu thiết bị';
@@ -36,24 +37,23 @@
     function render(data) {
         if (!data?.enabled) return reset();
         state = data;
-        if (el('attentionUnavailable')) el('attentionUnavailable').hidden = true;
         const box = el('demoAttention'); box.hidden = false; box.dataset.level = data.level;
         const message = data.mode === 'paused' ? 'Con đang học trên lớp. Theo dõi PH tạm dừng.'
-            : data.mode === 'waiting' ? 'Đang chờ HS 20310 đăng nhập.'
-            : data.mode === 'active' ? (data.returnedAt ? 'HS 20310 đã quay lại trang ôn tập.' : 'HS 20310 đang mở trang ôn tập.')
-            : data.mode === 'disconnected' ? 'Mất tín hiệu từ thiết bị HS — chưa xác định nguyên nhân.'
-            : data.level === 'pending' ? 'Trang ôn tập vừa bị ẩn. Đang chờ HS quay lại…'
-            : data.level === 'urgent' ? 'HS 20310 đã rời trang ôn tập quá 30 giây.' : 'HS 20310 đã rời trang ôn tập từ 10 giây.';
+            : data.mode === 'waiting' ? 'Đang chờ con đăng nhập.'
+            : data.mode === 'active' ? (data.returnedAt ? 'Con đã quay lại ôn tập.' : 'Con đang ở trang ôn tập.')
+            : data.mode === 'disconnected' ? 'Mất kết nối với thiết bị của con.'
+            : data.level === 'pending' ? 'Con vừa rời trang ôn tập.'
+            : data.level === 'urgent' ? 'Con rời trang ôn tập quá 30 giây.' : 'Con rời trang ôn tập từ 10 giây.';
         el('demoAttentionMessage').textContent = message;
         el('demoAttentionClock').textContent = data.mode === 'active' && data.returnedAt
             ? `Quay lại lúc ${stamp(data.returnedAt)} · Thời gian vắng: ${duration(data.lastDuration)}`
-            : data.priorToLogin ? 'Trạng thái đã có trước phiên theo dõi hiện tại.' : ['away', 'disconnected'].includes(data.mode) ? `Ghi nhận lúc ${stamp(data.since)}` : '';
+            : data.priorToLogin ? '' : ['away', 'disconnected'].includes(data.mode) ? `Ghi nhận lúc ${stamp(data.since)}` : '';
         renderHistory(data);
         const key = [data.mode, data.level, data.since, data.returnedAt].join(':');
         if (key !== lastSound && ['warning', 'urgent'].includes(data.level)) beep();
         lastSound = key;
     }
-    function reset() {state = null; lastSound = ''; if (el('attentionUnavailable')) el('attentionUnavailable').hidden = false; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();}
+    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();}
     el('demoAttentionSound').onclick = async () => {
         try {
             if (sound) {sound = false; el('demoAttentionSound').textContent = 'Bật âm báo'; el('demoAttentionSound').setAttribute?.('aria-pressed', 'false'); return;}
