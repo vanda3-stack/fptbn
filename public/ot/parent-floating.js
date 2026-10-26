@@ -43,20 +43,20 @@
     mirror.alert.className='alert';mirror.alert.setAttribute('role','status');mirror.alert.setAttribute('aria-live','polite');mirror.placeholder.className='placeholder';mirror.video.autoplay=true;mirror.video.muted=true;mirror.video.playsInline=true;mirror.image.alt='Màn hình học sinh';
     observer=new MutationObserver(sync);observer.observe(el('parentDashboard'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','src','data-level']});sync();
     win.addEventListener('pagehide',()=>{if(floating!==win)return;observer?.disconnect();observer=null;mirror?.video.pause();if(mirror)mirror.video.srcObject=null;floating=null;mirror=null;label()},{once:true});
-    help.textContent='Cửa sổ nổi đang mở. PH có thể chuyển ứng dụng; hãy giữ trang theo dõi này mở.';
+    help.textContent='Cửa sổ nổi đang mở. Giữ trang theo dõi này mở.';
    }else{
-    if(video.hidden||!video.srcObject||video.readyState<2){help.textContent='Cửa sổ video nổi cần hình trực tiếp. Hãy chờ con chia sẻ và video kết nối thành công; ảnh cập nhật chưa hỗ trợ trên trình duyệt này.';return}
+    if(video.hidden||!video.srcObject||video.readyState<2){help.textContent='Hãy chờ video trực tiếp. Trình duyệt này chưa hỗ trợ cửa sổ nổi cho ảnh cập nhật.';return}
     if(videoSupported)await video.requestPictureInPicture();
     else if(safariSupported)video.webkitSetPresentationMode('picture-in-picture');
     else throw Error('unsupported');
     if(ticket!==generation){clear();return}
-    help.textContent='Đang mở video nổi. Cảnh báo chi tiết vẫn ở trang theo dõi; trình duyệt và thiết bị quyết định khả năng tiếp tục phát khi chuyển ứng dụng.';
+    help.textContent='Video nổi đang mở. Xem cảnh báo tại trang theo dõi.';
    }
-  }catch{help.textContent='Chưa mở được cửa sổ nổi. Hãy bấm lại khi có hình; nếu trình duyệt không hỗ trợ, PH có thể dùng chia đôi màn hình.'}
+  }catch{help.textContent='Chưa mở được cửa sổ nổi. Hãy thử lại hoặc chia đôi màn hình.'}
   finally{opening=false;label()}
  }
  button.onclick=open;
- if(!documentSupported&&!videoSupported&&!safariSupported){button.disabled=true;help.textContent='Trình duyệt này chưa hỗ trợ cửa sổ nổi qua nút này. PH có thể dùng tính năng video nổi của trình duyệt hoặc chia đôi màn hình.'}
+ if(!documentSupported&&!videoSupported&&!safariSupported){button.disabled=true;help.textContent='Trình duyệt chưa hỗ trợ cửa sổ nổi. Có thể dùng chia đôi màn hình.'}
  video.addEventListener('enterpictureinpicture',label);video.addEventListener('leavepictureinpicture',label);video.addEventListener('webkitpresentationmodechanged',label);
  window.addEventListener('pagehide',close);
  window.OTParentFloating={clear,close};
