@@ -39,7 +39,8 @@ test('a late login response cannot resume PH viewing after the student leaves', 
 test('unsupported devices authenticate revision without publishing a nonexistent image', async () => {
     const h = setup();await h.session.start('FBN12345', null);
     assert(h.session.identity());
-    assert(!h.calls.some(x => x[0] === 'attach' || x[0] === 'connect'));
+    assert(h.calls.some(x => x[0] === 'connect'));
+    assert(!h.calls.some(x => x[0] === 'attach'));
 });
 
 test('the main classroom starts family publishing on its first room confirmation', async () => {
