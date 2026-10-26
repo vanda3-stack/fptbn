@@ -102,6 +102,8 @@ test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects i
     const app = express(), server = http.createServer(app), io = new Server(server), sockets = [];
     const child = {id: 1, student_code: 'FBN20310', full_name: 'Demo', class_code: '9A3'};
     app.use(express.json());
+    // The bundled browser client cannot override User-Agent; emulate an iPad transport header.
+    io.of('/ot-family').use((s,next)=>{s.handshake.headers['user-agent']='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) Safari/605.1';next()});
     const mounted = require('../lib/ot-family')(app, {io, attentionHistory: require('../lib/family-attention-history')(), lookup: async () => child,
         authenticateStudent: async token => {if (token !== 'valid') throw Error('invalid');return child;}});
     await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -112,8 +114,8 @@ test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects i
         socket.on(name, done);
     });}
     async function connect(role, token) {
-        const s = client(url + '/ot-family', {auth: {role, token}, transports: ['websocket'], autoConnect: false, reconnection: false});
-        sockets.push(s); const ready = event(s, 'ready');s.connect();assert.equal((await ready).demoAttention, true);return s;
+        const s = client(url + '/ot-family', {auth: {role, token,device:{maxTouchPoints:5}},extraHeaders:{'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) Safari/605.1'}, transports: ['websocket'], autoConnect: false, reconnection: false});
+        sockets.push(s);s.on('study-status',d=>s.studyData=d); const ready = event(s, 'ready');s.connect();assert.equal((await ready).demoAttention, true);return s;
     }
     try {
         const student = await connect('student', 'valid'), parents = [];
@@ -123,7 +125,7 @@ test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects i
         }
         const hidden = parents.map(s => event(s, 'study-status', d => d.mode === 'away'));
         student.emit('study-visibility', {visibility: 'hidden', sequence: 1});
-        const data = await Promise.all(hidden);assert(data.every(d => d.since === data[0].since));
+        const data = await Promise.all(hidden);assert(data.every(d => d.since === data[0].since));assert(data.every(d=>d.device==='iPad'));
         const returned = parents.map(s => event(s, 'study-status', d => d.mode === 'active'));
         const post = (token,visibility='visible',sequence=2) => fetch(url + '/api/ot/demo-attention', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token, socketId: student.id, visibility, sequence})});
         assert.equal((await post('invalid')).status, 403);assert.equal((await post('valid')).status, 204);
