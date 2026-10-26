@@ -38,7 +38,7 @@ test('mobile suspension and disconnect stay distinct from known hidden-page even
     student.fire('study-visibility', {visibility: 'visible', sequence: 1}); assert.equal(parent.last.mode, 'active');
     student.fire('study-visibility', {visibility: 'hidden', sequence: 2});
     h.advance(5000); student.fire('disconnect'); h.advance(5000);
-    assert.equal(parent.last.mode, 'away'); assert.equal(parent.last.level, 'warning');
+    assert.equal(parent.last.mode, 'away'); assert.equal(parent.last.level, 'warning');assert.equal(parent.last.connected,false);
     const next = h.socket('new');
     next.fire('study-visibility', {visibility: 'hidden', sequence: 1});
     assert.equal(parent.last.since, 120000, 'reconnection in the background keeps the original departure');
@@ -70,11 +70,11 @@ test('demo tablet establishes the family connection without requesting screen ca
 
 test('mobile visibility adapter sends ordered events and a durable hidden-page beacon without capturing', () => {
     const vm = require('node:vm'), fs = require('node:fs');
-    const handlers = {}, events = {}, emitted = [], beacons = [], intervals = [];
+    const handlers = {}, events = {}, emitted = [], beacons = [], intervals = [], windowEvents = {};
     const elements = Object.fromEntries(['familyStart', 'familyStop', 'familyMessage'].map(id => [id, {}]));
     const socket = {id: 'demo-socket', connected: true, emit: (...args) => emitted.push(args),
         on: (name, fn) => handlers[name] = fn, disconnect() {}};
-    const context = {window: {addEventListener() {}}, document: {visibilityState: 'visible',
+    const context = {window: {addEventListener:(name,fn)=>windowEvents[name]=fn}, document: {visibilityState: 'visible',
         addEventListener: (name, fn) => events[name] = fn, getElementById: id => elements[id],
         querySelector: () => ({after() {}}), createElement: () => ({remove() {}})},
         navigator: {sendBeacon: (...args) => {beacons.push(args); return true;}}, Blob,
@@ -89,6 +89,10 @@ test('mobile visibility adapter sends ordered events and a durable hidden-page b
     const previous = emitted.at(-1)[1].sequence;
     context.document.visibilityState = 'visible'; events.visibilitychange();
     assert(emitted.at(-1)[1].sequence > previous);
+    windowEvents.pagehide({persisted:false});
+    assert.equal(emitted.at(-1)[1].visibility,'left');assert.equal(beacons.length,3);
+    windowEvents.pagehide({persisted:true});assert.equal(emitted.at(-1)[1].visibility,'hidden');
+    assert(!emitted.some(([name]) => name === 'stop'), 'leaving the page is not reported as an intentional screen stop');
     assert(!emitted.some(([name]) => name === 'start'), 'no nonexistent mobile video share');
 });
 
@@ -121,9 +125,11 @@ test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects i
         student.emit('study-visibility', {visibility: 'hidden', sequence: 1});
         const data = await Promise.all(hidden);assert(data.every(d => d.since === data[0].since));
         const returned = parents.map(s => event(s, 'study-status', d => d.mode === 'active'));
-        const post = token => fetch(url + '/api/ot/demo-attention', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token, socketId: student.id, visibility: 'visible', sequence: 2})});
+        const post = (token,visibility='visible',sequence=2) => fetch(url + '/api/ot/demo-attention', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token, socketId: student.id, visibility, sequence})});
         assert.equal((await post('invalid')).status, 403);assert.equal((await post('valid')).status, 204);
         await Promise.all(returned);
+        const left=parents.map(s=>event(s,'study-status',d=>d.mode==='left'));
+        assert.equal((await post('valid','left',3)).status,204);await Promise.all(left);
     } finally {for (const s of sockets) s.disconnect();mounted.close();await new Promise(r => io.close(r));server.close();}
 });
 
@@ -154,4 +160,14 @@ test('screen stop has its own timestamp, stays separate from tab status, and ign
  const next=h.socket('next');h.tracker.sharing(next,'live');h.tracker.sharing(s,'stopped');assert.equal(p.last.screen.state,'live');
  h.tracker.sharing(next,'disconnected');assert.equal(p.last.screen.state,'disconnected');
  h.block(true);assert.equal(p.last.mode,'paused');assert.equal(p.last.screen,undefined);
+});
+
+test('page departure has a distinct event and timestamp; an unannounced disconnect is never claimed to be a tab closure',()=>{
+ const h=harness(),s=h.socket('s'),p=h.socket('p','parent');
+ s.fire('study-visibility',{visibility:'hidden',sequence:1});h.advance(5000);
+ assert.equal(h.tracker.reportHttp({token:s.data.token,socketId:s.id,visibility:'left',sequence:2}),true);
+ assert.equal(p.last.mode,'left');assert.equal(p.last.since,105000);assert.equal(p.last.history[0].kind,'left');
+ s.fire('disconnect');assert.equal(p.last.mode,'left');
+ const next=h.socket('next');next.fire('study-visibility',{visibility:'visible',sequence:1});assert.equal(p.last.mode,'active');
+ next.fire('disconnect');assert.equal(p.last.mode,'disconnected');
 });
