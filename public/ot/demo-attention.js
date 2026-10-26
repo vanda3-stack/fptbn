@@ -38,7 +38,16 @@
     function render(data) {
         if (!data?.enabled) return reset();
         state = data;
-        const box = el('demoAttention'); box.hidden = false; box.dataset.level = !['paused','waiting'].includes(data.mode) && (['left','disconnected'].includes(data.mode) || data.connected === false || data.screen?.state === 'stopped') ? 'urgent' : data.mode === 'away' ? (data.level === 'urgent' ? 'urgent' : 'warning') : data.level;
+        const tablet = /iPad|Máy tính bảng/.test(data.device || '') && data.mode !== 'paused';
+        if(el('tabletNotice')) {
+            el('tabletNotice').hidden = !tablet;
+            el('tabletNotice').textContent = tablet ? 'Con đang ôn tập bằng máy tính bảng. Hệ thống chỉ ghi nhận khi con rời trang ôn tập.' : '';
+            el('parentMonitor').dataset.device = tablet ? 'tablet' : '';
+            el('parentFloating').hidden = tablet;
+            if(tablet)window.OTParentFloating?.close();
+        }
+        const screen = tablet ? null : data.screen;
+        const box = el('demoAttention'); box.hidden = false; box.dataset.level = !['paused','waiting'].includes(data.mode) && (['left','disconnected'].includes(data.mode) || data.connected === false || screen?.state === 'stopped') ? 'urgent' : data.mode === 'away' ? (data.level === 'urgent' ? 'urgent' : 'warning') : data.level;
         const message = data.mode === 'paused' ? 'Con đang học trên lớp.'
             : data.mode === 'waiting' ? 'Con chưa đăng nhập.'
             : data.connected === false && data.mode !== 'left' ? 'Mất kết nối — chưa rõ nguyên nhân.' : data.mode === 'active' ? 'Con đang ở trang ôn tập.'
@@ -49,18 +58,17 @@
             : data.priorToLogin ? '' : ['away', 'disconnected', 'left'].includes(data.mode) && data.since != null ? `Từ ${clock(data.since)}` : '';
         const screenRow = el('screenSharingStatus');
         if (screenRow) {
-            const screen = data.screen;
-            screenRow.hidden = !screen || ['paused', 'waiting'].includes(data.mode);
+            screenRow.hidden = tablet || !screen || ['paused', 'waiting'].includes(data.mode);
             screenRow.dataset.state = screen?.state || '';
             el('screenSharingMessage').textContent = !screen ? '' : screen.state === 'live' ? 'Đang chia sẻ màn hình.' : screen.state === 'stopped' ? 'Đã dừng chia sẻ màn hình.' : 'Mất kết nối màn hình.';
             el('screenSharingTime').textContent = !screen || data.mode === 'paused' || screen.since == null ? '' : `Từ ${clock(screen.since)}`;
         }
         renderHistory(data);
-        const key = [data.mode, data.level, data.since, data.returnedAt, data.screen?.state, data.screen?.since].join(':');
-        if (key !== lastSound && (['warning', 'urgent'].includes(data.level) || data.mode === 'left' || data.screen?.state === 'stopped')) beep();
+        const key = [data.mode, data.level, data.since, data.returnedAt, screen?.state, screen?.since].join(':');
+        if (key !== lastSound && (['warning', 'urgent'].includes(data.level) || data.mode === 'left' || screen?.state === 'stopped')) beep();
         lastSound = key;
     }
-    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true; el('demoHistoryRows').replaceChildren();if(el('screenSharingStatus'))el('screenSharingStatus').hidden=true;}
+    function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true;if(el('tabletNotice')){el('tabletNotice').hidden=true;el('parentMonitor').dataset.device='';el('parentFloating').hidden=false;} el('demoHistoryRows').replaceChildren();if(el('screenSharingStatus'))el('screenSharingStatus').hidden=true;}
     el('demoAttentionSound').onclick = async () => {
         try {
             if (sound) {sound = false; el('demoAttentionSound').textContent = 'Bật âm báo'; el('demoAttentionSound').setAttribute?.('aria-pressed', 'false'); return;}
