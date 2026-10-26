@@ -13,3 +13,5 @@
 .study-status-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap}.study-status-row p{flex:1 1 150px;margin:10px 0;font-size:16px}.study-status-row .study-time{font-size:13px;line-height:1.5;color:#b9cce5}.study-status-row[data-state=stopped] p{color:#ffd18a}.study-status-row[data-state=disconnected] p{color:#b9cce5}
 
 .study-event{margin-top:14px;padding-top:12px;border-top:1px solid #38516f}.study-label{display:block;font-size:11px!important;font-weight:700;letter-spacing:.05em;color:#a7bbd4!important}.study-status-row p{font-size:15px;margin:8px 0}.study-status-row .study-time{font-variant-numeric:tabular-nums;white-space:nowrap}.study-event[data-state=stopped]{border-top-color:#fb7185}.study-event[data-state=stopped] p{color:#ffb3bf}
+
+.tablet-notice{padding:18px;margin:0;border:1px solid #38516f;border-left:4px solid #60a5fa;border-radius:12px;background:#101d31;color:#dce9fb;font-size:15px;line-height:1.7}.monitor-main[data-device=tablet] .monitor-toolbar,.monitor-main[data-device=tablet] .screen-stage,.monitor-main[data-device=tablet] .monitor-help{display:none}
