@@ -1,6 +1,7 @@
 'use strict';
 (() => {
     const exit = document.getElementById('studentExit');
+    if (!exit) return;
     window.addEventListener('student-portal-access', event => {exit.hidden = event.detail !== true;});
     exit.onclick = () => {
         if (!confirm('Em có chắc muốn thoát hệ thống? Phần bài làm chưa lưu sẽ bị mất và việc chia sẻ màn hình sẽ dừng.')) return;

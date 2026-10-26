@@ -14,6 +14,7 @@
         if (!ready && index !== 0) index = 0;
         const join=document.getElementById('joinPage');
         join.hidden=index!==0||ready;
+        if(previous===3&&index!==3)window.dispatchEvent(new Event('paper-tab-hidden'));
         if(previous===2&&index!==2)window.dispatchEvent(new Event('mock-tab-hidden'));
         if(index===2)window.dispatchEvent(new Event('mock-tab-show'));
         if(index===3)window.dispatchEvent(new CustomEvent('paper-tab-show', {detail:{packId}}));
