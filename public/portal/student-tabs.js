@@ -1,21 +1,22 @@
 'use strict';
 // Keep the existing classroom document and its WebRTC session alive on tab changes.
 (() => {
-    const tabs = [document.getElementById('classTab'), document.getElementById('reviewTab'), document.getElementById('examTab')];
-    const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel'), document.getElementById('examPanel')];
+    const tabs = [document.getElementById('classTab'), document.getElementById('reviewTab'), document.getElementById('examTab'), document.getElementById('paperTab')];
+    const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel'), document.getElementById('examPanel'), document.getElementById('paperPanel')];
     const navigation = document.getElementById('studentTabs');
     let frame = null, ready = false;
-    let reviewRequested = new URLSearchParams(location.search).get('tab') === 'review';
+    let requestedTab = new URLSearchParams(location.search).get('tab');
     function visibility(visible) {
         if (frame?.contentWindow) frame.contentWindow.dispatchEvent(new CustomEvent('ot-portal-visibility', {detail: visible}));
     }
     let previous=0;
-    function select(index) {
-        if (!ready && index === 1) index = 0;
+    function select(index, packId) {
+        if (!ready && index !== 0) index = 0;
         const join=document.getElementById('joinPage');
         join.hidden=index!==0||ready;
         if(previous===2&&index!==2)window.dispatchEvent(new Event('mock-tab-hidden'));
         if(index===2)window.dispatchEvent(new Event('mock-tab-show'));
+        if(index===3)window.dispatchEvent(new CustomEvent('paper-tab-show', {detail:{packId}}));
         previous=index;
         tabs.forEach((tab, i) => {
             tab.setAttribute('aria-selected', String(i === index));
@@ -36,17 +37,18 @@
     }
     window.addEventListener('student-portal-access', event => {
         ready = event.detail === true;
-        navigation.hidden = false;
+        navigation.hidden = !ready;
         if (!ready) select(0);
-        else if (reviewRequested) { reviewRequested = false; select(1); }
+        else if (requestedTab) { const index={review:1,exam:2,paper:3}[requestedTab]||0; requestedTab=null; select(index); }
     });
-    navigation.hidden = false;
+    navigation.hidden = !ready;
+    window.addEventListener('portal-open-paper', event => { if(ready) select(3, event.detail?.packId); });
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index));
         tab.addEventListener('keydown', event => {
             if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
             event.preventDefault();
-            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (index + (event.key === 'ArrowLeft' ? 2 : 1)) % 3;
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 3 : (index + (event.key === 'ArrowLeft' ? 3 : 1)) % 4;
             select(next);
             tabs[next].focus();
         });

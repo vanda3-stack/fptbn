@@ -19,7 +19,7 @@ test('portal switches in place, creates review only once and preserves classroom
         }}, CustomEvent: class {constructor(type, args) {this.type = type; this.detail = args.detail;}}};
     vm.runInNewContext(fs.readFileSync('public/portal/student-tabs.js', 'utf8'), context);
     assert.equal(frames.length, 0);
-    assert.equal(element('studentTabs').hidden, false);
+    assert.equal(element('studentTabs').hidden, true);
     element('reviewTab').handlers.click();
     assert.equal(frames.length, 0, 'review stays unavailable before successful login and capture');
     handlers['student-portal-access']({detail: true});
@@ -38,7 +38,7 @@ test('portal switches in place, creates review only once and preserves classroom
     assert.equal(context.screenStream, stream);
     assert.equal(element('reviewTab').attrs['aria-selected'], 'true');
     handlers['student-portal-access']({detail: false});
-    assert.equal(element('studentTabs').hidden, false);
+    assert.equal(element('studentTabs').hidden, true);
     assert.equal(element('classPanel').hidden, false);
     assert.equal(element('reviewPanel').hidden, true);
     assert.equal(events.at(-1), false);
