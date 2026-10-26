@@ -5,6 +5,7 @@
     const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel'), document.getElementById('examPanel')];
     const navigation = document.getElementById('studentTabs');
     let frame = null, ready = false;
+    let reviewRequested = new URLSearchParams(location.search).get('tab') === 'review';
     function visibility(visible) {
         if (frame?.contentWindow) frame.contentWindow.dispatchEvent(new CustomEvent('ot-portal-visibility', {detail: visible}));
     }
@@ -25,7 +26,7 @@
             frame = document.createElement('iframe');
             frame.id = 'reviewFrame';
             frame.title = 'Ôn tập tại nhà';
-            frame.src = '/ontap?embedded=1';
+            frame.src = '/portal/review?embedded=1';
             frame.allow = 'display-capture; microphone';
             frame.addEventListener('load', () => visibility(!panels[1].hidden));
             document.getElementById('reviewMount').append(frame);
@@ -37,6 +38,7 @@
         ready = event.detail === true;
         navigation.hidden = false;
         if (!ready) select(0);
+        else if (reviewRequested) { reviewRequested = false; select(1); }
     });
     navigation.hidden = false;
     tabs.forEach((tab, index) => {

@@ -12,33 +12,33 @@ test('portal switches in place, creates review only once and preserves classroom
             append(frame) {frames.push(frame);}};
     }
     const stream = {active: true};
-    const context = {joinedClass: true, screenStream: stream, window: {addEventListener(type, fn) {handlers[type] = fn;}},
+    const context = {URLSearchParams, location: {search: ''}, Event: class {constructor(type){this.type=type;}}, joinedClass: true, screenStream: stream, window: {dispatchEvent() {}, addEventListener(type, fn) {handlers[type] = fn;}},
         document: {getElementById: element, createElement() {
             return {contentWindow: {draft: 'Câu trả lời đang làm', dispatchEvent(e) {events.push(e.detail);}},
                 addEventListener(type, fn) {this[type] = fn;}};
         }}, CustomEvent: class {constructor(type, args) {this.type = type; this.detail = args.detail;}}};
     vm.runInNewContext(fs.readFileSync('public/portal/student-tabs.js', 'utf8'), context);
     assert.equal(frames.length, 0);
-    assert.equal(element('studentTabs').hidden, true);
+    assert.equal(element('studentTabs').hidden, false);
     element('reviewTab').handlers.click();
     assert.equal(frames.length, 0, 'review stays unavailable before successful login and capture');
     handlers['student-portal-access']({detail: true});
     assert.equal(element('studentTabs').hidden, false);
     element('reviewTab').handlers.click();
     assert.equal(frames.length, 1);
-    assert.equal(frames[0].src, '/ontap?embedded=1');
+    assert.equal(frames[0].src, '/portal/review?embedded=1');
     assert(element('classPanel').hidden);
     assert(!element('reviewClassNotice').hidden);
     element('classTab').handlers.click();
     assert(element('reviewPanel').hidden);
     assert.equal(events.at(-1), false);
-    element('reviewTab').handlers.keydown({key: 'End', preventDefault() {}});
+    element('classTab').handlers.keydown({key: 'ArrowRight', preventDefault() {}});
     assert.equal(frames.length, 1);
     assert.equal(frames[0].contentWindow.draft, 'Câu trả lời đang làm');
     assert.equal(context.screenStream, stream);
     assert.equal(element('reviewTab').attrs['aria-selected'], 'true');
     handlers['student-portal-access']({detail: false});
-    assert.equal(element('studentTabs').hidden, true);
+    assert.equal(element('studentTabs').hidden, false);
     assert.equal(element('classPanel').hidden, false);
     assert.equal(element('reviewPanel').hidden, true);
     assert.equal(events.at(-1), false);
