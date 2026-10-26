@@ -2,9 +2,9 @@
 (()=>{
  let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0,streamOwned=true,externalEndedCleanup=null,accessBlocked=false;
  let attentionEnabled=false,attentionTimer=null,attentionSequence=0;
- function reportVisibility(durable=false){
+ function reportVisibility(durable=false, departure=null){
   if(!attentionEnabled||!socket?.connected)return;
-  const visibility=document.visibilityState==='hidden'?'hidden':'visible';
+  const visibility=departure || (document.visibilityState==='hidden'?'hidden':'visible');
   const report={visibility,sequence:++attentionSequence};
   socket.emit('study-visibility',report);
   // Flush the last mobile visibility transition before the browser suspends us.
@@ -105,5 +105,5 @@
   announce();return true;
  }
  window.OTFamily={connect,disconnect,start,attachStream,isSharing:()=>Boolean(stream&&currentShare)};
- window.addEventListener('pagehide',()=>stop());
+ window.addEventListener('pagehide',event=>{reportVisibility(true,event.persisted?'hidden':'left');stop(false)});
 })();
