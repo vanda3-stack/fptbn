@@ -16,7 +16,7 @@ function harness() {
     return {tracker, socket, advance: ms => {time += ms; tracker.tick();}, block: value => {denied = value; tracker.refresh();}};
 }
 
-test('demo parents receive thresholds while late logins exclude old incidents and other accounts get nothing', () => {
+test('parents receive thresholds while late logins and other children stay isolated', () => {
     const h = harness(), student = h.socket('student'), parents = Array.from({length: 12}, (_, i) => h.socket('p' + i, 'parent'));
     const other = h.socket('other', 'parent', {id: 2, student_code: 'FBN12345'});
     student.fire('study-visibility', {visibility: 'hidden', sequence: 1});
@@ -29,7 +29,7 @@ test('demo parents receive thresholds while late logins exclude old incidents an
     h.advance(19000); assert(parents.every(p => p.last.level === 'urgent'));
     student.fire('study-visibility', {visibility: 'visible', sequence: 2});
     assert(parents.every(p => p.last.mode === 'active' && p.last.lastDuration === 30000));
-    assert.equal(other.received.length, 0);
+    assert.equal(other.received.length, 1);assert.equal(other.last.mode, 'waiting');assert.equal(other.last.history.length, 0);
 });
 
 test('mobile suspension and disconnect stay distinct from known hidden-page events', () => {
@@ -92,7 +92,7 @@ test('mobile visibility adapter sends ordered events and a durable hidden-page b
     assert(!emitted.some(([name]) => name === 'start'), 'no nonexistent mobile video share');
 });
 
-test('real Socket.IO broadcasts demo state to three parents and HTTP fallback rejects invalid tokens', async () => {
+test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects invalid tokens', async () => {
     const express = require('express'), http = require('node:http'), {Server} = require('socket.io');
     const {io: client} = require(require('node:path').join(require.resolve('socket.io'), '../../client-dist/socket.io.js'));
     const app = express(), server = http.createServer(app), io = new Server(server), sockets = [];
@@ -113,7 +113,7 @@ test('real Socket.IO broadcasts demo state to three parents and HTTP fallback re
     }
     try {
         const student = await connect('student', 'valid'), parents = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             const response = await fetch(url + '/api/ot/parent/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: 'FBN20310PH'})});
             parents.push(await connect('parent', (await response.json()).token));
         }
@@ -125,4 +125,19 @@ test('real Socket.IO broadcasts demo state to three parents and HTTP fallback re
         assert.equal((await post('invalid')).status, 403);assert.equal((await post('valid')).status, 204);
         await Promise.all(returned);
     } finally {for (const s of sockets) s.disconnect();mounted.close();await new Promise(r => io.close(r));server.close();}
+});
+
+test('ordinary children have separate live states, histories and HTTP ownership', () => {
+ const h = harness(), a = h.socket('a'), pa = h.socket('pa', 'parent');
+ const childB = {id: 2, student_code: 'FBN12345'};
+ const b = h.socket('b', 'student', childB), pb = h.socket('pb', 'parent', childB);
+ a.fire('study-visibility', {visibility: 'hidden', sequence: 1});
+ assert.equal(pa.last.mode, 'away');assert.equal(pb.last.mode, 'active');assert.equal(pb.last.history.length, 0);
+ h.advance(10000);b.fire('study-visibility', {visibility: 'hidden', sequence: 1});
+ assert.equal(pa.last.since, 100000);assert.equal(pb.last.since, 110000);
+ assert.equal(pa.last.history.length, 1);assert.equal(pb.last.history.length, 1);
+ assert.notEqual(pa.last.history[0].id, pb.last.history[0].id);
+ assert.equal(h.tracker.reportHttp({token:a.data.token,socketId:b.id,visibility:'visible',sequence:2},childB),false);
+ assert.equal(h.tracker.reportHttp({token:b.data.token,socketId:b.id,visibility:'visible',sequence:2},childB),true);
+ assert.equal(pb.last.mode,'active');assert.equal(pa.last.mode,'away');
 });
