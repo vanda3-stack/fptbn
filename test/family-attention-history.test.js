@@ -48,7 +48,7 @@ test('malformed existing journal remains intact and reports a save failure', () 
 
 test('PH shows fixed timestamps and retained evidence, with no local countdown', () => {
     function node() {return {hidden: true, textContent: '', dataset: {}, children: [], append(child) {this.children.push(child);}, replaceChildren() {this.children = [];}};}
-    const ids = ['demoAttention', 'demoAttentionClock', 'demoAttentionMessage', 'demoAttentionSound', 'demoHistory', 'demoHistoryRows', 'demoHistoryEmpty', 'demoHistorySave', 'screenSharingStatus', 'screenSharingMessage', 'screenSharingTime'];
+    const ids = ['demoAttention', 'demoAttentionClock', 'demoAttentionMessage', 'demoAttentionSound', 'demoHistory', 'demoHistoryRows', 'demoHistoryEmpty', 'demoHistorySave', 'screenSharingStatus', 'screenSharingMessage', 'screenSharingTime', 'tabletNotice', 'parentMonitor', 'parentFloating'];
     const elements = Object.fromEntries(ids.map(id => [id, node()])), handlers = {};
     const context = {window: {}, document: {getElementById: id => elements[id], createElement: node}, setInterval() {throw Error('No live countdown should be installed');}};
     vm.runInNewContext(fs.readFileSync('public/ot/demo-attention.js', 'utf8'), context);
@@ -63,6 +63,12 @@ test('PH shows fixed timestamps and retained evidence, with no local countdown',
     assert.match(elements.screenSharingTime.textContent,/08:30:15/);
     handlers['study-status']({enabled: true, mode: 'away', level: 'warning', since, historySaved: true,
         history: [{kind: 'away', startedAt: since, endedAt: null, durationMs: null}]});
+    handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device:'iPad',screen:{state:'stopped',since},history:[]});
+    assert.equal(elements.tabletNotice.hidden,false);assert.match(elements.tabletNotice.textContent,/máy tính bảng/);
+    assert.equal(elements.parentMonitor.dataset.device,'tablet');assert.equal(elements.screenSharingStatus.hidden,true);assert.equal(elements.parentFloating.hidden,true);
+    handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device:'Máy tính bảng Android',history:[]});assert.equal(elements.tabletNotice.hidden,false);
+    handlers['study-status']({enabled:true,mode:'away',level:'warning',since,device:'',history:[{kind:'away',startedAt:since,endedAt:null,durationMs:null}]});
+    assert.equal(elements.tabletNotice.hidden,true);assert.equal(elements.parentMonitor.dataset.device,'');assert.equal(elements.parentFloating.hidden,false);
     const stamp = elements.demoAttentionClock.textContent;
     assert.match(stamp, /08:30:15/);assert.doesNotMatch(stamp, /phút/);
     const row = elements.demoHistoryRows.children[0];assert.equal(row.children[2].textContent, 'Chưa ghi nhận quay lại');
