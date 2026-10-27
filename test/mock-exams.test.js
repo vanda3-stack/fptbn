@@ -26,6 +26,13 @@ test('Delete is scoped to the teacher and keeps historical attempts',async()=>{
  assert(!f.calls.some(([s])=>s.startsWith('DELETE FROM')));
  const denied=fixture(async()=>[{affectedRows:0}]);await assert.rejects(()=>denied.routes['DELETE /teacher/exams/:id'](req,{json(){}}),e=>e.status===404);
 });
+test('Hosting-compatible POST delete uses the same owner-scoped handler',async()=>{
+ const f=fixture(async(s,args)=>{assert.match(s,/UPDATE ot_exams SET is_open=-1/);assert.deepEqual(args,['exam',7]);return [{affectedRows:1}]});
+ assert.equal(f.routes['POST /teacher/exams/:id/delete'],f.routes['DELETE /teacher/exams/:id']);
+ let result;await f.routes['POST /teacher/exams/:id/delete'](req,{json:d=>result=d});assert(result.success);
+ const fs=require('node:fs'),source=fs.readFileSync('public/ot/mock-exams-teacher.js','utf8');
+ assert(source.includes("api('/teacher/exams/'+b.dataset.delete+'/delete',{})"));
+});
 test('Deleted exam rejects start, saved results, writes and management',async()=>{
  const row={id:'a',exam_id:'exam',student_id:1,submitted_at:1,snapshot_json:'[]',answers_json:'[]'};
  const f=fixture(async s=>{
