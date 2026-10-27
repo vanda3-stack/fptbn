@@ -79,3 +79,22 @@ test('Closed exam results remain listed for their student with grade status; oth
 test('Teacher exam listing does not require a student session',async()=>{
  const f=fixture(async s=>s.startsWith('SELECT * FROM ot_exams')?[[{id:'exam'}]]:[[]]);let d;await f.routes['GET /teacher/exams']({teacherId:7},{json:x=>d=x});assert.equal(d.exams.length,1);
 });
+
+test('Submitted and archived essays auto grade from their own snapshot, never leak rubric before submission, and teacher override wins',async()=>{
+ const row={id:'auto',exam_id:'exam',student_id:1,submitted_at:1000,deadline:Date.now()+60000,score:1,snapshot_json:JSON.stringify({questions:[{q:'Q',o:['A'],a:0}],essays:[{q:'E',ideas:['first','second'],keywords:[['internet'],['dữ liệu']]}],mcq_points:5}),answers_json:JSON.stringify({choices:[0],essays:['Internet giúp học tập']})};
+ for(const archived of [false,true]){
+  let marks=null;const f=fixture(async(s,args)=>{
+   if(s.startsWith('SELECT * FROM ot_exams'))return [[{id:'exam',is_open:1}]];
+   if(s.startsWith('SELECT * FROM ot_exam_attempts'))return [archived?[]:[row]];
+   if(s.startsWith('SELECT attempt_json'))return [[{attempt_json:JSON.stringify(row)}]];
+   if(s.startsWith('SELECT title,require_share'))return [[{title:'Exam',is_open:1}]];
+   if(s.startsWith('SELECT marks_json'))return [marks?[{marks_json:JSON.stringify(marks)}]:[]];
+   if(s.startsWith('INSERT INTO ot_exam_grades'))marks=JSON.parse(args[1]);
+   return [[]];
+  });
+  const read=async()=>{let data;await f.routes['GET /exams/attempts/:id']({...req,params:{id:'auto'}},{json:d=>data=d.attempt});return data};
+  let a=await read();assert.equal(a.essay_grade_source,'automatic');assert.equal(a.total_points,7.5);assert.deepEqual(a.essay_marks,[2.5]);assert.equal(a.essays[0].keywords,undefined);assert.equal(JSON.stringify(a).includes('dữ liệu'),false);
+  await f.routes['POST /teacher/exams/:id/grade']({...req,body:{attempt_id:'auto',marks:[4]}},{json(){}});a=await read();assert.equal(a.essay_grade_source,'teacher');assert.equal(a.total_points,9);assert.deepEqual(a.essay_marks,[4]);
+  row.submitted_at=null;marks=null;a=await read();assert.equal(a.essay_marks,null);assert.equal(a.essay_auto_details,null);assert.equal(a.total_points,null);row.submitted_at=1000;
+ }
+});
