@@ -17,3 +17,13 @@ test('server enforces identity, class, year, teacher ownership, canonical scorin
  a=await h.request('post','/packs/:id/attempts',{id:crypto.randomUUID(),kind:'writing',essay:0,texts:['Tính toán nhanh và chính xác']},t,params);assert.equal(a.body.result.score,null);assert.equal(a.body.result.detail.keyword_matches[0].matched,true);
  await h.request('patch','/teacher/packs/:id',{open:false},'teacher',params);assert.equal((await h.request('get','/packs/:id',{},t,params)).status,403)
  }finally{h.close()}});
+test('Whole-answer practice persists server-computed points and completion, ignores client grades, retry keeps original result',async()=>{
+ const h=harness();try{
+  const essay={q:'Q',ideas:['a','b','c','d','e'],keywords:[['lưu tệp ~ lưu file'],['máy tính'],['internet'],['dữ liệu'],['an toàn']]};
+  h.pack.content_json=JSON.stringify({questions:content.questions,essays:[essay]});
+  const login=await h.request('post','/login',{student_code:'FBN12345'}),t=login.body.token,params={id:h.pack.id},id=crypto.randomUUID();
+  let a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Lưu file máy tính internet dữ liệu',grading:{points:999}},t,params);
+  assert.equal(a.status,200);assert.equal(a.body.result.detail.grading.points,2);assert.equal(a.body.result.detail.grading.maximum,2.5);assert.equal(a.body.result.detail.completion.completed,true);assert.equal(JSON.parse(h.attempts.get(id).detail_json).grading.points,2);
+  a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Sai hết'},t,params);assert.equal(a.body.result.detail.grading.points,2);assert.equal(h.attempts.size,1);
+ }finally{h.close()}
+});
