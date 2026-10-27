@@ -45,3 +45,37 @@ test('Deleted exam rejects start, saved results, writes and management',async()=
  await assert.rejects(()=>f.routes['PATCH /teacher/exams/:id']({...req,body:{open:true}},{json(){}}),e=>e.status===403);
  assert(!f.calls.some(([s])=>s.startsWith('UPDATE')||s.startsWith('INSERT')));
 });
+
+test('Saving and correcting grades publishes exact per-question marks for current and archived attempts, including zero',async()=>{
+ for(const archived of [false,true]){
+  const row={id:'graded',exam_id:'exam',student_id:1,submitted_at:1000,deadline:1000,score:1,snapshot_json:JSON.stringify({questions:[{q:'Q',o:['A'],a:0}],essays:[{q:'E1',ideas:['private']},{q:'E2',ideas:['private']}],mcq_points:5}),answers_json:JSON.stringify({choices:[0],essays:['a','b']})};let marks=null;
+  const f=fixture(async(s,args)=>{
+   if(s.startsWith('SELECT * FROM ot_exams'))return [[{id:'exam',is_open:0}]];
+   if(s.startsWith('SELECT * FROM ot_exam_attempts WHERE id'))return [archived?[]:[row]];
+   if(s.startsWith('SELECT attempt_json'))return [[{attempt_json:JSON.stringify(row)}]];
+   if(s.startsWith('SELECT title,require_share'))return [[{title:'Exam',is_open:0}]];
+   if(s.startsWith('INSERT INTO ot_exam_grades'))marks=JSON.parse(args[1]);
+   if(s.startsWith('SELECT marks_json'))return [marks?[{marks_json:JSON.stringify(marks)}]:[]];
+   return [[]];
+  });
+  for(const values of [[0,0],[2,2.5]]){
+   await f.routes['POST /teacher/exams/:id/grade']({...req,body:{attempt_id:row.id,marks:values}},{json(){}});
+   let result;await f.routes['GET /exams/attempts/:id']({...req,params:{id:row.id}},{json:d=>result=d.attempt});
+   assert.deepEqual(result.essay_marks,values);assert.equal(result.total_points,5+values[0]+values[1]);assert.equal(result.essays[0].ideas,undefined);
+  }
+  await assert.rejects(()=>f.routes['GET /exams/attempts/:id']({...req,student:{id:2},params:{id:row.id}},{json(){}}),e=>e.status===404);
+ }
+});
+test('Closed exam results remain listed for their student with grade status; other classes and unused closed exams stay hidden',async()=>{
+ const f=fixture(async(s,args)=>{
+  if(s.startsWith('SELECT e.*,p.year_id')){assert(s.includes('e.is_open<>-1'));return [[{id:'exam',is_open:0,classes_json:'[5]'},{id:'unused',is_open:0,classes_json:'[5]'},{id:'other',is_open:1,classes_json:'[9]'}]]}
+  if(s.startsWith('SELECT id,exam_id,submitted_at'))return [[{id:'a',exam_id:'exam',submitted_at:1000}]];
+  if(s.startsWith('SELECT id,exam_id,attempt_json'))return [[{id:'old',exam_id:'exam',attempt_json:'{"submitted_at":500}'}]];
+  if(s.startsWith('SELECT g.attempt_id')){assert.deepEqual(args,[1,1]);return [[{attempt_id:'old'}]]}
+  if(s.startsWith('SELECT COALESCE'))return [[{extra:0}]];
+  return [[]];
+ });let d;await f.routes['GET /exams'](req,{json:x=>d=x});assert.equal(d.exams.length,1);assert.equal(d.exams[0].remaining,0);assert.equal(d.exams[0].is_open,false);assert.equal(d.exams[0].attempt.graded,false);assert.equal(d.exams[0].history[0].graded,true);
+});
+test('Teacher exam listing does not require a student session',async()=>{
+ const f=fixture(async s=>s.startsWith('SELECT * FROM ot_exams')?[[{id:'exam'}]]:[[]]);let d;await f.routes['GET /teacher/exams']({teacherId:7},{json:x=>d=x});assert.equal(d.exams.length,1);
+});
