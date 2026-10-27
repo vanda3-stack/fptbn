@@ -15,3 +15,15 @@ test('Missing rubric stays ungraded rather than turning into zero; empty MCQ-onl
 test('Essay-only split remains bounded at ten points and repeated keywords do not inflate score',()=>{
  const essay={ideas:['một ý'],keywords:[['một ý']]};const r=grade({mcq_points:0,essays:[essay,essay,essay]},{essays:['một ý một ý','một ý','một ý']});assert(Math.abs(r.marks.reduce((n,x)=>n+x,0)-10)<1e-9);assert(r.marks.every(x=>x<=10/3));
 });
+test('Version 2: five ideas at half a point, accepted alternatives, no repeat credit and preserved legacy results',()=>{
+ const e={ideas:['1','2','3','4','5'],keywords:[['lưu tệp ~ lưu file'],['máy tính'],['internet'],['dữ liệu'],['an toàn']]};const s={essay_grading_version:2,mcq_points:7.5,essays:[e]};
+ const r=grade(s,{essays:['LƯU FILE, máy tính và Internet. Lưu file, internet.']});assert.deepEqual(r.marks,[1.5]);assert.deepEqual(r.details[0].idea_points,[.5,.5,.5,0,0]);
+ assert.equal(grade(s,{essays:['lưu tệpx máy tính internet dữ liệu an toàn']}).marks[0],2);
+ assert.equal(grade(s,{essays:['không lưu file, máy tính internet']}).details[0].needs_review,true);
+ assert.equal(grade({...s,essay_grading_version:undefined},{essays:['lưu file máy tính internet']}).marks[0],1);
+});
+test('Practice and exam both support accepted alternatives while requiring all keyword groups',()=>{
+ const Core=require('../public/ot/core'),e={ideas:['a'],keywords:[['lưu tệp ~ lưu file','máy tính']]};
+ assert.equal(Core.keywordCheck(e,['Lưu file trên máy tính'])[0].matched,true);
+ assert.equal(Core.keywordCheck(e,['Lưu file'])[0].matched,false);
+});

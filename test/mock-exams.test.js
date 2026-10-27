@@ -98,3 +98,12 @@ test('Submitted and archived essays auto grade from their own snapshot, never le
   row.submitted_at=null;marks=null;a=await read();assert.equal(a.essay_marks,null);assert.equal(a.essay_auto_details,null);assert.equal(a.total_points,null);row.submitted_at=1000;
  }
 });
+test('Half-point exam creation enforces five ideas per question and preserves ten-point total on server',async()=>{
+ const essay={q:'E',ideas:['1','2','3','4','5'],keywords:[['a'],['b'],['c'],['d'],['e']]};
+ for(const invalid of ['total','rubric',false]){
+  const p={id:'pack',classes:[5],content:{questions:[{q:'Q',o:['a','b','c','d'],a:0}],essays:[essay,invalid==='rubric'?{...essay,ideas:['one']}:essay]}};
+  const f=fixture(async()=>[[]],p);const body={pack_id:'pack',title:'Exam',count:1,essay_count:2,minutes:45,attempts:1,mcq_points:invalid==='total'?6:5,half_point_ideas:true};
+  if(invalid){await assert.rejects(()=>f.routes['POST /teacher/exams']({...req,body},{json(){}}),/0,5 điểm/);assert(!f.calls.some(([s])=>s.startsWith('INSERT')))}
+  else{let data;await f.routes['POST /teacher/exams']({...req,body},{json:d=>data=d});assert(data.success);const insert=f.calls.find(([s])=>s.startsWith('INSERT INTO ot_exam_settings'));assert.equal(JSON.parse(insert[1][1]).mcq_points,5)}
+ }
+});
