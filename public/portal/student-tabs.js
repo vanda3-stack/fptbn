@@ -29,6 +29,29 @@
         document.getElementById('reviewClassNotice').hidden = !(index === 1 && typeof joinedClass !== 'undefined' && joinedClass);
         visibility(index === 1);
     }
+    // Apply each grade's server-side default only after student access is established.
+    // Do not navigate or stop the active WebRTC screen-share session.
+    window.addEventListener('fptbn-student-joined', async event => {
+        const grade = Number(event.detail?.grade);
+        if (!Number.isInteger(grade) || grade < 6 || grade > 9) return;
+        try {
+            const response = await fetch('/api/student/default-tab?grade=' + grade, {cache:'no-store'});
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.success) return;
+            const map = {class:0, review:1, exam:2};
+            if (Object.prototype.hasOwnProperty.call(map,data.tab)) {
+                select(map[data.tab]);
+            } else if (data.tab === 'print') {
+                // The print-resources tab is provided by the resource module, when available.
+                const printButton = [...document.querySelectorAll('[role="tab"],.student-tabs button')]
+                    .find(el => /đề cương để in/i.test(el.textContent || ''));
+                if (printButton) printButton.click();
+            }
+        } catch (error) {
+            console.warn('Không tải được trang mặc định của khối:', error);
+        }
+    });
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index));
         tab.addEventListener('keydown', event => {
