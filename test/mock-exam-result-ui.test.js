@@ -12,6 +12,6 @@ test('Submitted result refreshes after grading and corrections; pending marks ar
  f.setResult({...f.getResult(),essay_marks:[4],total_points:9});await f.elements['#resultRefresh'].onclick();assert(f.host.innerHTML.includes('Tổng điểm: 9.00 / 10'));
 });
 test('Student sees automatic grading label and teacher confirmation replaces it even when score stays the same',async()=>{
- const f=fixture();f.setResult({...f.getResult(),essay_marks:[4],total_points:9,essay_grade_source:'automatic'});await f.ctx.testAPI.open('/exams/attempts/a');assert(f.host.innerHTML.includes('chấm tự động theo từ khóa'));assert(!f.host.innerHTML.includes('Giáo viên đã chấm'));
- f.setResult({...f.getResult(),essay_grade_source:'teacher'});await f.intervals[2]();assert(f.host.innerHTML.includes('Giáo viên đã chấm'));assert(!f.host.innerHTML.includes('chấm tự động theo từ khóa'));
+ const f=fixture();f.setResult({...f.getResult(),essay_marks:[4],total_points:9,essay_grade_source:'automatic'});await f.ctx.testAPI.open('/exams/attempts/a');assert(f.host.innerHTML.includes('chấm tự động theo đề cương'));assert(!f.host.innerHTML.includes('Giáo viên đã chấm'));
+ f.setResult({...f.getResult(),essay_grade_source:'teacher'});await f.intervals[2]();assert(f.host.innerHTML.includes('Giáo viên đã chấm'));assert(!f.host.innerHTML.includes('chấm tự động theo đề cương'));
 });
