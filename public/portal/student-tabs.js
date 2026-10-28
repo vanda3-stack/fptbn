@@ -54,7 +54,7 @@
         ready = event.detail === true;
         navigation.hidden = !ready;
         if (!ready) { preferenceApplied = false; select(0); }
-        else if (requestedTab) { const index={review:1,exam:2,paper:3}[requestedTab]||0; requestedTab=null; select(index); }
+        else if (requestedTab) { const index={review:1,exam:2,paper:3}[requestedTab]||0; requestedTab=null; preferenceApplied=true; select(index); }
         else if (!preferenceApplied) { preferenceApplied = true; applyGradeDefault(); }
     });
     navigation.hidden = !ready;
