@@ -453,6 +453,7 @@ button.addEventListener(
 
     studentSchoolYear =
         student.school_year;
+    window.FPTBN_STUDENT_GRADE = Number(student.grade_level);
 
 
     console.log(
