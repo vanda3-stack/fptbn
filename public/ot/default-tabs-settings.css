@@ -1,0 +1,19 @@
+/* Default tab preferences: full-width row, without displacing the dashboard heading. */
+.landing-preferences {width:100%;margin:0 0 20px;padding:19px 22px;border:1px solid #294260;background:#101e33;border-radius:14px;color:#e2eaf7;box-sizing:border-box}
+.landing-head {display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.landing-head h2 {font-size:17px;line-height:1.45;margin:0 0 4px;color:#f1f6ff}
+.landing-head p {font-size:12px;line-height:1.5;color:#a9bbd1;margin:0}
+.landing-tag {flex-shrink:0;font-size:11px;padding:5px 9px;border-radius:20px;background:#1d3554;border:1px solid #365377;color:#bed8ff}
+.landing-controls {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.landing-controls label {display:block;min-width:0;margin:0;padding:10px 12px;background:#13253d;border:1px solid #304a6b;border-radius:10px}
+.landing-controls label span {display:block;margin:0 0 7px;color:#c9dbef;font-weight:600;font-size:12px}
+.landing-controls select {width:100%;min-width:0;height:40px;padding:7px 30px 7px 10px;margin:0;background:#0a182c;color:#eaf2ff;border:1px solid #405b7a;border-radius:8px;font:inherit;font-size:13px}
+.landing-controls select:focus-visible {outline:2px solid #60a5fa;outline-offset:1px}
+.landing-footer {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+.landing-note {font-size:11px;color:#9badc2;flex:1;min-width:210px}
+.landing-status {font-size:12px;color:#bed4f5;max-width:100%;overflow-wrap:anywhere}
+.landing-status[data-state="error"] {color:#ffb4aa}
+.landing-status[data-state="success"] {color:#8de4c1}
+.landing-footer button {min-height:38px;padding:8px 15px;font-size:12px;white-space:nowrap;margin:0}
+@media(max-width:850px) {.landing-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px) {.landing-preferences{padding:15px}.landing-head{display:block}.landing-tag{display:inline-block;margin-top:10px}.landing-controls{grid-template-columns:1fr}.landing-footer button{width:100%}}
