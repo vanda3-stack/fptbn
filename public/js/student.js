@@ -647,6 +647,8 @@ button.addEventListener(
             joinedClass =
                 true;
 
+            window.dispatchEvent(new CustomEvent("fptbn-student-joined", {detail:{grade: Number(student.grade_level)}}));
+
 
             // =========================================
             // ĐĂNG KÝ HS VÀO ROOM THEO LỚP
