@@ -24,9 +24,9 @@
  function render() {
   if (!data) return;
   $('title').textContent = data.title;
-  $('scope').textContent = 'Lớp '+data.class_code+' · Thống kê từ đầu đợt ôn tập';
+  $('scope').textContent = 'Lớp '+data.class_code;
   const rows=selectedRows();
-  $('summary').innerHTML = `<span><b>${rows.length}</b> học sinh</span><span><b>${rows.filter(r=>r.state==='none').length}</b> chưa ôn</span><span><b>${rows.filter(r=>r.state==='low').length}</b> cần ôn thêm</span>`;
+  $('summary').innerHTML = `<span><b>${rows.length}</b> học sinh</span><span><b>${rows.filter(r=>r.state==='none').length}</b> chưa ôn</span><span><b>${rows.filter(r=>r.state==='low').length}</b> ôn ít</span>`;
   $('count').textContent = 'Danh sách toàn lớp · HS cần nhắc xếp trước · Mốc nhắc: 3 lượt/phần';
   $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number">${r.quiz}</td><td class="gvcn-number">${r.essay}</td><td class="gvcn-number">${score(r.latest_quiz_score)}</td><td class="gvcn-number">${score(r.part3_essay_score)}</td><td><span class="gvcn-state ${r.state}">${escape(r.label)}</span></td></tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
   $('report').hidden = false;
@@ -42,7 +42,7 @@
     if ([401,403,404].includes(response.status)) {stopped = true; data = null; $('report').hidden = true; $('rows').textContent = ''; $('summary').textContent = ''; $('scope').textContent = ''; $('title').textContent = 'Báo cáo không còn khả dụng';}
     throw Error(result.message || 'Chưa thể cập nhật báo cáo.');
    }
-   data = result; render(); $('status').textContent = 'Cập nhật thành công lúc '+date(data.updated_at);
+   data = result; render(); $('status').textContent = 'Cập nhật: '+date(data.updated_at);
   } catch (error) {
    $('status').textContent = error.message + (data ? ' Đang hiển thị dữ liệu cũ, cập nhật lúc '+date(data.updated_at)+'.' : '');
   } finally {loading = false; $('refresh').disabled = stopped;}
