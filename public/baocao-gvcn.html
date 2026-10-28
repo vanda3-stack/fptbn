@@ -4,10 +4,10 @@
 </style></head><body><header><strong>FPTBN MONITOR · Báo cáo GVCN</strong></header><main>
 <h1 id="title">Báo cáo ôn tập theo lớp</h1><p id="scope"></p><p id="status" role="status">Đang tải báo cáo…</p>
 <section id="report" class="card" hidden>
- <h2>Theo dõi ôn tự luận</h2>
- <div class="gvcn-tools"><label>Hiển thị<select id="filter"><option value="needs">HS cần nhắc nhở</option><option value="all">Tất cả học sinh</option><option value="none">Chưa tự kiểm tra</option><option value="content">Cần ôn đủ ý</option><option value="low">Cần ôn lặp lại</option><option value="met">Đạt mục tiêu ôn</option></select></label><label>Mục tiêu lượt đạt / câu<input id="threshold" type="number" min="1" max="100" step="1" value="3"></label><button id="refresh">Cập nhật ngay</button><button id="copy">Sao chép thông báo GVCN</button></div>
- <p class="muted"><strong>Mục tiêu mặc định:</strong> mỗi câu có ít nhất 3 lượt viết/nói đạt từ 80% số ý, lần tự kiểm tra gần nhất nhận diện đủ ý. Có thể đổi số lượt ở trên; bộ lọc và thông báo sẽ áp dụng theo số đã chọn.</p>
- <p class="muted">Chỉ tính lượt viết/nói đã nộp; không cộng trắc nghiệm, điền từ hoặc thẻ nhớ. Đây là kết quả nhận diện ý tự động, chưa xác nhận HS đã học thuộc; GV/PH nên kiểm tra lại bằng cách yêu cầu con tự trình bày.</p>
+ <h2>Danh sách học sinh cần nhắc ôn tập</h2>
+ <div class="gvcn-tools"><label>Hiển thị<select id="filter"><option value="needs">HS cần nhắc nhở</option><option value="none">Chưa ôn tập</option><option value="low">Ôn tập ít lần</option><option value="all">Tất cả học sinh</option></select></label><label>Nhắc HS ôn dưới số lượt<input id="threshold" type="number" min="2" max="10000" step="1" value="3"></label><button id="refresh">Cập nhật ngay</button><button id="copy">Sao chép thông báo GVCN</button></div>
+ <p class="muted">Chưa ôn: 0 lượt. Ôn ít: có ôn nhưng dưới ngưỡng đã chọn (mặc định 3 lượt). Kính nhờ GVCN nhắc các con ôn lại nhiều lần và học thuộc nội dung tự luận.</p>
+ <p class="muted">Số lượt tính từ đầu đợt: mỗi bộ trắc nghiệm hoặc câu tự luận đã nộp là 1 lượt, kể cả chưa đạt. Chỉ đăng nhập, mở bài hoặc xem thẻ nhớ không được tính. Đây là số lượt luyện tập, không phải số buổi học hay kết luận đã thuộc bài.</p>
  <div id="summary" class="gvcn-summary"></div><p id="count"></p>
- <div class="table-wrap"><table><thead><tr><th>Học sinh</th><th>Lượt tự kiểm tra</th><th>Câu đủ ý gần nhất</th><th>Câu đủ lượt ôn đạt</th><th>Cần nhắc nhở</th><th>Tự kiểm tra gần nhất</th></tr></thead><tbody id="rows"></tbody></table></div>
-</section></main><script src="/ot/gvcn-report.js?v=20261028-quality"></script></body></html>
+ <div class="table-wrap"><table><thead><tr><th>Học sinh</th><th>Số lượt ôn</th><th>Tình trạng</th><th>Ôn gần nhất</th></tr></thead><tbody id="rows"></tbody></table></div>
+</section></main><script src="/ot/gvcn-report.js?v=20261028-reminders"></script></body></html>
