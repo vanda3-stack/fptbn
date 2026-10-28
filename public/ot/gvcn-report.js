@@ -19,7 +19,7 @@
  }
  function selectedRows() {
   const priorities={none:0,low:1,met:2},filter=$('filter').value;
-  return data.rows.map(assess).filter(r=>filter==='all'||filter==='needs'&&r.state!=='met'||filter==='missing_quiz'&&r.quiz===0||filter==='missing_essay'&&r.essay===0||filter===r.state)
+  return data.rows.map(assess).filter(r=>r.state!=='met'&&(filter==='needs'||filter===r.state))
    .sort((a,b)=>priorities[a.state]-priorities[b.state]||a.attempts-b.attempts||a.full_name.localeCompare(b.full_name,'vi'));
  }
  function render() {
@@ -27,10 +27,15 @@
   $('title').textContent = data.title;
   $('scope').textContent = 'Lớp '+data.class_code+' · Số lượt đã nộp từ đầu đợt';
   const all=data.rows.map(assess);
-  $('summary').innerHTML = `<span><b>${all.length}</b> học sinh</span><span><b>${all.filter(r=>!r.quiz).length}</b> chưa ôn TN</span><span><b>${all.filter(r=>!r.essay).length}</b> chưa ôn TL</span><span><b>${all.filter(r=>r.state!=='met').length}</b> cần nhắc</span>`;
+  $('summary').innerHTML = `<span><b>${all.filter(r=>r.state==='none').length}</b> chưa ôn tập</span><span><b>${all.filter(r=>r.state==='low').length}</b> ôn chưa đủ lượt</span><span><b>${all.filter(r=>r.state!=='met').length}/${all.length}</b> HS cần nhắc</span>`;
   const rows = selectedRows();
-  $('count').textContent = 'Đang hiển thị '+rows.length+'/'+data.rows.length+' học sinh';
-  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number ${r.quiz<target()?'gvcn-low':''}">${r.quiz}</td><td class="gvcn-number ${r.essay<target()?'gvcn-low':''}">${r.essay}</td><td><span class="gvcn-state ${r.state}">${escape(r.label)}</span></td></tr>`).join('') || '<tr><td colspan="4">Không có học sinh trong bộ lọc này.</td></tr>';
+  $('count').textContent = 'Đang hiển thị '+rows.length+' HS cần nhắc · Ngưỡng '+target()+' lượt cho mỗi phần';
+  const studentRow=r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number ${r.quiz<target()?'gvcn-low':''}">${r.quiz}</td><td class="gvcn-number ${r.essay<target()?'gvcn-low':''}">${r.essay}</td><td><span class="gvcn-state ${r.state}">${escape(r.state==='none'?'Bắt đầu ôn cả TN và TL':r.label)}</span></td></tr>`;
+  $('rows').innerHTML = ['none','low'].map(state=>{
+   const group=rows.filter(r=>r.state===state);if(!group.length)return '';
+   const title=state==='none'?'1. Chưa ôn tập':'2. Ôn chưa đủ lượt';
+   return `<tr class="gvcn-group ${state}"><th colspan="4" scope="rowgroup">${title} <span>(${group.length} HS)</span></th></tr>`+group.map(studentRow).join('');
+  }).join('') || '<tr><td colspan="4">Không có học sinh cần nhắc trong nhóm đang chọn.</td></tr>';
   $('report').hidden = false;
  }
  async function refresh() {
@@ -54,7 +59,7 @@
   if (!data) return;
   const rows=selectedRows(),all=data.rows.map(assess),group=state=>rows.filter(r=>r.state===state);
   const list=state=>group(state).map((r,i)=>(i+1)+'. '+r.full_name+' ('+r.student_code+'): '+'TN '+r.quiz+' lượt; TL '+r.essay+' lượt — '+r.label+'.').join('\n')||'Không có.';
-  const text='BÁO CÁO ÔN TẬP — LỚP '+data.class_code+'\n'+data.title+'\nCập nhật: '+date(data.updated_at)+'\nToàn lớp: '+all.filter(r=>r.state==='none').length+' HS chưa ôn; '+all.filter(r=>r.state==='low').length+' HS còn thiếu hoặc ôn dưới '+target()+' lượt ở một trong hai phần.\n\nTheo bộ lọc đang chọn:\nCHƯA ÔN TẬP:\n'+list('none')+'\n\nCHƯA ÔN ĐỦ HAI PHẦN (ngưỡng '+target()+' lượt/phần):\n'+list('low')+($('filter').value==='all'||$('filter').value==='met'?'\n\nĐÃ ÔN NHIỀU LẦN:\n'+list('met'):'')+'\n\nKính nhờ thầy/cô GVCN thông báo và nhắc các HS chưa ôn hoặc ôn ít tiếp tục ôn tập, làm lại nhiều lần và học thuộc nội dung tự luận.';
+  const text='BÁO CÁO ÔN TẬP — LỚP '+data.class_code+'\n'+data.title+'\nCập nhật: '+date(data.updated_at)+'\nToàn lớp: '+all.filter(r=>r.state==='none').length+' HS chưa ôn; '+all.filter(r=>r.state==='low').length+' HS còn thiếu hoặc ôn dưới '+target()+' lượt ở một trong hai phần.\n\nDanh sách cần nhắc theo nhóm đang chọn:\nCHƯA ÔN TẬP:\n'+list('none')+'\n\nÔN CHƯA ĐỦ LƯỢT (ngưỡng '+target()+' lượt/phần):\n'+list('low')+'\n\nKính nhờ thầy/cô GVCN thông báo và nhắc các HS chưa ôn hoặc ôn ít tiếp tục ôn tập, làm lại nhiều lần và học thuộc nội dung tự luận.';
   try {await navigator.clipboard.writeText(text); $('status').textContent = 'Đã sao chép danh sách.';} catch {window.prompt('Sao chép danh sách:', text);}
  };
  setInterval(() => {if (!document.hidden) refresh();}, 60000);
