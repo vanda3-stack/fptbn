@@ -23,7 +23,7 @@ test('Whole-answer practice persists server-computed points and completion, igno
   h.pack.content_json=JSON.stringify({questions:content.questions,essays:[essay]});
   const login=await h.request('post','/login',{student_code:'FBN12345'}),t=login.body.token,params={id:h.pack.id},id=crypto.randomUUID();
   let a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Lưu file máy tính internet dữ liệu',grading:{points:999}},t,params);
-  assert.equal(a.status,200);assert.equal(a.body.result.detail.grading.points,2);assert.equal(a.body.result.detail.grading.maximum,2.5);assert.equal(a.body.result.detail.completion.completed,true);assert.equal(JSON.parse(h.attempts.get(id).detail_json).grading.points,2);
-  a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Sai hết'},t,params);assert.equal(a.body.result.detail.grading.points,2);assert.equal(h.attempts.size,1);
+  assert.equal(a.status,200);assert.equal(a.body.result.detail.grading.points,8);assert.equal(a.body.result.detail.grading.maximum,10);assert.equal(a.body.result.detail.completion.completed,true);assert.equal(JSON.parse(h.attempts.get(id).detail_json).grading.points,8);
+  a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Sai hết'},t,params);assert.equal(a.body.result.detail.grading.points,8);assert.equal(h.attempts.size,1);
  }finally{h.close()}
 });

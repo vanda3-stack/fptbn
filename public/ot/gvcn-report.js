@@ -14,8 +14,6 @@
   if(row.has_quiz!==false){if(!quiz)labels.push('Chưa ôn TN');else if(quiz<threshold)labels.push('Ôn TN còn ít ('+quiz+'/3 lượt)');}
   if(row.essay_questions!==0){if(!essay)labels.push('Chưa ôn TL');else if(essay<threshold)labels.push('Ôn TL còn ít ('+essay+'/3 lượt)');
    if(essay&&row.part3_questions_done<row.essay_questions)labels.push('Viết cả câu: '+row.part3_questions_done+'/'+row.essay_questions+' câu');}
-  if(row.latest_quiz_score!=null&&Number(row.latest_quiz_score)<8)labels.push('Luyện lại TN để củng cố');
-  if(row.part3_essay_score!=null&&Number(row.part3_essay_score)<8)labels.push('Luyện viết đủ ý phần 3');
   const state=quiz+essay===0?'none':labels.length?'low':'met';
   return {...row,quiz,essay,attempts:quiz+essay,state,label:labels.join(' · ')||'Đã đủ lượt ôn'};
  }
