@@ -36,11 +36,26 @@
         document.getElementById('reviewClassNotice').hidden = !(index === 1 && typeof joinedClass !== 'undefined' && joinedClass);
         visibility(index === 1);
     }
+    // Apply grade preference after the student has gained portal access.
+    let preferenceApplied = false;
+    async function applyGradeDefault() {
+        const grade = Number(window.FPTBN_STUDENT_GRADE);
+        if (!Number.isInteger(grade) || grade < 6 || grade > 9) return;
+        try {
+            const response = await fetch('/api/student/default-tab?grade=' + grade, {cache:'no-store'});
+            if (!response.ok || !ready) return;
+            const data = await response.json();
+            if (!ready || !data.success) return;
+            const target = {class:0,review:1,exam:2,print:3}[data.tab];
+            if (Number.isInteger(target)) select(target);
+        } catch (error) { console.warn('Không tải được trang mặc định:', error); }
+    }
     window.addEventListener('student-portal-access', event => {
         ready = event.detail === true;
         navigation.hidden = !ready;
-        if (!ready) select(0);
+        if (!ready) { preferenceApplied = false; select(0); }
         else if (requestedTab) { const index={review:1,exam:2,paper:3}[requestedTab]||0; requestedTab=null; select(index); }
+        else if (!preferenceApplied) { preferenceApplied = true; applyGradeDefault(); }
     });
     navigation.hidden = !ready;
     window.addEventListener('portal-open-paper', event => { if(ready) select(3, event.detail?.packId); });
