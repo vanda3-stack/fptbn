@@ -30,8 +30,8 @@
   $('summary').innerHTML = `<span><b>${rows.length}</b> học sinh</span><span><b>${rows.filter(r=>r.state==='none').length}</b> chưa ôn</span><span><b>${rows.filter(r=>r.state==='low').length}</b> ôn ít</span>`;
   $('count').textContent = 'Danh sách toàn lớp · HS cần nhắc xếp trước · Mốc nhắc: 10 lượt/phần';
   const questions=rows[0]?.question_scores||[];
-  const header=$('reportHead');if(header)header.innerHTML='<th>Học sinh</th><th>Lượt TN</th><th>Lượt TL</th><th>Điểm TN /10</th><th>Điểm TL /10</th>'+questions.map(q=>`<th>Câu ${q.number}<br>Lượt · Điểm /10</th>`).join('')+'<th>Cần nhắc</th>';
-  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number">${r.quiz}</td><td class="gvcn-number">${r.essay}</td><td class="gvcn-number">${score(r.latest_quiz_score)}</td><td class="gvcn-number">${score(r.part3_essay_score)}</td>${(r.question_scores||[]).map(q=>`<td class="gvcn-number">${q.attempts} lượt<br>${score(q.score)}/10</td>`).join('')}<td><span class="gvcn-state ${r.state}">${escape(r.label)}</span></td></tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
+  const header=$('reportHead');if(header)header.innerHTML='<th>Học sinh</th><th>Điểm TN /10</th><th>Điểm TL /10</th>'+'<th>Cần nhắc</th>';
+  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number">${score(r.latest_quiz_score)}</td><td class="gvcn-number">${score(r.part3_essay_score)}</td><td><span class="gvcn-state ${r.state}">${escape(r.label)}</span><small>TN: ${r.quiz} lượt · TL: ${r.essay} lượt${(r.question_scores||[]).map(q=>' · Câu '+q.number+': '+q.attempts+' lượt ('+score(q.score)+'/10)').join('')}</small></td></tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
   $('report').hidden = false;
  }
  async function refresh() {
