@@ -82,7 +82,7 @@
       setStatus('Đang lưu…');
       try {
         const tabs=Object.fromEntries(grades.map(g=>[g,section.querySelector('[data-grade="'+g+'"]').value]));
-        await request('/api/teacher/default-tabs',{method:'PUT',body:JSON.stringify({tabs})});
+        await request('/api/teacher/default-tabs',{method:'POST',body:JSON.stringify({tabs})});
         setStatus('Đã lưu thành công.','success');
       } catch(e) {setStatus(e.message,'error');}
       finally {save.disabled=false;}
