@@ -1,0 +1,55 @@
+/* Student workspace: instructions, question, then one continuous answer. */
+.essay-top,.essay-bottom,.essay-question,.essay-body,.essay-progress-panel{max-width:1000px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto}
+.essay-question{padding:24px 30px;margin-bottom:14px}.essay-question h1{margin:18px 0 0;font-size:clamp(20px,2vw,28px);line-height:1.55;padding-top:18px;border-top:1px solid #2b405a}
+.essay-switch{margin-top:16px}.essay-instruction{font-size:14px;line-height:1.65;margin:16px 0 0;color:#b9d6f7!important}.essay-body{padding:24px 30px}
+.essay-cloze{margin:0;padding-left:24px}.essay-cloze li{padding:18px 4px 18px 10px;border-bottom:1px solid #293c55;line-height:2.7;font-size:17px}.essay-cloze li:last-child{border-bottom:0}
+.essay-blank-wrap{display:inline-block;position:relative;vertical-align:baseline;margin:4px 6px 13px;width:var(--blank-width);max-width:calc(100% - 12px)}
+.essay-blank-wrap .essay-blank{padding:8px 10px;min-height:42px;border:1px solid #527291;border-bottom:2px solid #72a9db;border-radius:6px;background:#0c1b2d;font-size:17px}
+.essay-word-hint{position:absolute;bottom:-17px;right:3px;margin:0;line-height:16px;font-size:10px;color:#90a9c4}.essay-blank::placeholder{color:#a6bdd6;font-size:12px}
+.essay-correction{display:inline-block;font-size:13px}.essay-actions{padding-top:16px;border-top:1px solid #293c55}.essay-text{width:100%;box-sizing:border-box;min-height:320px;padding:20px;line-height:1.9}
+.essay-progress-panel{border:1px solid #2b405a;background:#0e1b2d;border-radius:12px;padding:16px 20px;margin-bottom:20px}.essay-progress-panel summary{cursor:pointer;font-weight:600;color:#b8d7ff}.essay-progress-row{display:grid;grid-template-columns:70px 70px 1fr 1.3fr;gap:12px;padding:14px 0;border-top:1px solid #283a50;font-size:13px;line-height:1.6}
+body.quiz-playing main{width:100%;max-width:1600px;padding:16px 24px;box-sizing:border-box}.play-stage{min-height:calc(100svh - 125px);box-sizing:border-box;display:flex;flex-direction:column;padding:24px 32px}.play-question{flex:1;min-height:220px}.play-question h1{max-width:1250px;font-size:clamp(25px,2.4vw,38px)}.play-answers{gap:20px}.play-answer{min-height:130px;font-size:clamp(18px,1.6vw,24px)}.play-bottom{min-height:70px}.play-notice:empty{display:none}
+@media(max-width:650px){.essay-question,.essay-body{padding:18px 16px}.essay-switch button{font-size:12px}.essay-question h1{font-size:21px}.essay-cloze li{font-size:16px;padding-left:4px;line-height:2.8}.essay-progress-row{grid-template-columns:1fr 1fr;gap:6px}.essay-text{min-height:280px}body.quiz-playing main{padding:10px}.play-stage{padding:16px;min-height:calc(100svh - 125px)}.play-question{min-height:165px}.play-question h1{font-size:23px}.play-answer{min-height:84px;font-size:17px}.play-answers{gap:12px}}
+
+/* Keep the essay workspace within the available viewport. Long answers scroll locally. */
+body:has(#essayBack){height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+body:has(#essayBack)>header{flex:0 0 auto;min-height:52px;padding-top:8px;padding-bottom:8px;box-sizing:border-box}
+body:has(#essayBack)>header .wordmark img{height:30px}
+main:has(#essayBack){flex:1;min-height:0;width:100%;max-width:1240px;box-sizing:border-box;padding:10px 22px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+main:has(#essayBack)>.essay-top,main:has(#essayBack)>.essay-bottom{flex:0 0 auto;margin-top:0;margin-bottom:0}
+main:has(#essayBack)>.essay-question{flex:0 1 auto;min-height:0;max-height:35%;overflow:auto;padding:12px 20px;margin-top:0;margin-bottom:0}
+main:has(#essayBack) .essay-question>.tag{display:none}
+main:has(#essayBack) .essay-switch{margin:0;padding:3px}
+main:has(#essayBack) .essay-switch button{min-height:36px;padding:7px}
+main:has(#essayBack) .essay-instruction{margin-top:8px;font-size:13px;line-height:1.4}
+main:has(#essayBack) .essay-question h1{margin-top:8px;padding-top:8px;font-size:clamp(18px,1.6vw,23px);line-height:1.4}
+main:has(#essayBack)>.essay-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:14px 20px;margin:0 auto}
+main:has(#essayBack) .essay-cloze li{padding:8px 4px;line-height:2.35;font-size:16px}
+main:has(#essayBack) .essay-answer{margin-top:0;margin-bottom:10px}
+main:has(#essayBack) .essay-answer li{padding-top:5px;padding-bottom:5px}
+main:has(#essayBack) .essay-blank-wrap{margin-top:2px;margin-bottom:12px}
+main:has(#essayBack) .essay-blank-wrap .essay-blank{min-height:36px;padding:5px 8px;font-size:16px}
+main:has(#essayBack) .essay-flip{min-height:160px;padding:18px;margin-top:0}
+main:has(#essayBack) .essay-flip-hint{margin-top:10px}
+main:has(#essayBack) .essay-text{min-height:140px;height:clamp(140px,24dvh,260px);padding:12px;resize:vertical}
+main:has(#essayBack) .essay-actions{position:sticky;bottom:-14px;background:#101d31;padding:10px 0;margin:8px 0 0;z-index:2;box-shadow:0 -8px 16px #101d31}
+main:has(#essayBack) .essay-actions button{margin-top:0;min-height:38px}
+main:has(#essayBack) #essayNotice:empty{display:none}
+main:has(#essayBack)>.essay-progress-panel{flex:0 0 auto;position:relative;padding:8px 14px;margin-top:0;margin-bottom:0;font-size:12px}
+main:has(#essayBack)>.essay-progress-panel[open]{flex:0 1 auto;max-height:30%;min-height:40px;overflow:auto}
+main:has(#essayBack) .essay-progress-row{padding:8px 0}
+main:has(#essayBack) .essay-top button,main:has(#essayBack) .essay-bottom button{min-height:36px;padding:7px 12px}
+@media(max-width:650px){
+ body:has(#essayBack)>header{gap:6px;min-height:44px;padding:5px 10px}
+ body:has(#essayBack)>header .product-name{display:none}
+ body:has(#essayBack)>header .wordmark img{height:25px}
+ body:has(#essayBack)>header #studyBadge{order:initial;width:auto;margin:0;padding:3px 5px;font-size:10px}
+ body:has(#essayBack)>header #identity{font-size:10px}
+ main:has(#essayBack){padding:7px 10px;gap:6px}
+ main:has(#essayBack)>.essay-question{padding:10px 12px;max-height:38%}
+ main:has(#essayBack)>.essay-body{padding:10px 12px}
+ main:has(#essayBack) .essay-question h1{font-size:18px}
+ main:has(#essayBack) .essay-instruction{font-size:12px}
+ main:has(#essayBack) .essay-switch button{font-size:11px;padding:6px 3px;min-height:34px}
+ main:has(#essayBack) .essay-actions{bottom:-10px}
+}
