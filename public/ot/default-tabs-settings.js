@@ -1,43 +1,94 @@
 'use strict';
 (() => {
- const labels={class:'Học tại lớp',review:'Ôn tập tại nhà',exam:'Thi thử',print:'Đề cương để in'};
- const grades=[6,7,8,9], root=document.getElementById('app');
- let loading=false;
- async function render() {
-   if (!root || !sessionStorage.getItem('ot-teacher-token') || !root.querySelector('#create') || root.querySelector('#defaultTabSettings') || loading) return;
-   loading=true;
-   const block=document.createElement('section');
-   block.id='defaultTabSettings';
-   block.className='card';
-   block.innerHTML='<h2>Cài đặt trang mở mặc định</h2><p class="muted">Chọn nội dung học sinh khối 6–9 sẽ nhìn thấy đầu tiên sau khi vào trang chính. Các tab khác vẫn dùng bình thường.</p>'+
-    '<div class="classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">'+grades.map(g=>
-       '<label>Khối '+g+'<select data-grade="'+g+'" style="display:block;width:100%;margin-top:6px">'+
-       Object.entries(labels).map(([key,label])=>'<option value="'+key+'">'+label+'</option>').join('')+'</select></label>'
-     ).join('')+'</div><div class="toolbar" style="margin-top:12px"><button type="button" class="primary" id="saveDefaultTabs">Lưu cài đặt</button><span id="defaultTabStatus" role="status"></span></div>';
-   const toolbar=root.querySelector('.toolbar');
-   if (!toolbar) {loading=false;return;}
-   toolbar.after(block);
-   const message=block.querySelector('#defaultTabStatus');
-   const auth=()=>({'Authorization':'Bearer '+sessionStorage.getItem('ot-teacher-token'),'Content-Type':'application/json'});
-   try {
-     const r=await fetch('/api/teacher/default-tabs',{headers:auth(),cache:'no-store'});
-     const data=await r.json();
-     if (!r.ok || !data.success) throw Error(data.message||'Không đọc được cài đặt');
-     grades.forEach(g=>block.querySelector('[data-grade="'+g+'"]').value=data.tabs[g]||'class');
-   } catch(e) {message.textContent='Không tải được: '+e.message;}
-   block.querySelector('#saveDefaultTabs').onclick=async()=>{
-     const button=block.querySelector('#saveDefaultTabs');
-     button.disabled=true;message.textContent='Đang lưu…';
-     try {
-       const tabs=Object.fromEntries(grades.map(g=>[g,block.querySelector('[data-grade="'+g+'"]').value]));
-       const r=await fetch('/api/teacher/default-tabs',{method:'PUT',headers:auth(),body:JSON.stringify({tabs})});
-       const data=await r.json();
-       if(!r.ok||!data.success)throw Error(data.message||'Lưu thất bại');
-       message.textContent='✓ Đã lưu. Học sinh sẽ nhận cài đặt khi đăng nhập lần tiếp theo.';
-     } catch(e){message.textContent='Lỗi: '+e.message;} finally {button.disabled=false;}
-   };
-   loading=false;
- }
- new MutationObserver(()=>{render()}).observe(root,{childList:true});
- render();
+  const root = document.getElementById('app');
+  if (!root) return;
+  const grades = [6, 7, 8, 9];
+  const choices = [
+    ['class','Học tại lớp'],['review','Ôn tập tại nhà'],
+    ['exam','Thi thử'],['print','Đề cương để in']
+  ];
+  let rendering = false;
+  async function request(url, options = {}) {
+    let response;
+    try {
+      response = await fetch(url, {
+        cache:'no-store',
+        ...options,
+        headers: {
+          'Accept':'application/json',
+          'Authorization':'Bearer ' + (sessionStorage.getItem('ot-teacher-token') || ''),
+          ...(options.body ? {'Content-Type':'application/json'} : {})
+        }
+      });
+    } catch(e) {throw new Error('Không kết nối được máy chủ. Kiểm tra mạng và tiến trình Node.js.');}
+    const type = response.headers.get('content-type') || '';
+    if (!type.includes('application/json')) {
+      const hint = response.status === 404
+        ? 'API cài đặt chưa hoạt động (404). Cần cập nhật nhánh triển khai và khởi động lại Node.js.'
+        : 'Máy chủ hoặc proxy đang trả về HTML thay vì JSON (HTTP ' + response.status + '). Kiểm tra cấu hình chuyển tiếp /api và khởi động lại Node.js.';
+      throw new Error(hint);
+    }
+    let data;
+    try {data = await response.json();} catch(e) {throw new Error('Phản hồi API không phải JSON hợp lệ.');}
+    if (!response.ok || !data.success) throw new Error(data.message || 'Yêu cầu thất bại (HTTP ' + response.status + ').');
+    return data;
+  }
+  async function render() {
+    if (rendering || !sessionStorage.getItem('ot-teacher-token') || !root.querySelector('.dashboard-heading') || root.querySelector('#defaultTabSettings')) return;
+    rendering = true;
+    const section = document.createElement('section');
+    section.id = 'defaultTabSettings';
+    section.className = 'landing-preferences';
+    section.innerHTML = `
+      <div class="landing-head">
+        <div><h2>Trang mở mặc định cho học sinh</h2>
+          <p>Chọn nội dung hiển thị đầu tiên theo từng khối. Học sinh vẫn sử dụng được tất cả tab.</p>
+        </div>
+        <span class="landing-tag">Áp dụng khối 6–9</span>
+      </div>
+      <div class="landing-controls">
+        ${grades.map(g=>`<label for="landing-grade-${g}"><span>Khối ${g}</span><select id="landing-grade-${g}" data-grade="${g}">
+          ${choices.map(([value,label])=>`<option value="${value}">${label}</option>`).join('')}
+        </select></label>`).join('')}
+      </div>
+      <div class="landing-footer">
+        <span class="landing-note">Cài đặt lưu trên máy chủ và áp dụng khi học sinh đăng nhập.</span>
+        <span class="landing-status" id="defaultTabStatus" role="status" aria-live="polite"></span>
+        <button type="button" class="primary" id="saveDefaultTabs">Lưu thay đổi</button>
+      </div>`;
+    root.querySelector('.dashboard-heading').after(section);
+    const status = section.querySelector('#defaultTabStatus');
+    const save = section.querySelector('#saveDefaultTabs');
+    const setStatus = (message, kind='') => {
+      status.textContent=message;
+      status.dataset.state=kind;
+    };
+    save.disabled = true;
+    try {
+      const data = await request('/api/teacher/default-tabs');
+      grades.forEach(g=>{
+        const el=section.querySelector('[data-grade="'+g+'"]');
+        el.value=data.tabs[g]||'class';
+      });
+      setStatus('');
+      save.disabled = false;
+    } catch(e) {
+      setStatus(e.message,'error');
+      save.disabled = true;
+    }
+    section.querySelectorAll('select').forEach(el=>el.addEventListener('change',()=>{if(!save.disabled)setStatus('Có thay đổi chưa lưu.');}));
+    save.addEventListener('click', async()=>{
+      save.disabled=true;
+      setStatus('Đang lưu…');
+      try {
+        const tabs=Object.fromEntries(grades.map(g=>[g,section.querySelector('[data-grade="'+g+'"]').value]));
+        await request('/api/teacher/default-tabs',{method:'PUT',body:JSON.stringify({tabs})});
+        setStatus('Đã lưu thành công.','success');
+      } catch(e) {setStatus(e.message,'error');}
+      finally {save.disabled=false;}
+    });
+    rendering = false;
+  }
+  new MutationObserver(()=>{void render()}).observe(root,{childList:true});
+  void render();
 })();
