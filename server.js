@@ -4526,6 +4526,7 @@ app.patch(
 
 const teacherLoginTokens = new Map();
 require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens });
+require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens });
 
 
 app.post("/api/teacher/login", async (req, res) => {
