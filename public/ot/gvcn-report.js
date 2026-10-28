@@ -7,25 +7,30 @@
  const date = value => value ? new Date(value).toLocaleString('vi-VN', {timeZone:'Asia/Ho_Chi_Minh'}) : '—';
  function target() {return Math.max(2,Math.min(10000,Math.trunc(Number($('threshold').value)||3)));}
  function assess(row) {
-  const attempts=Math.max(0,Number(row.attempts||0)-Number(row.flashcard_attempts||0));
-  const state=attempts===0?'none':attempts<target()?'low':'met';
-  const label={none:'Chưa ôn tập',low:'Ôn tập ít lần',met:'Đã ôn nhiều lần'}[state];
-  return {...row,attempts,state,label};
+  const quiz=Math.max(0,Number(row.quiz_attempts||0));
+  const essay=['cloze_attempts','writing_attempts','speech_attempts'].reduce((sum,key)=>sum+Math.max(0,Number(row[key]||0)),0);
+  const attempts=quiz+essay;
+  const state=attempts===0?'none':quiz<target()||essay<target()?'low':'met';
+  const labels=[];
+  if(!quiz)labels.push('Chưa ôn TN');else if(quiz<target())labels.push('TN còn ít');
+  if(!essay)labels.push('Chưa ôn TL');else if(essay<target())labels.push('TL còn ít');
+  const label=state==='none'?'Chưa ôn tập':labels.join(' · ')||'Đã ôn cả hai phần';
+  return {...row,quiz,essay,attempts,state,label};
  }
  function selectedRows() {
   const priorities={none:0,low:1,met:2},filter=$('filter').value;
-  return data.rows.map(assess).filter(r=>filter==='all'||filter==='needs'&&r.state!=='met'||filter===r.state)
+  return data.rows.map(assess).filter(r=>filter==='all'||filter==='needs'&&r.state!=='met'||filter==='missing_quiz'&&r.quiz===0||filter==='missing_essay'&&r.essay===0||filter===r.state)
    .sort((a,b)=>priorities[a.state]-priorities[b.state]||a.attempts-b.attempts||a.full_name.localeCompare(b.full_name,'vi'));
  }
  function render() {
   if (!data) return;
   $('title').textContent = data.title;
-  $('scope').textContent = 'Lớp '+data.class_code+' · Ôn tập từ đầu đợt · Tự cập nhật mỗi 60 giây';
-  const all=data.rows.map(assess),count=state=>all.filter(r=>r.state===state).length;
-  $('summary').innerHTML = `<span><b>${all.length}</b> học sinh</span><span><b>${count('none')}</b> chưa ôn tập</span><span><b>${count('low')}</b> ôn tập ít lần</span><span><b>${count('met')}</b> đã ôn nhiều lần</span>`;
+  $('scope').textContent = 'Lớp '+data.class_code+' · Số lượt đã nộp từ đầu đợt';
+  const all=data.rows.map(assess);
+  $('summary').innerHTML = `<span><b>${all.length}</b> học sinh</span><span><b>${all.filter(r=>!r.quiz).length}</b> chưa ôn TN</span><span><b>${all.filter(r=>!r.essay).length}</b> chưa ôn TL</span><span><b>${all.filter(r=>r.state!=='met').length}</b> cần nhắc</span>`;
   const rows = selectedRows();
   $('count').textContent = 'Đang hiển thị '+rows.length+'/'+data.rows.length+' học sinh';
-  $('rows').innerHTML = rows.map(r=>`<tr><td><strong>${escape(r.full_name)}</strong><br><small>${escape(r.student_code)}</small></td><td>${r.attempts}</td><td><span class="gvcn-state ${r.state}">${escape(r.label)}</span></td><td>${escape(date(r.attempts?r.last_practice:null))}</td></tr>`).join('') || '<tr><td colspan="4">Không có học sinh trong bộ lọc này.</td></tr>';
+  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td class="gvcn-number ${r.quiz<target()?'gvcn-low':''}">${r.quiz}</td><td class="gvcn-number ${r.essay<target()?'gvcn-low':''}">${r.essay}</td><td><span class="gvcn-state ${r.state}">${escape(r.label)}</span></td></tr>`).join('') || '<tr><td colspan="4">Không có học sinh trong bộ lọc này.</td></tr>';
   $('report').hidden = false;
  }
  async function refresh() {
@@ -48,8 +53,8 @@
  $('copy').onclick = async () => {
   if (!data) return;
   const rows=selectedRows(),all=data.rows.map(assess),group=state=>rows.filter(r=>r.state===state);
-  const list=state=>group(state).map((r,i)=>(i+1)+'. '+r.full_name+' ('+r.student_code+'): '+r.attempts+' lượt.').join('\n')||'Không có.';
-  const text='BÁO CÁO ÔN TẬP — LỚP '+data.class_code+'\n'+data.title+'\nCập nhật: '+date(data.updated_at)+'\nToàn lớp: '+all.filter(r=>r.state==='none').length+' HS chưa ôn; '+all.filter(r=>r.state==='low').length+' HS ôn dưới '+target()+' lượt.\n\nTheo bộ lọc đang chọn:\nCHƯA ÔN TẬP:\n'+list('none')+'\n\nÔN TẬP ÍT LẦN (1–'+(target()-1)+' lượt):\n'+list('low')+($('filter').value==='all'||$('filter').value==='met'?'\n\nĐÃ ÔN NHIỀU LẦN:\n'+list('met'):'')+'\n\nKính nhờ thầy/cô GVCN thông báo và nhắc các HS chưa ôn hoặc ôn ít tiếp tục ôn tập, làm lại nhiều lần và học thuộc nội dung tự luận.';
+  const list=state=>group(state).map((r,i)=>(i+1)+'. '+r.full_name+' ('+r.student_code+'): '+'TN '+r.quiz+' lượt; TL '+r.essay+' lượt — '+r.label+'.').join('\n')||'Không có.';
+  const text='BÁO CÁO ÔN TẬP — LỚP '+data.class_code+'\n'+data.title+'\nCập nhật: '+date(data.updated_at)+'\nToàn lớp: '+all.filter(r=>r.state==='none').length+' HS chưa ôn; '+all.filter(r=>r.state==='low').length+' HS còn thiếu hoặc ôn dưới '+target()+' lượt ở một trong hai phần.\n\nTheo bộ lọc đang chọn:\nCHƯA ÔN TẬP:\n'+list('none')+'\n\nCHƯA ÔN ĐỦ HAI PHẦN (ngưỡng '+target()+' lượt/phần):\n'+list('low')+($('filter').value==='all'||$('filter').value==='met'?'\n\nĐÃ ÔN NHIỀU LẦN:\n'+list('met'):'')+'\n\nKính nhờ thầy/cô GVCN thông báo và nhắc các HS chưa ôn hoặc ôn ít tiếp tục ôn tập, làm lại nhiều lần và học thuộc nội dung tự luận.';
   try {await navigator.clipboard.writeText(text); $('status').textContent = 'Đã sao chép danh sách.';} catch {window.prompt('Sao chép danh sách:', text);}
  };
  setInterval(() => {if (!document.hidden) refresh();}, 60000);
