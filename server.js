@@ -4572,6 +4572,7 @@ app.patch(
 // =====================================================
 
 const teacherLoginTokens = new Map();
+require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens });
 const revisionModule = require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io,
     isParentViewingBlocked: child => {
         if (teachersByClass.has(normalizeClassCode(child.class_code))) return true;
