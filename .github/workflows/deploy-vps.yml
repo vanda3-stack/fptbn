@@ -60,7 +60,7 @@ jobs:
           printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-      - name: Update VPS code without restarting Node.js
+      - name: Deploy and request service restart
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
@@ -70,8 +70,8 @@ jobs:
           [[ "$PORT" =~ ^[0-9]{1,5}$ ]] && [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || { echo "Invalid SSH port"; exit 1; }
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -p "$PORT" \
             -- "$VPS_USER@$VPS_HOST" \
-            'sudo -n /usr/local/sbin/fptbn-deploy-code-only'
-      - name: Verify HTTPS endpoint (service not restarted)
+            'sudo -n /usr/local/sbin/fptbn-deploy-code'
+      - name: Verify HTTPS endpoint after restart
         run: |
           curl -fsS --retry 5 --retry-delay 3 --retry-connrefused -o /dev/null https://fptbnmonitor.online/api/status
-          echo 'HTTPS status endpoint reachable (Node.js not restarted)'
+          echo 'HTTPS status endpoint reachable'
