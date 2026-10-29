@@ -37,9 +37,6 @@ jobs:
     environment: production
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - name: Check deployment configuration
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -73,4 +70,8 @@ jobs:
           [[ "$PORT" =~ ^[0-9]{1,5}$ ]] && [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || { echo "Invalid SSH port"; exit 1; }
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -p "$PORT" \
             -- "$VPS_USER@$VPS_HOST" \
-            'bash -s' < .github/deploy/deploy-remote.sh
+            'sudo -n /usr/local/sbin/fptbn-deploy-code'
+      - name: Verify HTTPS endpoint after restart
+        run: |
+          curl -fsS --retry 5 --retry-delay 3 --retry-connrefused -o /dev/null https://fptbnmonitor.online/api/status
+          echo 'HTTPS status endpoint reachable'
