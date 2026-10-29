@@ -16,7 +16,10 @@
 .gvcn-mobile-table tbody td:first-child small{display:block;color:#b6cce5!important;font-size:12px!important;margin-top:2px}
 .gvcn-mobile-table tbody td:nth-child(2){grid-column:1/-1;padding:9px 4px!important;border-bottom:1px solid #38516d!important}
 .gvcn-mobile-table .gvcn-number{text-align:center;color:#fff!important;font-size:18px!important;font-weight:700;white-space:nowrap;padding:11px 1px 3px!important}
-.gvcn-mobile-table .gvcn-number::before{content:attr(data-label);display:block;font-size:11px!important;font-weight:600;color:#aac3e3!important;white-space:normal;margin-bottom:3px}
+.gvcn-mobile-table .gvcn-number::before{display:none!important}
+.gvcn-mobile-table .gvcn-score-heading{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:3px;color:#aac3e3!important;font-size:11px!important;font-weight:600;line-height:1.3;margin-bottom:4px;white-space:normal}
+.gvcn-mobile-table .gvcn-score-heading small{color:#b6d6ff!important;font-size:10px!important;font-weight:500}
+.gvcn-mobile-table .gvcn-number strong{display:block;color:#fff!important;font-size:inherit}
 .gvcn-mobile-table .gvcn-state-full,.gvcn-mobile-table .gvcn-attempts-full{display:none!important}
 .gvcn-mobile-table .gvcn-state-mobile{display:block!important;color:#ffcd91!important;font-size:13px!important;line-height:1.45;font-weight:600;white-space:normal}
 .gvcn-mobile-table .gvcn-state-mobile.none{color:#ffaaa8!important}
@@ -30,13 +33,17 @@
  function assess(row) {
   const quiz=Math.max(0,Number(row.quiz_attempts||0));
   const essay=['cloze_attempts','writing_attempts','speech_attempts'].reduce((sum,key)=>sum+Math.max(0,Number(row[key]||0)),0);
+  const parts=[];
+  if(row.has_quiz!==false)parts.push({name:'TN',attempts:quiz});
+  if(row.essay_questions!==0)(row.question_scores||[]).forEach(q=>parts.push({name:'TL'+q.number,attempts:Math.max(0,Number(q.attempts)||0)}));
+  const never=parts.filter(p=>p.attempts===0).map(p=>p.name);
+  const few=parts.filter(p=>p.attempts>0&&p.attempts<threshold).map(p=>p.name);
+  const active=parts.length>0&&parts.every(p=>p.attempts>=threshold);
+  const state=active?'met':parts.every(p=>p.attempts===0)?'none':'low';
   const labels=[];
-  if(row.has_quiz!==false){if(!quiz)labels.push('Chưa ôn TN');else if(quiz<threshold)labels.push('Ôn TN còn ít ('+quiz+'/10 lượt)');}
-  if(row.essay_questions!==0){if(!essay)labels.push('Chưa ôn TL');else if(essay<threshold)labels.push('Ôn TL còn ít ('+essay+'/10 lượt)');
-   if(essay&&row.part3_questions_done<row.essay_questions)labels.push('Viết cả câu: '+row.part3_questions_done+'/'+row.essay_questions+' câu');}
-  const active=quiz>=threshold&&essay>=threshold;
-  const state=active?'met':quiz+essay===0?'none':'low';
-  return {...row,quiz,essay,attempts:quiz+essay,state,label:active?'Em đã tích cực ôn tập, chúc em đạt điểm cao':labels.join(' · ')};
+  if(never.length)labels.push('Chưa ôn: '+never.join(', '));
+  if(few.length)labels.push('Cần ôn thêm: '+few.join(', '));
+  return {...row,quiz,essay,attempts:quiz+essay,state,label:active?'Đã đủ lượt ôn các phần':labels.join(' · ')||'Chưa có nội dung ôn tập'};
  }
  function selectedRows() {
   const priorities={none:0,low:1,met:2};
@@ -53,7 +60,7 @@
   const header=$('reportHead');if(header){header.innerHTML='<th>Học sinh</th><th>Cần nhắc</th><th>Điểm TN</th>'+questions.map(q=>`<th>TL câu ${q.number}</th>`).join('');
    const table=header.closest('table');if(table){table.classList.add('gvcn-mobile-table');table.style.setProperty('--gvcn-score-columns',String(questions.length+1));header.querySelectorAll('th').forEach(th=>th.style.removeProperty('width'));}
   }
-  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td title="${escape(r.label)}"><span class="gvcn-state gvcn-state-full ${r.state}">${escape(r.label)}</span><small class="gvcn-attempts-full">TN: ${r.quiz} lượt${(r.question_scores||[]).map(q=>' · Câu '+q.number+': '+q.attempts+' lượt').join('')}</small><span class="gvcn-state-mobile ${r.state}" style="display:none">${r.state==='met'?'Đã đủ lượt':r.state==='none'?'Chưa ôn':'Ôn ít'} · TN ${r.quiz}/10 lượt${(r.question_scores||[]).map(q=>' · TL'+q.number+' '+Math.max(0,Number(q.attempts||0))+' lượt').join('')}</span></td><td class="gvcn-number" data-label="TN">${score(r.latest_quiz_score)}</td>${(r.question_scores||[]).map(q=>`<td class="gvcn-number" data-label="TL ${q.number}">${score(q.score)}</td>`).join('')}</tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
+  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td title="${escape(r.label)}"><span class="gvcn-state gvcn-state-full ${r.state}">${escape(r.label)}</span><small class="gvcn-attempts-full">TN: ${r.quiz} lượt${(r.question_scores||[]).map(q=>' · Câu '+q.number+': '+q.attempts+' lượt').join('')}</small><span class="gvcn-state-mobile ${r.state}" style="display:none">${escape(r.label)}</span></td><td class="gvcn-number" data-label="TN"><span class="gvcn-score-heading">TN <small>${r.quiz} lượt</small></span><strong>${score(r.latest_quiz_score)}</strong></td>${(r.question_scores||[]).map(q=>`<td class="gvcn-number" data-label="TL ${q.number}"><span class="gvcn-score-heading">TL${q.number} <small>${Math.max(0,Number(q.attempts)||0)} lượt</small></span><strong>${score(q.score)}</strong></td>`).join('')}</tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
   $('report').hidden = false;
  }
  async function refresh() {
