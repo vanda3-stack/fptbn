@@ -7,15 +7,20 @@
  const date = value => value ? new Date(value).toLocaleString('vi-VN', {timeZone:'Asia/Ho_Chi_Minh'}) : '—';
  const mobileStyle=document.createElement('style');
  mobileStyle.textContent=`@media(max-width:650px){
- .gvcn-mobile-table{width:100%!important;min-width:0!important;table-layout:fixed;border-collapse:collapse}
- .gvcn-mobile-table th,.gvcn-mobile-table td{box-sizing:border-box;min-width:0!important;overflow-wrap:anywhere;word-break:normal;padding:8px 4px!important;font-size:11px;line-height:1.35;vertical-align:top}
- .gvcn-mobile-table th{font-size:10px;white-space:normal}
- .gvcn-mobile-table th:first-child,.gvcn-mobile-table td:first-child{padding-left:5px!important}
- .gvcn-mobile-table td:first-child strong{display:block;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
- .gvcn-mobile-table td:first-child small{display:block;font-size:10px}
- .gvcn-mobile-table .gvcn-number{text-align:center;font-size:11px;white-space:nowrap;padding-left:1px!important;padding-right:1px!important}
+ .gvcn-mobile-table{width:100%!important;min-width:0!important;table-layout:auto;border-collapse:separate;border-spacing:0 10px}
+ .gvcn-mobile-table thead{display:none}
+ .gvcn-mobile-table tbody{display:block;width:100%}
+ .gvcn-mobile-table tbody tr{display:grid;grid-template-columns:repeat(var(--gvcn-score-columns,3),minmax(0,1fr));gap:0;width:100%;padding:10px;border:1px solid #d8e2ee;border-radius:12px;background:#fff;box-sizing:border-box}
+ .gvcn-mobile-table tbody td{min-width:0!important;box-sizing:border-box;padding:7px 5px!important;overflow-wrap:break-word;white-space:normal;vertical-align:top;border:0!important;font-size:12px;line-height:1.45}
+ .gvcn-mobile-table tbody td:first-child{grid-column:1/-1;padding:2px 5px 6px!important;border-bottom:1px solid #e4eaf1!important}
+ .gvcn-mobile-table tbody td:first-child strong{display:block;font-size:14px;line-height:1.4;overflow-wrap:break-word}
+ .gvcn-mobile-table tbody td:first-child small{display:block;font-size:11px}
+ .gvcn-mobile-table tbody td:nth-child(2){grid-column:1/-1;padding:7px 5px!important;border-bottom:1px solid #e4eaf1!important}
+ .gvcn-mobile-table .gvcn-number{text-align:center;font-size:14px;font-weight:700;white-space:nowrap;padding:7px 2px 2px!important}
+ .gvcn-mobile-table .gvcn-number::before{content:attr(data-label);display:block;font-size:10px;font-weight:600;color:#64748b;white-space:normal;margin-bottom:3px}
  .gvcn-mobile-table .gvcn-state-full,.gvcn-mobile-table .gvcn-attempts-full{display:none!important}
- .gvcn-mobile-table .gvcn-state-mobile{display:block!important;white-space:normal;font-size:10px;line-height:1.4;font-weight:600}
+ .gvcn-mobile-table .gvcn-state-mobile{display:block!important;font-size:12px;line-height:1.45;font-weight:600;white-space:normal}
+ .gvcn-mobile-table tbody tr:has(td[colspan]){display:block}
  }`;
  document.head.appendChild(mobileStyle);
  const threshold=10;
@@ -44,9 +49,9 @@
   $('count').textContent = 'Danh sách toàn lớp · HS cần nhắc xếp trước · Mốc nhắc: 10 lượt/phần';
   const questions=rows[0]?.question_scores||[];
   const header=$('reportHead');if(header){header.innerHTML='<th>Học sinh</th><th>Cần nhắc</th><th>Điểm TN</th>'+questions.map(q=>`<th>TL câu ${q.number}</th>`).join('');
-   const table=header.closest('table');if(table){table.classList.add('gvcn-mobile-table');const width=(42/(questions.length+1)).toFixed(3)+'%';header.querySelectorAll('th').forEach((th,i)=>{th.style.width=i===0?'29%':i===1?'29%':width;});}
+   const table=header.closest('table');if(table){table.classList.add('gvcn-mobile-table');table.style.setProperty('--gvcn-score-columns',String(questions.length+1));header.querySelectorAll('th').forEach(th=>th.style.removeProperty('width'));}
   }
-  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td title="${escape(r.label)}"><span class="gvcn-state gvcn-state-full ${r.state}">${escape(r.label)}</span><small class="gvcn-attempts-full">TN: ${r.quiz} lượt${(r.question_scores||[]).map(q=>' · Câu '+q.number+': '+q.attempts+' lượt').join('')}</small><span class="gvcn-state-mobile" style="display:none">${r.state==='met'?'Đã đủ lượt':r.state==='none'?'Chưa ôn':'Ôn ít'}<br>TN ${r.quiz}/10 · TL ${r.essay}/10</span></td><td class="gvcn-number">${score(r.latest_quiz_score)}</td>${(r.question_scores||[]).map(q=>`<td class="gvcn-number">${score(q.score)}</td>`).join('')}</tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
+  $('rows').innerHTML = rows.map(r=>`<tr><td title="${escape(r.student_code+' · Ôn gần nhất: '+date(r.last_practice))}"><strong>${escape(r.full_name)}</strong><small>${escape(r.student_code)}</small></td><td title="${escape(r.label)}"><span class="gvcn-state gvcn-state-full ${r.state}">${escape(r.label)}</span><small class="gvcn-attempts-full">TN: ${r.quiz} lượt${(r.question_scores||[]).map(q=>' · Câu '+q.number+': '+q.attempts+' lượt').join('')}</small><span class="gvcn-state-mobile" style="display:none">${r.state==='met'?'Đã đủ lượt':r.state==='none'?'Chưa ôn':'Ôn ít'} · TN ${r.quiz}/10 lượt · TL ${r.essay}/10 lượt</span></td><td class="gvcn-number" data-label="TN">${score(r.latest_quiz_score)}</td>${(r.question_scores||[]).map(q=>`<td class="gvcn-number" data-label="TL ${q.number}">${score(q.score)}</td>`).join('')}</tr>`).join('') || '<tr><td colspan="6">Chưa có học sinh trong lớp.</td></tr>';
   $('report').hidden = false;
  }
  async function refresh() {
