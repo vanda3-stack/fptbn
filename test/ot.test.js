@@ -27,3 +27,16 @@ test('Whole-answer practice persists server-computed points and completion, igno
   a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Sai hết'},t,params);assert.equal(a.body.result.detail.grading.points,8);assert.equal(h.attempts.size,1);
  }finally{h.close()}
 });
+test('Outline-based grading is computed by the server, saved, idempotent and excludes pending work from completion',async()=>{
+ const h=harness();try{
+  const profile=require('../lib/outline-rubrics')[2],ideas=profile.ideas.map(x=>x.answer),e={q:profile.question,ideas,templates:ideas.map(s=>C.cloze(s)),keywords:ideas.map(()=>['từ khóa cũ không khớp'])};
+  h.pack.content_json=JSON.stringify({questions:content.questions,essays:[e]});
+  const login=await h.request('post','/login',{student_code:'FBN12345'}),t=login.body.token,params={id:h.pack.id},id=crypto.randomUUID();
+  let a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:ideas.join('\n'),grading:{points:999}},t,params);
+  assert.equal(a.status,200);assert.equal(a.body.result.detail.grading.points,10);assert.equal(a.body.result.detail.assessment,'outline_rubric');assert.equal(a.body.result.detail.completion.completed,true);
+  assert.equal(JSON.parse(h.attempts.get(id).detail_json).grading.points,10);
+  a=await h.request('post','/packs/:id/attempts',{id,kind:'writing',essay:0,text:'Bài khác'},t,params);assert.equal(a.body.result.detail.grading.points,10);assert.equal(h.attempts.size,1);
+  a=await h.request('post','/packs/:id/attempts',{id:crypto.randomUUID(),kind:'speech',essay:0,text:ideas.join('\n')+' Có thể xúc phạm người khác.'},t,params);
+  assert.equal(a.body.result.detail.grading.points,null);assert.equal(a.body.result.detail.completion.completed,false);assert.equal(a.body.result.detail.completion.pending,true);
+ }finally{h.close()}
+});
