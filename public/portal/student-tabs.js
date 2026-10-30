@@ -40,7 +40,7 @@
     let preferenceApplied = false;
     async function applyGradeDefault() {
         const grade = Number(window.FPTBN_STUDENT_GRADE);
-        if (!Number.isInteger(grade) || grade < 6 || grade > 9) return;
+        if (!Number.isInteger(grade) || grade < 3 || grade > 12) return;
         try {
             const response = await fetch('/api/student/default-tab?grade=' + grade, {cache:'no-store'});
             if (!response.ok || !ready) return;
