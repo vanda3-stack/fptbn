@@ -18,3 +18,13 @@
 .landing-controls{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 @media(max-width:1000px){.landing-controls{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:650px){.landing-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dashboard-actions button{white-space:normal}}
+
+#teacherHomeButton{border:1px solid #55789c;border-radius:10px;background:#162943;color:#eff6ff;font-weight:600;padding:11px 16px;cursor:pointer}
+#teacherHomeButton[hidden]{display:none!important}
+#liveTextCreator{background:#11243d;border:1px solid #345475;border-radius:14px;padding:20px;margin-bottom:24px}
+#liveTextCreator h3{margin-top:0}
+#liveTextCreator pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#071529;padding:15px;border-radius:9px;line-height:1.6;color:#c7e2ff}
+#liveTextCreator textarea{display:block;width:100%;max-width:none;min-height:270px;background:#091a30;color:#eff6ff;border:1px solid #56749a;padding:12px;border-radius:9px;font:14px/1.6 ui-monospace,monospace}
+#liveTextCreator input{display:block;width:100%}
+#liveTextCreator #liveTextNotice{color:#b7e3bb}
+#app[data-workspace="settings"] .dashboard-heading{margin-bottom:20px}
