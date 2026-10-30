@@ -14,7 +14,7 @@ function sync(){
  const bar=heading.querySelector('.dashboard-actions');if(!bar)return;
  const create=bar.querySelector('#create');if(!create)return;
  const oldLink=bar.querySelector('.student-page-link');oldLink?.remove();
- const oldMock=bar.querySelector('#mockManage');if(oldMock){oldMock.textContent='+ Tạo đề thi thử';oldMock.classList.add('primary');oldMock.dataset.workspace='exam';}
+ const oldMock=bar.querySelector('#mockManage');if(oldMock){if(oldMock.textContent!=='+ Tạo đề thi thử')oldMock.textContent='+ Tạo đề thi thử';oldMock.classList.add('primary');oldMock.dataset.workspace='exam';}
  const live=bar.querySelector('#liveCreateTop');if(live)live.dataset.workspace='live';
  let settings=bar.querySelector('#teacherSettingsTop');
  if(!settings){settings=document.createElement('button');settings.id='teacherSettingsTop';settings.textContent='⚙ Trang mặc định';settings.type='button';bar.append(settings)}
