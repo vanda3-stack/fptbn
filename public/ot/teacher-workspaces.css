@@ -28,3 +28,6 @@
 #liveTextCreator input{display:block;width:100%}
 #liveTextCreator #liveTextNotice{color:#b7e3bb}
 #app[data-workspace="settings"] .dashboard-heading{margin-bottom:20px}
+
+#savedOutlinesHeading{padding:12px 0 4px}#savedOutlinesHeading h2{font-size:22px;margin:0 0 5px;color:#eff6ff}#savedOutlinesHeading p{font-size:13px;margin:0 0 10px;color:#9db0c9}
+#app:not([data-workspace="outline"]) #savedOutlinesHeading{display:none!important}
