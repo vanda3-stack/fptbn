@@ -36,3 +36,41 @@ test("exam roster lists active participants while ordinary classes keep absence 
         .map(match => match[1]).filter(script => script.trim());
     for (const script of inline) new vm.Script(script);
 });
+
+
+test("exam teacher view has no floating resource widget and retains student messaging", () => {
+    const teacherPage = html("x.html");
+    const loginScript = fs.readFileSync(path.join(__dirname, "..", "public", "js", "teacher-login.js"), "utf8");
+    const messagingScript = fs.readFileSync(path.join(__dirname, "..", "public", "js", "class-resources.js"), "utf8");
+    assert.doesNotMatch(loginScript, /teacherExamResources|Tài nguyên phòng thi|Game Manual/);
+    assert.match(teacherPage, /src="\/js\/class-resources\.js"/);
+    assert.match(messagingScript, /Gửi thông tin đến HS/);
+    const nodes = new Map();
+    const ids = [
+        "teacherLoginPage", "teacherApp", "teacherEmail", "teacherPassword",
+        "teacherLoginButton", "teacherClassRow", "teacherClassSelect",
+        "teacherEnterClassButton", "teacherLoginStatus", "teacherIdentity",
+        "shareTeacher", "endClass"
+    ];
+    for (const id of ids) {
+        nodes.set(id, { style: {}, addEventListener() {}, value: "", textContent: "", disabled: false });
+    }
+    const listeners = new Map();
+    const created = [];
+    const document = {
+        getElementById(id) { return nodes.get(id) || null; },
+        createElement(tag) { created.push(tag); return {}; }
+    };
+    const socket = {
+        on(event, listener) { listeners.set(event, listener); },
+        emit() {}
+    };
+    vm.runInNewContext(loginScript, { document, socket, console: { error() {} } }, { timeout: 1000 });
+    const onTeacherReady = listeners.get("teacher-ready");
+    assert.equal(typeof onTeacherReady, "function");
+    onTeacherReady({ class: { class_code: "EXAM" }, teacher: { full_name: "Test teacher" } });
+    assert.deepEqual(created, []);
+    assert.equal(nodes.get("teacherApp").style.display, "block");
+    assert.equal(nodes.get("shareTeacher").style.display, "none");
+    assert.equal(nodes.get("endClass").textContent, "🚪 Rời phòng thi");
+});
