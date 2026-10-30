@@ -950,6 +950,79 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 @media(max-width:650px) { #classroom #waitingTeacher { font-size:clamp(12px,3.5vw,18px); padding:8px; } }
 /* Exam room identification without changing student login flow. */
 #joinPage .join-card::before { content:"PHÒNG THI CHUNG · CLB"; display:block; width:fit-content; margin:0 auto 14px; padding:7px 13px; border:1px solid #31618b; border-radius:99px; background:#103050; color:#a8dbff; font-size:11px; font-weight:800; letter-spacing:.07em; }
+
+/* Exam room summary: concise copy and predictable, balanced line breaks. */
+.exam-room-info{
+    width:min(100%,860px);
+    margin:0 auto;
+    padding:clamp(16px,3vw,32px);
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.exam-room-icon{font-size:clamp(36px,4vw,48px);line-height:1;margin-bottom:20px}
+.exam-room-label{
+    margin:0;
+    padding:7px 14px;
+    border:1px solid #416999;
+    border-radius:100px;
+    background:#17385e;
+    color:#b9d9ff;
+    font-size:clamp(10px,1.5vw,12px);
+    font-weight:800;
+    letter-spacing:.045em;
+    line-height:1.5;
+    white-space:nowrap;
+}
+.exam-room-info h1{
+    margin:18px 0 14px;
+    color:#fff;
+    font-size:clamp(29px,4.6vw,48px);
+    line-height:1.2;
+    letter-spacing:-.035em;
+    text-wrap:balance;
+}
+.exam-room-lead{
+    max-width:100%;
+    margin:0 0 24px;
+    color:#c3d6f3;
+    font-size:clamp(15px,2vw,18px);
+    line-height:1.55;
+    text-wrap:balance;
+}
+.exam-room-features{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    max-width:100%;
+}
+.exam-room-features span{
+    padding:10px 16px;
+    border:1px solid #386298;
+    border-radius:12px;
+    background:#152c4b;
+    font-size:clamp(13px,1.6vw,15px);
+    line-height:1.5;
+    white-space:nowrap;
+}
+.exam-room-note{
+    max-width:100%;
+    margin:25px 0 0;
+    color:#9eb8dc;
+    font-size:clamp(13px,1.6vw,15px);
+    line-height:1.5;
+    text-wrap:balance;
+}
+@media(max-width:420px){
+    .exam-room-label{white-space:normal}
+    .exam-room-info h1{max-width:100%}
+    .exam-room-features{flex-direction:column;gap:9px}
+    .exam-room-features span{min-width:min(100%,245px)}
+}
+
 </style>
 
 </head>
@@ -1095,16 +1168,16 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
                     <!-- Keep video nodes for existing student.js/WebRTC event handlers. -->
                     <video id="teacherVideo" autoplay playsinline style="display:none"></video>
                     <div id="waitingTeacher" style="display:none"></div>
-                    <section aria-label="Thông tin phòng thi trực tuyến" style="width:100%;max-width:770px;text-align:center;padding:clamp(18px,4vw,36px)">
-                        <div aria-hidden="true" style="font-size:48px;margin-bottom:15px">🖥️</div>
-                        <p style="display:inline-block;margin:0 0 15px;padding:7px 15px;border:1px solid #416999;border-radius:100px;background:#17385e;color:#b9d9ff;font-size:12px;font-weight:800;letter-spacing:.05em">FPTBN MONITOR · PHÒNG THI CHUNG</p>
-                        <h1 style="font-size:clamp(28px,4vw,44px);margin:0 0 17px;color:#fff">Phòng thi trực tuyến</h1>
-                        <p style="max-width:630px;margin:0 auto 25px;color:#c3d6f3;font-size:clamp(15px,2vw,18px);line-height:1.8">Phòng thi được giáo viên giám sát trực tuyến thông qua FPTBN Monitor. Học sinh tham gia bằng mã học sinh của mình.</p>
-                        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;margin:0 auto 25px">
-                            <span style="padding:12px 17px;border:1px solid #386298;border-radius:12px;background:#152c4b;font-size:14px">👨‍🏫 Giáo viên giám sát</span>
-                            <span style="padding:12px 17px;border:1px solid #386298;border-radius:12px;background:#152c4b;font-size:14px">🖥 Chia sẻ toàn bộ màn hình</span>
+                    <section class="exam-room-info" aria-label="Thông tin phòng thi trực tuyến">
+                        <div class="exam-room-icon" aria-hidden="true">🖥️</div>
+                        <p class="exam-room-label">FPTBN MONITOR · PHÒNG THI CHUNG</p>
+                        <h1>Phòng thi trực tuyến</h1>
+                        <p class="exam-room-lead">Giáo viên giám sát trong suốt thời gian thi.</p>
+                        <div class="exam-room-features">
+                            <span>🛡️ Giám sát trực tuyến</span>
+                            <span>🖥️ Chia sẻ toàn màn hình</span>
                         </div>
-                        <p style="color:#9eb8dc;font-size:14px;line-height:1.8;margin:0 auto;max-width:620px">Trong thời gian thi, hãy duy trì kết nối và chia sẻ màn hình. Nếu gặp sự cố, em cần báo ngay cho giáo viên coi thi.</p>
+                        <p class="exam-room-note">Giữ kết nối và báo giáo viên khi gặp sự cố.</p>
                     </section>
                 </div>
             </div>
