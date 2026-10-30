@@ -1,0 +1,20 @@
+/* Teacher workspace navigation; keep existing feature markup and handlers intact. */
+.dashboard-actions{max-width:none!important;gap:10px!important;flex-wrap:wrap}
+.dashboard-actions button{flex:0 0 auto}
+.dashboard-actions [data-workspace][aria-pressed="true"]{outline:2px solid #83baff;outline-offset:2px}
+#app[data-workspace="outline"] #liveGames,#app[data-workspace="outline"] #defaultTabSettings{display:none!important}
+#app[data-workspace="live"] #defaultTabSettings,
+#app[data-workspace="live"] .dashboard-filter,#app[data-workspace="live"] .pack-grid,#app[data-workspace="live"] #packNoResults{display:none!important}
+#app[data-workspace="settings"] #liveGames,
+#app[data-workspace="settings"] .dashboard-filter,#app[data-workspace="settings"] .pack-grid,#app[data-workspace="settings"] #packNoResults{display:none!important}
+#liveGames{margin-top:8px;min-width:0}
+#liveGames .live-set-item{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #2c3e58}
+#liveGames .live-set-item strong{flex:1;min-width:180px}
+#liveEditor[hidden]{display:none!important}
+#liveEditor{margin-top:18px;border-top:1px solid #304760;padding-top:18px}
+#liveEditor form label{display:block;margin:10px 0}
+#liveEditor input{width:100%;max-width:700px}
+#liveCurrent{margin-top:20px}
+.landing-controls{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+@media(max-width:1000px){.landing-controls{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:650px){.landing-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dashboard-actions button{white-space:normal}}
