@@ -9,6 +9,7 @@ function activate(space){
 }
 function sync(){
  const heading=app.querySelector('.dashboard-heading');if(!heading){lastHeading=null;return}
+ const changed=heading!==lastHeading;
  lastHeading=heading;
  const bar=heading.querySelector('.dashboard-actions');if(!bar)return;
  const create=bar.querySelector('#create');if(!create)return;
@@ -23,7 +24,7 @@ function sync(){
  settings.onclick=()=>activate('settings');
  create.dataset.workspace='outline';
  if(!create.dataset.boundWorkspace){create.dataset.boundWorkspace='1';create.addEventListener('click',()=>activate('outline'),true)}
- if(!app.dataset.workspace)activate('outline');
+ if(changed||!app.dataset.workspace)activate('outline');
 }
 new MutationObserver(sync).observe(app,{childList:true,subtree:true});sync();
 })();
