@@ -9,6 +9,14 @@ const html = file => fs.readFileSync(path.join(__dirname, "..", "public", file),
 test("exam page provides room information without external resource cards", () => {
     const page = html("exam.html");
     assert.match(page, /Phòng thi trực tuyến/);
+    assert.match(page, /class="exam-room-info"/);
+    assert.match(page, /Giáo viên giám sát trong suốt thời gian thi\./);
+    assert.match(page, /Giữ kết nối và báo giáo viên khi gặp sự cố\./);
+    assert.match(page, /\.exam-room-info h1\s*\{/);
+    assert.match(page, /text-wrap:balance/);
+    assert.match(page, /white-space:nowrap/);
+    assert.doesNotMatch(page, /Học sinh tham gia bằng mã học sinh của mình|Trong thời gian thi, hãy duy trì kết nối/);
+
     assert.doesNotMatch(page, /Tài nguyên phòng thi|forms\.gle\/zdrRxyh1kQZQRXq98|LevelUp-2\.1\.pdf/);
     assert.match(page, /id="teacherVideo"/);
     assert.match(page, /window\.FPTBN_EXAM_MODE = true/);
