@@ -2,9 +2,9 @@
 (() => {
   const root = document.getElementById('app');
   if (!root) return;
-  const grades = [6, 7, 8, 9];
+  const grades = [3,4,5,6,7,8,9,10,11,12];
   const choices = [
-    ['class','Học tại lớp'],['review','Ôn tập tại nhà'],
+    ['class','Học tại lớp'],['review','Ôn tập tại nhà'],['live','Ôn tập tại lớp'],
     ['exam','Thi thử'],['print','Đề cương để in']
   ];
   let rendering = false;
@@ -44,7 +44,7 @@
         <div><h2>Trang mở mặc định cho học sinh</h2>
           <p>Chọn nội dung hiển thị đầu tiên theo từng khối. Học sinh vẫn sử dụng được tất cả tab.</p>
         </div>
-        <span class="landing-tag">Áp dụng khối 6–9</span>
+        <span class="landing-tag">Áp dụng khối 3–12</span>
       </div>
       <div class="landing-controls">
         ${grades.map(g=>`<label for="landing-grade-${g}"><span>Khối ${g}</span><select id="landing-grade-${g}" data-grade="${g}">
