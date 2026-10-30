@@ -9,7 +9,6 @@ function activate(space){
 }
 function sync(){
  const heading=app.querySelector('.dashboard-heading');if(!heading){lastHeading=null;return}
- if(heading===lastHeading)return;
  lastHeading=heading;
  const bar=heading.querySelector('.dashboard-actions');if(!bar)return;
  const create=bar.querySelector('#create');if(!create)return;
@@ -19,12 +18,12 @@ function sync(){
  let settings=bar.querySelector('#teacherSettingsTop');
  if(!settings){settings=document.createElement('button');settings.id='teacherSettingsTop';settings.textContent='⚙ Trang mặc định';settings.type='button';bar.append(settings)}
  settings.dataset.workspace='settings';
- if(live)live.addEventListener('click',()=>activate('live'),true);
- if(oldMock)oldMock.addEventListener('click',()=>activate('exam'),true);
+ if(live&&!live.dataset.boundWorkspace){live.dataset.boundWorkspace='1';live.addEventListener('click',()=>activate('live'),true)}
+ if(oldMock&&!oldMock.dataset.boundWorkspace){oldMock.dataset.boundWorkspace='1';oldMock.addEventListener('click',()=>activate('exam'),true)}
  settings.onclick=()=>activate('settings');
  create.dataset.workspace='outline';
- create.addEventListener('click',()=>activate('outline'),true);
- activate('outline');
+ if(!create.dataset.boundWorkspace){create.dataset.boundWorkspace='1';create.addEventListener('click',()=>activate('outline'),true)}
+ if(!app.dataset.workspace)activate('outline');
 }
 new MutationObserver(sync).observe(app,{childList:true,subtree:true});sync();
 })();
