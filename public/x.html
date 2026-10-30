@@ -991,7 +991,7 @@
             font-weight: 700;
         }
 
-    #rosterToggle{border:1px solid #3b536e;background:#1e293b;color:#e2e8f0;border-radius:9px;padding:12px;font-weight:700;cursor:pointer}#rosterPanel{position:fixed;right:0;top:0;height:100dvh;width:min(380px,94vw);background:#121e30;border-left:1px solid #34465e;box-shadow:-15px 0 50px #0007;z-index:2000;transform:translateX(105%);transition:transform .25s ease;color:#e2e8f0;display:flex;flex-direction:column;padding:18px;gap:14px}#rosterPanel.open{transform:translateX(0)}.rosterTop{display:flex;align-items:center;justify-content:space-between;font-size:18px}.rosterTop button{background:none;border:0;color:white;font-size:22px;cursor:pointer}.rosterStats{display:flex;gap:6px;flex-wrap:wrap}.rosterStats span{padding:8px;background:#223249;border-radius:8px;font-size:12px}#rosterOnline{color:#4ade80}#rosterMissing{color:#fbbf24}#rosterSearch{width:100%;padding:11px;background:#0c1626;border:1px solid #40536c;border-radius:8px;color:white}.rosterTabs{display:flex;gap:5px}.rosterTabs button{flex:1;background:#233149;color:#cbd5e1;border:0;border-radius:7px;padding:10px 5px;cursor:pointer}.rosterTabs button.selected{background:#2563eb;color:white}#rosterList{overflow:auto;flex:1}.rosterItem{display:flex;align-items:center;justify-content:space-between;padding:11px 5px;border-bottom:1px solid #28384e;gap:8px;font-size:13px}.rosterItem small{color:#94a3b8}.rosterItem .online{color:#4ade80}.rosterItem .missing{color:#fbbf24}#rosterStatus{color:#94a3b8}#rosterShade{display:none;position:fixed;inset:0;background:#0006;z-index:1999}#rosterShade.open{display:block}@media(prefers-reduced-motion:reduce){#rosterPanel{transition:none}}
+    #rosterToggle{border:1px solid #3b536e;background:#1e293b;color:#e2e8f0;border-radius:9px;padding:12px;font-weight:700;cursor:pointer}#rosterPanel{position:fixed;right:0;top:0;height:100dvh;width:min(380px,94vw);background:#121e30;border-left:1px solid #34465e;box-shadow:-15px 0 50px #0007;z-index:2000;transform:translateX(105%);transition:transform .25s ease;color:#e2e8f0;display:flex;flex-direction:column;padding:18px;gap:14px}#rosterPanel.open{transform:translateX(0)}.rosterTop{display:flex;align-items:center;justify-content:space-between;font-size:18px}.rosterTop button{background:none;border:0;color:white;font-size:22px;cursor:pointer}.rosterStats{display:flex;gap:6px;flex-wrap:wrap}.rosterStats span{padding:8px;background:#223249;border-radius:8px;font-size:12px}#rosterOnline{color:#4ade80}#rosterMissing{color:#fbbf24}#rosterSearch{width:100%;padding:11px;background:#0c1626;border:1px solid #40536c;border-radius:8px;color:white}.rosterTabs{display:flex;gap:5px}.rosterTabs button{flex:1;background:#233149;color:#cbd5e1;border:0;border-radius:7px;padding:10px 5px;cursor:pointer}.rosterTabs button.selected{background:#2563eb;color:white}#rosterList{overflow:auto;flex:1}.rosterItem{display:flex;align-items:center;justify-content:space-between;padding:11px 5px;border-bottom:1px solid #28384e;gap:8px;font-size:13px}.rosterItem small{color:#94a3b8}.rosterItem .online{color:#4ade80}.rosterItem .missing{color:#fbbf24}#rosterStatus{color:#94a3b8}#rosterShade{display:none;position:fixed;inset:0;background:#0006;z-index:1999}#rosterShade.open{display:block}#rosterPanel .rosterTabs[hidden],#rosterPanel #rosterMissing[hidden]{display:none!important}@media(prefers-reduced-motion:reduce){#rosterPanel{transition:none}}
 
 .fptbn-brand-logo{display:block;width:auto;height:43px;max-width:min(260px,40vw);object-fit:contain;object-position:left center}
 .fptbn-login-icon{display:block;width:65px;height:65px;object-fit:contain;margin:auto}
@@ -1279,30 +1279,85 @@
 
 <script>
 (()=>{
-const panel=document.getElementById("rosterPanel"),shade=document.getElementById("rosterShade"),list=document.getElementById("rosterList"),status=document.getElementById("rosterStatus");
+const panel=document.getElementById("rosterPanel");
+const shade=document.getElementById("rosterShade");
+const list=document.getElementById("rosterList");
+const status=document.getElementById("rosterStatus");
+const search=document.getElementById("rosterSearch");
+const tabs=document.querySelector(".rosterTabs");
 let students=[],filter="missing",lastClass="",loading=false;
+const isExamRoom=()=>typeof activeTeacherClass!=="undefined"&&activeTeacherClass==="EXAM";
 const open=()=>{panel.classList.add("open");shade.classList.add("open");document.getElementById("rosterToggle").setAttribute("aria-expanded","true");refresh()};
 const close=()=>{panel.classList.remove("open");shade.classList.remove("open");document.getElementById("rosterToggle").setAttribute("aria-expanded","false")};
 document.getElementById("rosterToggle").addEventListener("click",()=>panel.classList.contains("open")?close():open());
-document.getElementById("rosterClose").addEventListener("click",close);shade.addEventListener("click",close);
+document.getElementById("rosterClose").addEventListener("click",close);
+shade.addEventListener("click",close);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))close()});
+
 function render(){
-const online=students.filter(s=>s.online).length,total=students.length;
-document.getElementById("rosterBadge").textContent=online+"/"+total;
-document.getElementById("rosterTotal").textContent=total+" sĩ số";
-document.getElementById("rosterOnline").textContent=online+" đã vào";
-document.getElementById("rosterMissing").textContent=(total-online)+" chưa vào";
-const q=document.getElementById("rosterSearch").value.toLocaleLowerCase("vi");
-list.replaceChildren();
-const visible=students.filter(s=>(filter==="all"||(filter==="online"?s.online:!s.online))&&(s.full_name+" "+s.student_code).toLocaleLowerCase("vi").includes(q));
-for(const s of visible){const item=document.createElement("div");item.className="rosterItem";const name=document.createElement("span");name.className="rosterPerson";const fullName=document.createElement("span");fullName.textContent=s.full_name;name.append(fullName);if(s.online&&s.device){const device=document.createElement("small");device.className="rosterDevice";device.textContent=s.device;name.append(device)}const state=document.createElement("small");state.className=s.online?"online":"missing";state.textContent=s.online?"● Đã vào":"○ Chưa vào";item.append(name,state);list.append(item)}
-if(!visible.length){const empty=document.createElement("p");empty.textContent="Không có học sinh phù hợp.";empty.style.color="#94a3b8";list.append(empty)}
+    const exam=isExamRoom();
+    const online=students.filter(s=>s.online).length;
+    const total=students.length;
+    // EXAM has no assigned class roster. Count only students actually connected.
+    document.getElementById("rosterBadge").textContent=exam?String(online):online+"/"+total;
+    document.getElementById("rosterTotal").textContent=exam?online+" tham gia":total+" sĩ số";
+    document.getElementById("rosterOnline").textContent=exam?online+" trực tuyến":online+" đã vào";
+    document.getElementById("rosterMissing").textContent=(total-online)+" chưa vào";
+    document.getElementById("rosterMissing").hidden=exam;
+    tabs.hidden=exam;
+    const title=panel.querySelector(".rosterTop strong");
+    title.textContent=exam?"👥 Học sinh tham gia phòng thi":"👥 Danh sách học sinh";
+    document.querySelectorAll("[data-roster-filter]").forEach(b=>b.classList.toggle("selected",b.dataset.rosterFilter===filter));
+    const q=search.value.trim().toLocaleLowerCase("vi");
+    list.replaceChildren();
+    const visible=students.filter(s=>(exam||filter==="all"||(filter==="online"?s.online:!s.online))&&
+        (String(s.full_name||"")+" "+String(s.student_code||"")+" "+String(s.original_class||"")).toLocaleLowerCase("vi").includes(q));
+    for(const s of visible){
+        const item=document.createElement("div");item.className="rosterItem";
+        const name=document.createElement("span");name.className="rosterPerson";
+        const fullName=document.createElement("span");fullName.textContent=s.full_name||s.student_code||"Học sinh";name.append(fullName);
+        const details=document.createElement("small");details.className="rosterDevice";
+        details.textContent=[s.student_code||"",exam&&s.original_class?"Lớp "+s.original_class:"",s.online&&s.device?s.device:""].filter(Boolean).join(" · ");
+        if(details.textContent)name.append(details);
+        const state=document.createElement("small");state.className=s.online?"online":"missing";
+        state.textContent=s.online?(exam?"● Đang tham gia":"● Đã vào"):"○ Chưa vào";
+        item.append(name,state);list.append(item);
+    }
+    if(!visible.length){
+        const empty=document.createElement("p");
+        empty.textContent=exam?(q?"Không tìm thấy học sinh đang tham gia.":"Chưa có học sinh nào đang tham gia phòng thi."):"Không có học sinh phù hợp.";
+        empty.style.color="#94a3b8";list.append(empty);
+    }
 }
-document.querySelectorAll("[data-roster-filter]").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.rosterFilter;document.querySelectorAll("[data-roster-filter]").forEach(x=>x.classList.toggle("selected",x===b));render()}));
-document.getElementById("rosterSearch").addEventListener("input",render);
-async function refresh(){const cls=typeof activeTeacherClass!=="undefined"?activeTeacherClass:"";const token=typeof teacherLoginToken!=="undefined"?teacherLoginToken:"";if(!cls||!token||loading)return;if(lastClass!==cls){students=[];lastClass=cls;render()}loading=true;try{const response=await fetch("/api/teacher/class-roster?classCode="+encodeURIComponent(cls),{headers:{"x-teacher-token":token},cache:"no-store"});const data=await response.json().catch(()=>({success:false,message:"Máy chủ chưa trả dữ liệu hợp lệ"}));if(!response.ok||!data.success){if(response.status===404&&(!data.message||data.message==="Máy chủ chưa trả dữ liệu hợp lệ"))throw Error("API sĩ số chưa hoạt động. Cần git pull và Restart Node.js trên VPS.");throw Error(data.message||"HTTP "+response.status)}students=data.students||[];status.textContent="Tự cập nhật mỗi 5 giây";render()}catch(e){status.textContent="Không tải được danh sách: "+e.message}finally{loading=false}}
+document.querySelectorAll("[data-roster-filter]").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.rosterFilter;render()}));
+search.addEventListener("input",render);
+async function refresh(){
+    const cls=typeof activeTeacherClass!=="undefined"?activeTeacherClass:"";
+    const token=typeof teacherLoginToken!=="undefined"?teacherLoginToken:"";
+    if(!cls||!token||loading)return;
+    if(lastClass!==cls){students=[];lastClass=cls;filter=cls==="EXAM"?"online":"missing";search.value="";render()}
+    loading=true;
+    try{
+        const response=await fetch("/api/teacher/class-roster?classCode="+encodeURIComponent(cls),{headers:{"x-teacher-token":token},cache:"no-store"});
+        const data=await response.json().catch(()=>({success:false,message:"Máy chủ chưa trả dữ liệu hợp lệ"}));
+        if(!response.ok||!data.success){
+            if(response.status===404&&(!data.message||data.message==="Máy chủ chưa trả dữ liệu hợp lệ"))throw Error("API sĩ số chưa hoạt động. Cần cập nhật máy chủ.");
+            throw Error(data.message||"HTTP "+response.status);
+        }
+        if(lastClass!==cls)return; // Ignore a response for a previously selected class.
+        students=Array.isArray(data.students)?data.students:[];
+        status.textContent=cls==="EXAM"?"Danh sách học sinh đang trực tuyến · Tự cập nhật mỗi 5 giây":"Tự cập nhật mỗi 5 giây";
+        render();
+    }catch(e){status.textContent="Không tải được danh sách: "+e.message}finally{loading=false}
+}
 setInterval(()=>{if(typeof teacherClassJoined!=="undefined"&&teacherClassJoined)refresh()},5000);
-if(typeof socket!=="undefined"){socket.on("teacher-ready",()=>{lastClass="";setTimeout(refresh,250)});socket.on("student-join",refresh);socket.on("student-left",refresh)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&panel.classList.contains("open"))refresh()});
+if(typeof socket!=="undefined"){
+    socket.on("teacher-ready",()=>{lastClass="";setTimeout(refresh,250)});
+    socket.on("student-joined",refresh);
+    socket.on("student-left",refresh);
+    socket.on("student-list",refresh);
+}
 })();
 </script><script src="/js/class-resources.js"></script>
 </body>
