@@ -3186,7 +3186,7 @@ app.post("/api/admin/teachers", async (req, res) => {
 
 
         if (
-            !/^[^\\s@]+@fe\\.edu\\.vn$/i.test(
+            !/^[^\s@]+@fe\.edu\.vn$/i.test(
                 cleanEmail
             )
         ) {
