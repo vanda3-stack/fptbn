@@ -954,6 +954,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 <link rel="stylesheet" href="/ot/family.css?v=unified1"><style>
 .student-code-input{display:flex;align-items:stretch;background:#091526;border:1px solid #38516f;border-radius:12px;overflow:hidden}.student-code-input>span{display:flex;align-items:center;padding:0 15px;color:#cfe2ff;font-weight:700;border-right:1px solid #38516f}.student-code-input:focus-within{outline:2px solid #60a5fa;outline-offset:2px}#joinPage .student-code-input #studentCode{flex:1;min-width:0;width:0;margin:0;border:0;border-radius:0;box-shadow:none}#status[hidden]{display:none!important}
 </style><link rel="stylesheet" href="/portal/mock-exams.css?v=1">
+<link rel="stylesheet" href="/portal/live-student.css?v=20261030a">
 </head>
 
 
@@ -974,6 +975,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
     <nav id="studentTabs" class="student-tabs" hidden role="tablist" aria-label="Hoạt động học tập">
         <button id="classTab" role="tab" aria-selected="true" aria-controls="classPanel" type="button">Học tại lớp</button>
         <button id="reviewTab" role="tab" aria-selected="false" aria-controls="reviewPanel" tabindex="-1" type="button">Ôn tập tại nhà</button>
+        <button id="liveTab" role="tab" aria-selected="false" aria-controls="livePanel" tabindex="-1" type="button">Ôn tập tại lớp</button>
         <button id="examTab" role="tab" aria-selected="false" aria-controls="examPanel" tabindex="-1" type="button">Thi thử</button>
         <button id="paperTab" role="tab" aria-selected="false" aria-controls="paperPanel" tabindex="-1" type="button">Đề cương để in</button>
     </nav>
@@ -1151,6 +1153,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
         <p id="reviewClassNotice" class="review-intro" hidden>Phiên chia sẻ màn hình trên lớp vẫn đang hoạt động khi em ôn tập.</p>
         <div id="reviewMount"></div>
     </section>
+    <section id="livePanel" role="tabpanel" aria-labelledby="liveTab" hidden><div id="liveMount"></div></section>
     <section id="examPanel" role="tabpanel" aria-labelledby="examTab" hidden></section>
     <section id="paperPanel" role="tabpanel" aria-labelledby="paperTab" hidden></section>
     <!-- ==========================================
@@ -1182,6 +1185,7 @@ body { background:radial-gradient(ellipse at 50% -22%,#18365d 0%,transparent 55%
 <script src="/portal/paper-documents.js?v=restart1"></script>
 <script src="/portal/student-tabs.js?v=10"></script>
 
+<script src="/portal/live-student.js?v=20261030a"></script>
 </body>
 
 </html>
