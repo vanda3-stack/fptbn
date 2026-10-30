@@ -4,7 +4,7 @@
 .landing-head h2 {font-size:17px;line-height:1.45;margin:0 0 4px;color:#f1f6ff}
 .landing-head p {font-size:12px;line-height:1.5;color:#a9bbd1;margin:0}
 .landing-tag {flex-shrink:0;font-size:11px;padding:5px 9px;border-radius:20px;background:#1d3554;border:1px solid #365377;color:#bed8ff}
-.landing-controls {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.landing-controls {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
 .landing-controls label {display:block;min-width:0;margin:0;padding:10px 12px;background:#13253d;border:1px solid #304a6b;border-radius:10px}
 .landing-controls label span {display:block;margin:0 0 7px;color:#c9dbef;font-weight:600;font-size:12px}
 .landing-controls select {width:100%;min-width:0;height:40px;padding:7px 30px 7px 10px;margin:0;background:#0a182c;color:#eaf2ff;border:1px solid #405b7a;border-radius:8px;font:inherit;font-size:13px}
