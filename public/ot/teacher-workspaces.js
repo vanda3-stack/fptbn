@@ -23,6 +23,13 @@ function sync(){
    bar.insertBefore(outlines,create);
  }
  outlines.dataset.workspace='outline';
+ const filter=app.querySelector('.dashboard-filter');
+ if(filter&&!app.querySelector('#savedOutlinesHeading')){
+  const title=document.createElement('div');
+  title.id='savedOutlinesHeading';
+  title.innerHTML='<h2>📚 Đề cương đã tạo</h2><p>Danh sách đề cương đã lưu, trạng thái mở, cập nhật và thống kê học sinh.</p>';
+  filter.parentNode.insertBefore(title,filter);
+ }
  outlines.onclick=async()=>{
    try{
      // Reload from the existing teacher API to reflect the latest saved packs.
