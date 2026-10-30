@@ -14,6 +14,22 @@ function sync(){
  const bar=heading.querySelector('.dashboard-actions');if(!bar)return;
  const create=bar.querySelector('#create');if(!create)return;
  const oldLink=bar.querySelector('.student-page-link');oldLink?.remove();
+ let outlines=bar.querySelector('#teacherOutlinesTop');
+ if(!outlines){
+   outlines=document.createElement('button');
+   outlines.id='teacherOutlinesTop';
+   outlines.type='button';
+   outlines.textContent='📚 Đề cương đã tạo';
+   bar.insertBefore(outlines,create);
+ }
+ outlines.dataset.workspace='outline';
+ outlines.onclick=async()=>{
+   try{
+     // Reload from the existing teacher API to reflect the latest saved packs.
+     await dashboard();
+     activate('outline');
+   }catch(error){alert(error.message||'Không tải được danh sách đề cương')}
+ };
  const oldMock=bar.querySelector('#mockManage');if(oldMock){if(oldMock.textContent!=='+ Tạo đề thi thử')oldMock.textContent='+ Tạo đề thi thử';oldMock.classList.add('primary');oldMock.dataset.workspace='exam';}
  const live=bar.querySelector('#liveCreateTop');if(live)live.dataset.workspace='live';
  let settings=bar.querySelector('#teacherSettingsTop');
