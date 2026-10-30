@@ -24,7 +24,13 @@ function sync(){
  settings.onclick=()=>activate('settings');
  create.dataset.workspace='outline';
  if(!create.dataset.boundWorkspace){create.dataset.boundWorkspace='1';create.addEventListener('click',()=>activate('outline'),true)}
- if(changed||!app.dataset.workspace)activate('outline');
+ if(changed||!app.dataset.workspace)activate('settings');
 }
-new MutationObserver(sync).observe(app,{childList:true,subtree:true});sync();
+const header=document.querySelector('body > header');
+if(header&&!document.getElementById('teacherHomeButton')){
+ const home=document.createElement('button');home.id='teacherHomeButton';home.type='button';home.textContent='← Về trang chủ';header.append(home);
+ home.onclick=async()=>{if(!sessionStorage.getItem('ot-teacher-token'))return;try{if(!app.querySelector('.dashboard-heading'))await dashboard();activate('settings')}catch(error){alert(error.message||'Không mở được trang chủ')}};
+}
+new MutationObserver(()=>{sync();const b=document.getElementById('teacherHomeButton');if(b)b.hidden=!sessionStorage.getItem('ot-teacher-token')||!!(app.querySelector('.dashboard-heading')&&app.dataset.workspace==='settings')}).observe(app,{childList:true,subtree:true});
+sync();
 })();
