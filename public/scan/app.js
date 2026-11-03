@@ -1,0 +1,810 @@
+"use strict";
+(() => {
+  const $ = (s) => document.querySelector(s),
+    esc = (s) =>
+      String(s ?? "").replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c],
+      );
+  let token = sessionStorage.getItem("ot-teacher-token") || "",
+    name = sessionStorage.getItem("ot-teacher-name") || "",
+    exams = [],
+    exam = null,
+    tab = "setup",
+    status = {},
+    pages = [null, null],
+    stream = null,
+    reviewPaper = null,
+    poll = null,
+    imageURLs = [],
+    listPage = 0,
+    filter = "",
+    busy = false;
+  const states = {
+    review: "Chờ duyệt",
+    queued: "Đang xếp hàng",
+    processing: "Đang nhận diện",
+    approved: "Đã chốt",
+    error: "OCR lỗi",
+  };
+  const fields = [
+    "code",
+    ...Array.from({ length: 20 }, (_, i) => "q" + (i + 1)),
+    "essay1",
+    "essay2",
+  ];
+  const fieldLabel = (k) =>
+    k === "code"
+      ? "Mã phách"
+      : k.startsWith("q")
+        ? "TN câu " + k.slice(1)
+        : "Tự luận " + k.slice(-1);
+  function toast(message) {
+    $("#toast").textContent = message;
+    $("#toast").hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => ($("#toast").hidden = true), 6500);
+  }
+  async function api(path, body, method) {
+    const options = {
+      method: method || (body ? "POST" : "GET"),
+      headers: { Authorization: "Bearer " + token },
+    };
+    if (body instanceof FormData) options.body = body;
+    else if (body !== undefined) {
+      options.headers["Content-Type"] = "application/json";
+      options.body = JSON.stringify(body);
+    }
+    const res = await fetch("/api/scan" + path, options);
+    const d = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) {
+        token = "";
+        sessionStorage.removeItem("ot-teacher-token");
+        login();
+      }
+      throw Error(d.message || "Không thể xử lý.");
+    }
+    return d;
+  }
+  function run(fn) {
+    return async (...args) => {
+      try {
+        await fn(...args);
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  }
+  function stopCamera() {
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    stream = null;
+    const box = $("#camera");
+    if (box) box.hidden = true;
+  }
+  function cleanup() {
+    stopCamera();
+    clearTimeout(poll);
+    imageURLs.forEach((u) => URL.revokeObjectURL(u));
+    imageURLs = [];
+  }
+  function login() {
+    cleanup();
+    $("#identity").textContent = "";
+    $("#logout").hidden = true;
+    $("#app").innerHTML =
+      `<div class="login"><span class="eyebrow">FPTBN · Chấm bài giấy</span><h1>Từ bài viết tay<br>đến bảng điểm.</h1><p class="muted">Chụp hai mặt. Kiểm tra đáp án. Chốt điểm theo mã phách.</p><form class="card" id="login"><label>Email giáo viên<input name="email" type="email" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button class="primary">Đăng nhập</button><p id="loginError" class="error" role="alert"></p></form><p class="help">Sử dụng tài khoản giáo viên FPTBN Monitor.</p></div>`;
+    $("#login").onsubmit = async (e) => {
+      e.preventDefault();
+      e.submitter.disabled = true;
+      try {
+        const res = await fetch("/api/teacher/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: e.target.email.value,
+              password: e.target.password.value,
+            }),
+          }),
+          d = await res.json();
+        if (!res.ok || !d.success)
+          throw Error(d.message || "Đăng nhập thất bại.");
+        token = d.token;
+        name = d.teacher.full_name;
+        sessionStorage.setItem("ot-teacher-token", token);
+        sessionStorage.setItem("ot-teacher-name", name);
+        await init();
+      } catch (error) {
+        if ($("#loginError")) $("#loginError").textContent = error.message;
+      } finally {
+        e.submitter.disabled = false;
+      }
+    };
+  }
+  async function init() {
+    [status, { exams }] = await Promise.all([api("/status"), api("/exams")]);
+    if (exam) exam = exams.find((e) => e.id === exam.id) || null;
+    render();
+  }
+  function render() {
+    cleanup();
+    reviewPaper = null;
+    $("#identity").textContent = name;
+    $("#logout").hidden = false;
+    $("#app").innerHTML =
+      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm nhanh. Duyệt chắc.</h1><p class="muted">20 câu trắc nghiệm · 2 câu tự luận · 2 mặt mỗi bài</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar"><label style="flex:1;margin:0">Đợt chấm<select id="examSelect"><option value="">Tạo đợt chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newExam">＋ Đợt mới</button></div><nav class="tabs" aria-label="Các bước chấm">${[
+        ["setup", "01 · Đáp án & vùng đọc"],
+        ["capture", "02 · Chụp bài"],
+        ["results", "03 · Duyệt & điểm"],
+      ]
+        .map(
+          ([id, label]) =>
+            `<button data-tab="${id}" class="${tab === id ? "active" : ""}" ${!exam && id !== "setup" ? "disabled" : ""}>${label}</button>`,
+        )
+        .join("")}</nav><div id="content"></div>`;
+    $("#examSelect").onchange = run(async (e) => {
+      if (busy) return;
+      exam = exams.find((x) => x.id === e.target.value) || null;
+      pages = [null, null];
+      tab = exam ? "capture" : "setup";
+      render();
+    });
+    $("#newExam").onclick = () => {
+      if (busy) return;
+      exam = null;
+      tab = "setup";
+      pages = [null, null];
+      render();
+    };
+    document.querySelectorAll("[data-tab]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          if (busy) {
+            toast("Chờ thao tác hiện tại hoàn tất.");
+            return;
+          }
+          tab = b.dataset.tab;
+          render();
+        }),
+    );
+    if (tab === "setup") setup();
+    else if (tab === "capture") capture();
+    else run(results)();
+  }
+  function setup() {
+    let layout = structuredClone(exam?.layout || {}),
+      sample = null,
+      samplePage = 0,
+      selection = "code",
+      drag = null;
+    const locked = !!exam?.count;
+    $("#content").innerHTML =
+      `<div class="grid wide"><section><div class="card"><span class="eyebrow">Nguồn đáp án</span><h2>Lấy từ Google Docs</h2><label>Đường dẫn tài liệu<input id="docUrl" type="url" placeholder="https://docs.google.com/document/d/…" value="${esc(exam?.docUrl || "")}"></label><button id="importDoc">Đọc tài liệu</button><details><summary>Hoặc dán đáp án / xem định dạng hỗ trợ</summary><p class="help">Trắc nghiệm: 1. A, 2. B… Tự luận: tiêu đề TL1 và TL2; mỗi ý một dòng: 0,5 | Nội dung. Định dạng khác có thể nhập tay trong bảng bên dưới.</p><textarea id="sourceText" placeholder="1. A\n2. B\n…\nTL1\n0,5 | Ý thứ nhất\nTL2\n0,5 | Ý thứ nhất"></textarea><button id="parseText">Trích xuất nội dung</button></details><p id="sourceNote" class="help">Đọc xong cần kiểm tra lại đáp án. Tài liệu riêng tư cần cấp quyền đọc cho tài khoản Google của máy chủ.</p></div><div class="card"><h2>Đáp án & thang điểm</h2>${locked ? '<p class="status">Đợt đã có bài: đáp án và vùng đọc đã khóa. Có thể cập nhật link Sheets; muốn đổi mã đề hãy tạo đợt mới.</p>' : ""}<label>Tên đợt / mã đề<input id="title" value="${esc(exam?.title || "")}" placeholder="Giữa kỳ I · Tin học 9 · Đề 01" ${locked ? "disabled" : ""}></label><label>Điểm mỗi câu trắc nghiệm<input id="quizPoint" type="number" min="0.01" max="0.5" step="0.01" value="${exam?.quizPoint ?? 0.25}" ${locked ? "disabled" : ""}></label><div class="key-grid">${Array.from({ length: 20 }, (_, i) => `<label>Câu ${i + 1}<select id="key${i}" ${locked ? "disabled" : ""}><option value="">—</option>${["A", "B", "C", "D"].map((a) => `<option ${exam?.key[i] === a ? "selected" : ""}>${a}</option>`).join("")}</select></label>`).join("")}</div>${[0, 1].map((i) => `<label style="margin-top:20px">Tự luận ${i + 1} · mỗi dòng: điểm | nội dung ý<textarea id="rubric${i}" ${locked ? "disabled" : ""} placeholder="0,5 | Nêu được khái niệm\n1 | Giải thích đúng">${esc((exam?.essays[i].ideas || []).map((x) => x.points + " | " + x.text).join("\n"))}</textarea></label>`).join("")}<p class="help">Tổng trắc nghiệm và tự luận phải bằng 10. Tự luận được GV cho điểm từng ý sau khi xem ảnh.</p></div></section><aside><div class="card"><h2>Vùng đọc hai mặt</h2><p class="help">Dùng ảnh mẫu cùng loại giấy. Chọn mặt, chọn trường rồi kéo khung trên ảnh. Giữ vị trí và hướng chụp giống ảnh mẫu; phiên bản này chưa tự căn phối cảnh.</p><label>Ảnh mẫu<input id="sampleFile" type="file" accept="image/jpeg,image/png" ${locked ? "disabled" : ""}></label><div class="row"><label>Mặt<select id="samplePage" ${locked ? "disabled" : ""}><option value="0">Mặt 1</option><option value="1">Mặt 2</option></select></label><label>Vùng<select id="region" ${locked ? "disabled" : ""}>${fields.map((k) => `<option value="${k}">${fieldLabel(k)}</option>`).join("")}</select></label></div><div class="canvas-wrap"><canvas id="template" width="600" height="400"></canvas></div><div class="toolbar"><span id="regionCount" class="badge"></span><button id="clearRegion" ${locked ? "disabled" : ""}>Xóa vùng đang chọn</button></div><p class="help">Tự luận mỗi câu hiện hỗ trợ một vùng trên một mặt. Nếu câu trải qua hai mặt, GV đọc ảnh để chấm thủ công.</p></div><div class="card"><h2>Bảng điểm</h2><label>Google Sheets (có thể thêm sau)<input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" value="${esc(exam?.sheetUrl || "")}"></label><p class="help">Ghi vào tab FPTBN_SCAN theo mã đợt + mã phách. Cần cấp quyền chỉnh sửa Sheet cho tài khoản máy chủ; không sửa các tab khác.</p><button class="primary" id="saveExam">${exam ? "Lưu cấu hình" : "Tạo đợt chấm"}</button><p class="help">Có thể tạo đợt chưa đặt vùng đọc và chấm thủ công trên ảnh. Cần đủ 23 vùng để chạy OCR.</p></div></aside></div>`;
+    const canvas = $("#template"),
+      ctx = canvas.getContext("2d");
+    function draw(temp) {
+      canvas.width = sample?.width || 600;
+      canvas.height = sample?.height || 400;
+      if (sample) ctx.drawImage(sample, 0, 0);
+      else {
+        ctx.fillStyle = "#edf2e9";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#627571";
+        ctx.font = "18px Arial";
+        ctx.fillText("Chọn ảnh mẫu để đặt vùng đọc", 35, 190);
+      }
+      for (const [k, b] of Object.entries(layout)) {
+        if (b.page !== samplePage) continue;
+        ctx.strokeStyle = k === selection ? "#ee7a38" : "#176c59";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(
+          b.x * canvas.width,
+          b.y * canvas.height,
+          b.w * canvas.width,
+          b.h * canvas.height,
+        );
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font = "16px Arial";
+        ctx.fillText(
+          fieldLabel(k),
+          b.x * canvas.width + 3,
+          b.y * canvas.height + 18,
+        );
+      }
+      if (temp) {
+        ctx.strokeStyle = "#ee7a38";
+        ctx.strokeRect(
+          temp.x * canvas.width,
+          temp.y * canvas.height,
+          temp.w * canvas.width,
+          temp.h * canvas.height,
+        );
+      }
+      $("#regionCount").textContent = Object.keys(layout).length + "/23 vùng";
+    }
+    draw();
+    const point = (e) => {
+      const b = canvas.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)),
+        y: Math.max(0, Math.min(1, (e.clientY - b.top) / b.height)),
+      };
+    };
+    canvas.onpointerdown = (e) => {
+      if (locked || !sample) return;
+      drag = point(e);
+      canvas.setPointerCapture(e.pointerId);
+    };
+    canvas.onpointermove = (e) => {
+      if (!drag) return;
+      const p = point(e);
+      draw({
+        x: Math.min(p.x, drag.x),
+        y: Math.min(p.y, drag.y),
+        w: Math.abs(p.x - drag.x),
+        h: Math.abs(p.y - drag.y),
+      });
+    };
+    canvas.onpointerup = (e) => {
+      if (!drag) return;
+      const p = point(e),
+        box = {
+          page: samplePage,
+          x: Math.min(p.x, drag.x),
+          y: Math.min(p.y, drag.y),
+          w: Math.abs(p.x - drag.x),
+          h: Math.abs(p.y - drag.y),
+        };
+      drag = null;
+      if (box.w > 0.002 && box.h > 0.002) layout[selection] = box;
+      draw();
+    };
+    canvas.onpointercancel = () => {
+      drag = null;
+      draw();
+    };
+    $("#region").onchange = (e) => {
+      selection = e.target.value;
+      draw();
+    };
+    $("#samplePage").onchange = (e) => {
+      samplePage = Number(e.target.value);
+      sample = null;
+      $("#sampleFile").value = "";
+      draw();
+    };
+    $("#sampleFile").onchange = run(async (e) => {
+      if (!e.target.files[0]) return;
+      sample = await bitmap(e.target.files[0]);
+      draw();
+    });
+    $("#clearRegion").onclick = () => {
+      delete layout[selection];
+      draw();
+    };
+    function applySource(d) {
+      if (locked)
+        throw Error("Đợt đã khóa đáp án. Tạo đợt mới để nhập tài liệu khác.");
+      d.key.forEach((v, i) => ($("#key" + i).value = v));
+      d.essays.forEach((e, i) => {
+        if (e.ideas.length)
+          $("#rubric" + i).value = e.ideas
+            .map((x) => x.points + " | " + x.text)
+            .join("\n");
+      });
+      $("#sourceText").value = d.text;
+      $("#sourceNote").textContent =
+        d.warning + " Đã đọc " + d.key.filter(Boolean).length + "/20 câu TN.";
+      toast("Đã đọc tài liệu. Kiểm tra đáp án bên dưới.");
+    }
+    $("#importDoc").onclick = run(async (e) => {
+      e.target.disabled = true;
+      try {
+        applySource(await api("/import-doc", { url: $("#docUrl").value }));
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+    $("#parseText").onclick = run(async () =>
+      applySource(await api("/parse-key", { text: $("#sourceText").value })),
+    );
+    $("#saveExam").onclick = run(async (e) => {
+      const essays = [0, 1].map((i) => ({
+        ideas: $("#rubric" + i)
+          .value.split("\n")
+          .filter((x) => x.trim())
+          .map((line) => {
+            const m = line.match(/^\s*(\d+(?:[.,]\d+)?)\s*\|\s*(.+)$/);
+            if (!m)
+              throw Error(
+                "Tự luận " +
+                  (i + 1) +
+                  ": mỗi dòng cần định dạng điểm | nội dung.",
+              );
+            return { points: Number(m[1].replace(",", ".")), text: m[2] };
+          }),
+      }));
+      e.target.disabled = true;
+      try {
+        const d = await api(
+          exam ? "/exams/" + exam.id : "/exams",
+          {
+            title: $("#title").value,
+            key: Array.from({ length: 20 }, (_, i) => $("#key" + i).value),
+            quizPoint: Number($("#quizPoint").value),
+            essays,
+            docUrl: $("#docUrl").value,
+            sheetUrl: $("#sheetUrl").value,
+            layout,
+          },
+          exam ? "PUT" : "POST",
+        );
+        exam = d.exam;
+        tab = "capture";
+        await init();
+        toast("Đã lưu đợt chấm. Có thể chụp hai mặt bài thi.");
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+  }
+  async function bitmap(file) {
+    try {
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
+    } catch {
+      const u = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        img.src = u;
+        await img.decode();
+        return img;
+      } finally {
+        URL.revokeObjectURL(u);
+      }
+    }
+  }
+  async function normalized(file) {
+    if (!file) throw Error("Chưa có ảnh.");
+    if (!/^image\/(jpeg|png)$/.test(file.type))
+      throw Error("Chọn ảnh JPG hoặc PNG. Với HEIC, hãy xuất sang JPG trước.");
+    if (file.size > 30 * 1024 * 1024)
+      throw Error("Ảnh nguồn quá lớn; tối đa 30 MB.");
+    const img = await bitmap(file),
+      scale = Math.min(1, 2400 / Math.max(img.width, img.height)),
+      c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale);
+    c.height = Math.round(img.height * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    img.close?.();
+    return new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.92));
+  }
+  function capture() {
+    pages = [null, null];
+    $("#content").innerHTML =
+      `<div class="grid wide"><section><div class="card"><span class="eyebrow">${esc(exam.title)}</span><h2>Chụp đủ hai mặt, giữ cùng mã phách</h2><label>Mã phách<input id="code" placeholder="Ví dụ: 00125" maxlength="40" autocomplete="off"></label><div class="grid">${[0, 1].map((i) => `<div class="drop"><strong>Mặt ${i + 1}</strong><img id="preview${i}" alt="Ảnh mặt ${i + 1}" hidden><label>Chọn ảnh / chụp bằng điện thoại<input id="page${i}" type="file" accept="image/jpeg,image/png" capture="environment"></label><button data-camera="${i}">Mở camera trực tiếp</button></div>`).join("")}</div><div id="camera" hidden><video id="video" playsinline autoplay muted></video><div class="toolbar"><button id="shutter" class="accent">Chụp mặt <span id="cameraSide"></span></button><button id="stopCamera">Đóng camera</button></div></div><label class="checkline" style="margin-top:20px"><input id="autoOcr" type="checkbox" ${status.ocr?.ready && Object.keys(exam.layout).length === 23 ? "checked" : ""} ${!status.ocr?.ready ? "disabled" : ""}>Đưa vào hàng đợi nhận diện sau khi lưu</label><div class="toolbar"><button class="primary" id="savePaper">Lưu bài & xem kết quả</button><button id="saveNext">Lưu & chụp bài tiếp</button></div><p class="help">Camera dừng sau mỗi lần chụp để thầy kiểm tra ảnh. Ảnh phải rõ, đúng hướng và đủ vùng bài làm.</p></div></section><aside><div class="card soft"><span class="eyebrow">Chấm theo đợt</span><h2>Đưa nhiều bài vào cùng lúc</h2><p class="muted">Chọn thư mục ảnh đã chụp. Mỗi mã phách cần một cặp ảnh, tên dạng <b>00125_1.jpg</b> và <b>00125_2.jpg</b>.</p><label>Ảnh hàng loạt<input id="batch" type="file" accept="image/jpeg,image/png" multiple></label><button id="uploadBatch">Kiểm tra & tải cả đợt</button><p id="batchProgress" role="status" class="help">Tải tuần tự, tối đa 2.000 bài/đợt. Không đóng trang khi đang tải.</p></div><div class="card"><h3>Trước khi đưa bài vào</h3><p class="help">① Đúng đợt và mã đề.<br>② Hai mặt cùng một bài.<br>③ Mã phách rõ, không mất số 0 đầu.<br>④ Ảnh cùng chiều và vị trí với ảnh mẫu.</p><button id="toResults">Xem danh sách bài →</button></div></aside></div>`;
+    async function setPage(i, blob) {
+      pages[i] = blob;
+      const u = URL.createObjectURL(blob);
+      imageURLs.push(u);
+      $("#preview" + i).src = u;
+      $("#preview" + i).hidden = false;
+    }
+    [0, 1].forEach(
+      (i) =>
+        ($("#page" + i).onchange = run(async (e) => {
+          if (e.target.files[0])
+            await setPage(i, await normalized(e.target.files[0]));
+        })),
+    );
+    let side = 0;
+    document.querySelectorAll("[data-camera]").forEach(
+      (b) =>
+        (b.onclick = run(async () => {
+          stopCamera();
+          side = Number(b.dataset.camera);
+          if (!navigator.mediaDevices?.getUserMedia)
+            throw Error(
+              "Trình duyệt chưa hỗ trợ camera. Dùng nút chọn ảnh/chụp phía trên.",
+            );
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 2400 },
+              height: { ideal: 1800 },
+            },
+            audio: false,
+          });
+          $("#video").srcObject = stream;
+          $("#cameraSide").textContent = side + 1;
+          $("#camera").hidden = false;
+          await $("#video").play();
+        })),
+    );
+    $("#stopCamera").onclick = stopCamera;
+    $("#shutter").onclick = run(async () => {
+      const v = $("#video");
+      if (!v.videoWidth) throw Error("Camera chưa sẵn sàng.");
+      const c = document.createElement("canvas");
+      c.width = v.videoWidth;
+      c.height = v.videoHeight;
+      c.getContext("2d").drawImage(v, 0, 0);
+      const blob = await new Promise((resolve) =>
+        c.toBlob(resolve, "image/jpeg", 0.94),
+      );
+      await setPage(side, await normalized(blob));
+      stopCamera();
+      toast("Đã chụp mặt " + (side + 1) + ". Kiểm tra ảnh trước khi lưu.");
+    });
+    async function upload(code, blobs) {
+      const form = new FormData();
+      form.append("code", code);
+      blobs.forEach((b, i) => form.append("pages", b, "page" + i + ".jpg"));
+      const d = await api("/exams/" + exam.id + "/papers", form);
+      if ($("#autoOcr").checked)
+        try {
+          await api(
+            "/exams/" + exam.id + "/papers/" + d.paper.id + "/recognize",
+            {},
+          );
+        } catch (e) {
+          toast("Đã lưu ảnh. " + e.message);
+        }
+      return d.paper;
+    }
+    async function save(next) {
+      if (busy) return;
+      if (!pages.every(Boolean)) throw Error("Cần chụp đủ 2 mặt.");
+      busy = true;
+      $("#savePaper").disabled = $("#saveNext").disabled = true;
+      try {
+        const p = await upload($("#code").value, pages);
+        exam.count = (exam.count || 0) + 1;
+        stopCamera();
+        if (next) {
+          capture();
+          toast("Đã lưu bài. Đưa bài tiếp theo vào.");
+        } else {
+          tab = "results";
+          render();
+          await openPaper(p.id);
+        }
+      } finally {
+        busy = false;
+        if ($("#savePaper"))
+          $("#savePaper").disabled = $("#saveNext").disabled = false;
+      }
+    }
+    $("#savePaper").onclick = run(() => save(false));
+    $("#saveNext").onclick = run(() => save(true));
+    $("#toResults").onclick = () => {
+      if (!busy) {
+        tab = "results";
+        render();
+      }
+    };
+    $("#uploadBatch").onclick = run(async (e) => {
+      if (busy) return;
+      const selected = [...$("#batch").files];
+      if (!selected.length) throw Error("Chọn các ảnh cần tải.");
+      const groups = new Map();
+      for (const f of selected) {
+        const m = f.name.match(
+          /^([A-Za-z0-9_-]{1,40})_([12])\.(?:jpe?g|png)$/i,
+        );
+        if (!m) throw Error("Tên ảnh chưa đúng: " + f.name);
+        const key = m[1].toUpperCase(),
+          g = groups.get(key) || [];
+        if (g[Number(m[2]) - 1]) throw Error("Trùng ảnh: " + f.name);
+        g[Number(m[2]) - 1] = f;
+        groups.set(key, g);
+      }
+      for (const [code, g] of groups)
+        if (!g[0] || !g[1]) throw Error("Thiếu một mặt của mã " + code);
+      if (groups.size > 2000) throw Error("Tối đa 2.000 bài/đợt.");
+      busy = true;
+      e.target.disabled = true;
+      $("#savePaper").disabled = $("#saveNext").disabled = true;
+      let done = 0;
+      const errors = [];
+      try {
+        for (const [code, g] of groups) {
+          $("#batchProgress").textContent =
+            "Đang tải " +
+            (done + errors.length + 1) +
+            "/" +
+            groups.size +
+            " · " +
+            code;
+          try {
+            await upload(code, [
+              await normalized(g[0]),
+              await normalized(g[1]),
+            ]);
+            done++;
+            exam.count = (exam.count || 0) + 1;
+          } catch (error) {
+            errors.push(code + ": " + error.message);
+          }
+        }
+        $("#batchProgress").textContent =
+          "Đã lưu " +
+          done +
+          "/" +
+          groups.size +
+          " bài." +
+          (errors.length ? "\n" + errors.join("\n") : "");
+        $("#batchProgress").style.whiteSpace = "pre-wrap";
+        toast("Hoàn thành tải ảnh: " + done + " bài.");
+      } finally {
+        busy = false;
+        e.target.disabled = false;
+        $("#savePaper").disabled = $("#saveNext").disabled = false;
+      }
+    });
+  }
+  async function results() {
+    const d = await api(
+      "/exams/" +
+        exam.id +
+        "/papers?page=" +
+        listPage +
+        "&filter=" +
+        encodeURIComponent(filter),
+    );
+    if (tab !== "results" || reviewPaper) return;
+    $("#content").innerHTML =
+      `<div class="stats"><div class="stat"><b>${d.total}</b><span>Bài đã lưu</span></div><div class="stat"><b>${(d.counts.queued || 0) + (d.counts.processing || 0)}</b><span>Đang nhận diện</span></div><div class="stat"><b>${(d.counts.review || 0) + (d.counts.error || 0)}</b><span>Cần kiểm tra</span></div><div class="stat"><b>${d.counts.approved || 0}</b><span>Đã chốt điểm</span></div></div><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Bài thi · ${esc(exam.title)}</h2><button id="export">Tải CSV</button><button class="primary" id="sync">Ghi Google Sheets</button></div><div class="toolbar"><label style="margin:0">Trạng thái<select id="filter"><option value="">Tất cả</option>${Object.entries(
+        states,
+      )
+        .map(
+          ([k, v]) =>
+            `<option value="${k}" ${filter === k ? "selected" : ""}>${v}</option>`,
+        )
+        .join(
+          "",
+        )}</select></label><button id="reload">Làm mới</button><span class="help">Chỉ bài đã chốt được xuất điểm. Chênh lệch = điểm đã duyệt − điểm chấm tay.</span></div><div class="table-wrap"><table><thead><tr><th>Mã phách</th><th>Trạng thái</th><th>Tổng</th><th>Chênh lệch</th><th></th></tr></thead><tbody>${d.papers.map((p) => `<tr><td><b>${esc(p.code)}</b></td><td><span class="badge ${p.status === "error" ? "warn" : ""}">${states[p.status] || esc(p.status)}</span></td><td>${p.total ?? "—"}</td><td class="${p.difference ? "error" : ""}">${p.difference ?? "—"}</td><td><button data-open="${p.id}">Mở bài →</button></td></tr>`).join("")}</tbody></table>${!d.papers.length ? '<div class="empty">Chưa có bài trong danh sách này. Chọn Chụp bài để bắt đầu.</div>' : ""}</div><div class="toolbar"><button id="prev" ${listPage === 0 ? "disabled" : ""}>← Trước</button><span class="help">Trang ${listPage + 1} · ${d.filtered} bài</span><button id="next" ${(listPage + 1) * 50 >= d.filtered ? "disabled" : ""}>Tiếp →</button></div><p id="syncNote" class="help"></p></div>`;
+    $("#filter").onchange = run(async (e) => {
+      filter = e.target.value;
+      listPage = 0;
+      await results();
+    });
+    $("#reload").onclick = run(results);
+    $("#prev").onclick = run(async () => {
+      listPage--;
+      await results();
+    });
+    $("#next").onclick = run(async () => {
+      listPage++;
+      await results();
+    });
+    document
+      .querySelectorAll("[data-open]")
+      .forEach((b) => (b.onclick = run(() => openPaper(b.dataset.open))));
+    $("#export").onclick = run(async () => {
+      const response = await fetch("/api/scan/exams/" + exam.id + "/export", {
+        headers: { Authorization: "Bearer " + token },
+      });
+      if (!response.ok) throw Error("Không tải được CSV.");
+      const u = URL.createObjectURL(await response.blob()),
+        a = document.createElement("a");
+      a.href = u;
+      a.download = "FPTBN-scan.csv";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(u), 1000);
+    });
+    $("#sync").onclick = run(async (e) => {
+      e.target.disabled = true;
+      try {
+        const d = await api("/exams/" + exam.id + "/sync", {});
+        $("#syncNote").textContent =
+          "Đã ghi " + d.count + " bài đã chốt vào tab FPTBN_SCAN.";
+        toast("Đã đồng bộ Google Sheets.");
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+    if ((d.counts.queued || 0) + (d.counts.processing || 0) > 0)
+      poll = setTimeout(() => run(results)(), 4000);
+  }
+  async function openPaper(id) {
+    clearTimeout(poll);
+    imageURLs.forEach((u) => URL.revokeObjectURL(u));
+    imageURLs = [];
+    const d = await api("/exams/" + exam.id + "/papers/" + id);
+    reviewPaper = d.paper;
+    const p = reviewPaper,
+      approved = p.status === "approved",
+      inFlight = ["queued", "processing"].includes(p.status),
+      ocr = p.ocr?.fields || {},
+      r = p.review || {};
+    let answers =
+      r.answers ||
+      Array.from({ length: 20 }, (_, i) => {
+        const text = String(ocr["q" + (i + 1)]?.text || "")
+          .trim()
+          .toUpperCase();
+        return /^[ABCD]$/.test(text) ? text : "";
+      });
+    let sheetScores =
+      r.essayScores || exam.essays.map((e) => e.ideas.map(() => null));
+    const texts = r.texts || [ocr.essay1?.text || "", ocr.essay2?.text || ""];
+    $("#content").innerHTML =
+      `<div class="toolbar"><button id="backList">← Danh sách bài</button><span class="badge">${states[p.status]}</span><span class="help">Mã nhập lúc chụp: ${esc(p.code)}</span></div>${p.error ? '<p class="status">' + esc(p.error) + "</p>" : ""}${inFlight ? '<p class="status">Đang xử lý OCR. Bấm cập nhật sau khi hoàn tất.</p>' : ""}<div class="grid wide"><section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Bài làm gốc</h2><button data-side="0" class="selected-page">Mặt 1</button><button data-side="1">Mặt 2</button></div><img id="reviewImage" class="review-image" alt="Ảnh bài làm gốc"><p class="help">Chạm ảnh để phóng to. Đối chiếu cả hai mặt trước khi chốt.</p><div class="toolbar"><button id="ocr" ${approved || r.answers || inFlight ? "disabled" : ""}>${p.ocr ? "Nhận diện lại" : "Nhận diện chữ viết"}</button><button id="refreshPaper">Cập nhật trạng thái</button>${approved ? '<button id="reopen">Mở lại để sửa</button>' : ""}</div><details><summary>Nhật ký nhận diện và chỉnh sửa</summary><pre>${esc(JSON.stringify({ ocr: p.ocr || "Chưa chạy", history: p.history || [] }, null, 2))}</pre></details></section><section class="card review-pane"><h2>Kiểm tra & cho điểm</h2><p class="help">OCR là bản đọc đề xuất. Tự luận cần GV đối chiếu nội dung theo từng ý. Điểm chưa chốt không được xuất.</p><fieldset ${approved || inFlight ? "disabled" : ""} style="border:0;padding:0;margin:0"><label>Mã phách đã kiểm tra<input id="reviewCode" value="${esc(r.code || p.code)}" maxlength="40"></label>${ocr.code ? '<p class="help">OCR đọc mã: ' + esc(ocr.code.text) + " · đối chiếu với mã nhập khi chụp.</p>" : ""}<h3>20 câu trắc nghiệm</h3><p class="help">“Bỏ trống” và “Nhiều đáp án” được tính 0 điểm. “Chưa xác định” cần kiểm tra trước khi chốt.</p><div class="key-grid">${answers
+        .map(
+          (a, i) =>
+            `<label>Câu ${i + 1} · ĐA ${exam.key[i]}<select data-answer="${i}">${[
+              ["", "?"],
+              ["A", "A"],
+              ["B", "B"],
+              ["C", "C"],
+              ["D", "D"],
+              ["BLANK", "Bỏ trống"],
+              ["MULTIPLE", "Nhiều ĐA"],
+            ]
+              .map(
+                ([v, l]) =>
+                  `<option value="${v}" ${a === v ? "selected" : ""}>${l}</option>`,
+              )
+              .join("")}</select></label>`,
+        )
+        .join(
+          "",
+        )}</div>${exam.essays.map((e, i) => `<h3 style="margin-top:22px">Tự luận ${i + 1}</h3><label>Nội dung đã nhận diện (có thể sửa)<textarea id="text${i}">${esc(texts[i])}</textarea></label>${e.ideas.map((idea, j) => `<label class="idea"><span>${esc(idea.text)}<small>Tối đa ${idea.points} điểm</small></span><input type="number" data-score="${i}-${j}" min="0" max="${idea.points}" step="0.01" aria-label="Điểm tự luận ${i + 1} ý ${j + 1}" value="${sheetScores[i][j] ?? ""}" placeholder="Chưa chấm"></label>`).join("")}`).join("")}<label style="margin-top:18px">Điểm chấm tay để đối chiếu (không bắt buộc)<input id="manualScore" type="number" min="0" max="10" step="0.01" value="${r.manualScore ?? ""}"></label><label>Ghi chú<textarea id="reviewNote">${esc(r.note || "")}</textarea></label><label class="checkline"><input id="verified" type="checkbox" ${r.verified ? "checked" : ""}>Tôi đã đối chiếu mã phách, hai mặt bài làm, đáp án và điểm từng ý.</label></fieldset><div class="card soft"><span class="eyebrow">Tổng điểm đang duyệt</span><div id="scoreSummary" class="score"></div><div id="difference" class="help"></div></div><div class="toolbar"><button id="saveDraft" ${approved || inFlight ? "disabled" : ""}>Lưu nháp</button><button id="approve" class="primary" ${approved || inFlight ? "disabled" : ""}>Chốt điểm bài này</button></div><p id="reviewNotice" role="status" class="help"></p></section></div><dialog id="zoom"><button id="closeZoom">Đóng ảnh</button><img alt="Ảnh bài làm phóng to" id="zoomImage"></dialog>`;
+    let side = 0;
+    const urls = {};
+    async function image(n) {
+      if (!urls[n]) {
+        const response = await fetch(
+          "/api/scan/exams/" + exam.id + "/papers/" + id + "/pages/" + n,
+          { headers: { Authorization: "Bearer " + token } },
+        );
+        if (!response.ok) throw Error("Không tải được ảnh.");
+        urls[n] = URL.createObjectURL(await response.blob());
+        imageURLs.push(urls[n]);
+      }
+      return urls[n];
+    }
+    async function show(n) {
+      side = n;
+      $("#reviewImage").src = await image(n);
+      document
+        .querySelectorAll("[data-side]")
+        .forEach((b) =>
+          b.classList.toggle("selected-page", Number(b.dataset.side) === n),
+        );
+    }
+    await show(0);
+    document
+      .querySelectorAll("[data-side]")
+      .forEach((b) => (b.onclick = run(() => show(Number(b.dataset.side)))));
+    $("#reviewImage").onclick = () => {
+      $("#zoomImage").src = urls[side];
+      $("#zoom").showModal();
+    };
+    $("#closeZoom").onclick = () => $("#zoom").close();
+    $("#backList").onclick = run(async () => {
+      reviewPaper = null;
+      imageURLs.forEach((u) => URL.revokeObjectURL(u));
+      imageURLs = [];
+      await results();
+    });
+    $("#refreshPaper").onclick = run(() => openPaper(id));
+    $("#ocr").onclick = run(async () => {
+      await api("/exams/" + exam.id + "/papers/" + id + "/recognize", {});
+      await openPaper(id);
+      toast("Đã đưa bài vào hàng đợi OCR.");
+    });
+    if ($("#reopen"))
+      $("#reopen").onclick = run(async () => {
+        await api("/exams/" + exam.id + "/papers/" + id + "/reopen", {});
+        await openPaper(id);
+        toast("Đã mở lại. Cần chốt và đồng bộ Sheet sau khi sửa.");
+      });
+    function values(approve) {
+      return {
+        code: $("#reviewCode").value,
+        answers: [...document.querySelectorAll("[data-answer]")].map(
+          (el) => el.value,
+        ),
+        essayScores: exam.essays.map((e, i) =>
+          e.ideas.map((_, j) => {
+            const v = $('[data-score="' + i + "-" + j + '"]').value;
+            return v === "" ? null : Number(v);
+          }),
+        ),
+        texts: [$("#text0").value, $("#text1").value],
+        manualScore: $("#manualScore").value,
+        verified: $("#verified").checked,
+        note: $("#reviewNote").value,
+        approve,
+      };
+    }
+    function calc() {
+      const v = values(false),
+        quiz = v.answers.reduce(
+          (s, a, i) => s + (a === exam.key[i] ? exam.quizPoint : 0),
+          0,
+        ),
+        essay = v.essayScores.flat().reduce((s, n) => s + (n || 0), 0),
+        complete =
+          !v.answers.includes("") &&
+          v.essayScores.flat().every((x) => x !== null),
+        total = Math.round((quiz + essay) * 100) / 100;
+      $("#scoreSummary").textContent =
+        total.toFixed(2) + " / 10" + (complete ? "" : " · chưa đủ");
+      $("#difference").textContent =
+        "TN " +
+        quiz.toFixed(2) +
+        " · TL " +
+        essay.toFixed(2) +
+        (v.manualScore !== "" && complete
+          ? " · Chênh lệch " +
+            Math.round((total - Number(v.manualScore)) * 100) / 100
+          : "");
+      document.querySelectorAll("[data-answer]").forEach((el) => {
+        el.classList.toggle(
+          "right",
+          el.value === exam.key[Number(el.dataset.answer)],
+        );
+        el.classList.toggle(
+          "wrong",
+          !!el.value && el.value !== exam.key[Number(el.dataset.answer)],
+        );
+      });
+    }
+    document
+      .querySelectorAll("[data-answer],[data-score],#manualScore")
+      .forEach((el) => (el.oninput = calc));
+    calc();
+    async function save(approve) {
+      if (busy) return;
+      busy = true;
+      $("#saveDraft").disabled = $("#approve").disabled = true;
+      try {
+        const d = await api(
+          "/exams/" + exam.id + "/papers/" + id + "/review",
+          values(approve),
+          "PUT",
+        );
+        reviewPaper = d.paper;
+        if (approve) {
+          toast("Đã chốt điểm mã phách " + d.paper.review.code);
+          await openPaper(id);
+        } else {
+          $("#reviewNotice").textContent =
+            "Đã lưu nháp lúc " + new Date().toLocaleTimeString("vi-VN");
+          toast("Đã lưu nháp.");
+        }
+      } finally {
+        busy = false;
+        if ($("#saveDraft") && reviewPaper.status !== "approved")
+          $("#saveDraft").disabled = $("#approve").disabled = false;
+      }
+    }
+    $("#saveDraft").onclick = run(() => save(false));
+    $("#approve").onclick = run(() => save(true));
+  }
+  $("#logout").onclick = () => {
+    token = "";
+    sessionStorage.removeItem("ot-teacher-token");
+    sessionStorage.removeItem("ot-teacher-name");
+    exam = null;
+    login();
+  };
+  window.addEventListener("pagehide", stopCamera);
+  window.addEventListener("beforeunload", (e) => {
+    if (busy) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+  if (token) run(init)();
+  else login();
+})();

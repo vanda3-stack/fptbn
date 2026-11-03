@@ -123,9 +123,11 @@ const excelUpload = multer({
 // =====================================================
 
 app.use("/api/ot", express.json({ limit: "1mb" }));
+app.use("/api/scan", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
 require("./lib/review-pages")(app, {path, root: __dirname});
+app.get("/scan", (req, res) => res.sendFile(path.join(__dirname, "public/scan.html")));
 app.get("/giaovien", (req, res) => res.sendFile(path.join(__dirname, "public/GV.html")));
 
 app.use(
@@ -4572,6 +4574,7 @@ app.patch(
 // =====================================================
 
 const teacherLoginTokens = new Map();
+require("./lib/scan")(app, { db, teacherTokens: teacherLoginTokens });
 require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens });
 const revisionModule = require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io,
     isParentViewingBlocked: child => {

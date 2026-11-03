@@ -10,6 +10,7 @@
   "dependencies": {
     "dotenv": "^18.0.5",
     "express": "^5.1.0",
+    "google-auth-library": "^10.9.1",
     "multer": "^2.4.0",
     "mysql2": "^3.24.5",
     "pm2": "^7.0.4",
