@@ -549,3 +549,42 @@ dialog::backdrop {
     width: 100%;
   }
 }
+.scan-exam-toolbar > label {
+  min-width: 220px;
+}
+.scan-exam-toolbar select {
+  min-width: 0;
+  width: 100%;
+  text-overflow: ellipsis;
+}
+.scan-exam-toolbar button {
+  white-space: normal;
+}
+@media (max-width: 850px) {
+  .scan-exam-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+  .scan-exam-toolbar > label {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .scan-exam-toolbar #newCapture {
+    grid-column: 1 / -1;
+  }
+  .scan-exam-toolbar #newExam {
+    grid-column: 1 / -1;
+  }
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+  .tabs button {
+    white-space: normal;
+    min-width: 0;
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+}

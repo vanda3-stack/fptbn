@@ -56,6 +56,7 @@
     const options = {
       method: method || (body ? "POST" : "GET"),
       headers: { Authorization: "Bearer " + token },
+      cache: "no-store",
     };
     if (body instanceof FormData) options.body = body;
     else if (body !== undefined) {
@@ -63,13 +64,26 @@
       options.body = JSON.stringify(body);
     }
     const res = await fetch("/api/scan" + path, options);
-    const d = await res.json();
+    let d;
+    try {
+      d = await res.json();
+    } catch {
+      throw Error(
+        path === "/capture-exams"
+          ? "Máy chủ chưa nạp bản chụp trước. Khởi động lại NodeJS trên VPS rồi tải lại trang."
+          : "Máy chủ không trả dữ liệu hợp lệ. Tải lại trang hoặc kiểm tra NodeJS.",
+      );
+    }
     if (!res.ok) {
       if (res.status === 401) {
         token = "";
         sessionStorage.removeItem("ot-teacher-token");
         login();
       }
+      if (path === "/capture-exams" && [400, 404].includes(res.status))
+        throw Error(
+          "Máy chủ và giao diện chưa cùng phiên bản. Cần cập nhật mã và khởi động lại NodeJS; không cần nhập đáp án để chụp.",
+        );
       throw Error(d.message || "Không thể xử lý.");
     }
     return d;
@@ -130,6 +144,7 @@
   }
   async function init() {
     [status, { exams }] = await Promise.all([api("/status"), api("/exams")]);
+    status.requiresRestart = status.capabilities?.photoFirst !== true;
     if (exam) exam = exams.find((e) => e.id === exam.id) || null;
     render();
   }
@@ -139,7 +154,7 @@
     $("#identity").textContent = name;
     $("#logout").hidden = false;
     $("#app").innerHTML =
-      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm nhanh. Duyệt chắc.</h1><p class="muted">20 câu trắc nghiệm · 2 câu tự luận · 2 mặt mỗi bài</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar"><label style="flex:1;margin:0">Đợt chấm<select id="examSelect"><option value="">Tạo đợt chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newCapture" class="primary">Chụp trước, nhập đáp án sau</button><button id="newExam">＋ Đợt mới</button></div><nav class="tabs" aria-label="Các bước chấm">${[
+      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm nhanh. Duyệt chắc.</h1><p class="muted">20 câu trắc nghiệm · 2 câu tự luận · 2 mặt mỗi bài</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar scan-exam-toolbar"><label style="flex:1;margin:0">Đợt chấm<select id="examSelect"><option value="">Tạo đợt chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newCapture" class="primary">Chụp trước, nhập đáp án sau</button><button id="newExam">＋ Đợt mới</button></div>${status.requiresRestart ? '<p class="status" role="alert">Giao diện đã cập nhật nhưng máy chủ chưa xác nhận hỗ trợ chụp trước. Cần khởi động lại NodeJS trên VPS rồi tải lại trang. Không cần nhập đáp án để chụp.</p>' : ""}<nav class="tabs" aria-label="Các bước chấm">${[
         ["setup", "01 · Đáp án & vùng đọc"],
         ["capture", "02 · Chụp bài"],
         ["results", "03 · Duyệt & điểm"],
@@ -156,16 +171,26 @@
       tab = exam ? "capture" : "setup";
       render();
     });
-    $("#newCapture").onclick = run(async () => {
+    $("#newCapture").onclick = run(async (event) => {
       if (busy) return;
-      const d = await api("/exams", {
-        title: "Đợt chụp " + new Date().toLocaleString("vi-VN"),
-        captureOnly: true,
-      });
-      exam = d.exam;
-      tab = "capture";
-      await init();
-      toast("Đã tạo đợt lưu ảnh. Nhập đáp án sau khi chụp xong.");
+      if (status.requiresRestart)
+        throw Error(
+          "Cần cập nhật và khởi động lại NodeJS trên VPS để dùng Chụp trước.",
+        );
+      busy = true;
+      event.target.disabled = true;
+      try {
+        const d = await api("/capture-exams", {
+          title: "Đợt chụp " + new Date().toLocaleString("vi-VN"),
+        });
+        exam = d.exam;
+        tab = "capture";
+        await init();
+        toast("Đã tạo đợt lưu ảnh. Nhập đáp án sau khi chụp xong.");
+      } finally {
+        busy = false;
+        event.target.disabled = false;
+      }
     });
     $("#newExam").onclick = () => {
       if (busy) return;

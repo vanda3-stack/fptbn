@@ -486,3 +486,37 @@ test("human-verified training stores only selected crops, keeps writers pseudony
     p.writerGroup,
   );
 });
+
+test("deployment revision can be checked without login and reports actual photo-first support", async (t) => {
+  const { api, base } = await server(t);
+  const publicVersion = await api("/version", null, "GET", "");
+  assert.equal(publicVersion.status, 200);
+  assert.equal(publicVersion.data.revision, "scan-20261103-3");
+  assert.equal(publicVersion.data.photoFirst, true);
+  assert.deepEqual(Object.keys(publicVersion.data).sort(), [
+    "photoFirst",
+    "revision",
+    "success",
+  ]);
+  const response = await fetch(base + "/api/scan/version");
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal((await api("/status", null, "GET", "")).status, 401);
+  const status = await api("/status");
+  assert.equal(status.data.capabilities.photoFirst, true);
+});
+test("dedicated photo-first endpoint does not enter answer-key validation, and still requires teacher login", async (t) => {
+  const { api } = await server(t);
+  assert.equal(
+    (await api("/capture-exams", { title: "Điện thoại" }, "POST", "")).status,
+    401,
+  );
+  const result = await api("/capture-exams", { title: "Điện thoại" });
+  assert.equal(result.status, 200);
+  assert.equal(result.data.exam.captureOnly, true);
+  assert(result.data.exam.key.every((a) => a === ""));
+  assert.equal(result.data.exam.maximum, null);
+  assert.equal(
+    (await api("/exams", { title: "Đề chấm cần đáp án" })).status,
+    400,
+  );
+});

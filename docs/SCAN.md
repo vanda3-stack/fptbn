@@ -106,3 +106,17 @@ Thử tối thiểu 50 bài đa dạng chữ viết, đối chiếu từng đáp
 - Đây là **chuẩn bị dữ liệu**, chưa có tác vụ tự huấn luyện. Mô hình nền phải đọc được nhiều nét chữ; không cần huấn luyện riêng cho từng HS ngay từ đầu. Ưu tiên thêm các kiểu chữ và lỗi OCR đa dạng đã được GV sửa.
 - Trước khi fine-tune: kiểm tra ảnh cắt/nhãn; gom cùng người viết vào cùng nhóm; tách nhóm thành train/validation/test; so CER/WER, tỷ lệ đọc đúng A–D và mã phách trên tập kiểm thử không dùng để học. Nếu không có mã nhóm nhất quán, cần rà soát nhóm người viết thủ công để tránh rò rỉ giữa các tập. Tập nhỏ có thể có split rỗng; không dùng để kết luận chất lượng.
 - Chỉ triển khai weights mới khi kiểm thử đạt và giữ weights cũ để quay lại. Không có cam kết cứ lưu thêm ảnh là nhận diện tốt lên. Dữ liệu được lưu riêng trên VPS, không tự gửi tới nhà cung cấp mô hình.
+
+## Nếu Chụp trước vẫn báo "Cần đủ 20 đáp án A–D"
+
+Đây là dấu hiệu giao diện mới nhưng Node đang chạy mã cũ, hoặc chưa cập nhật đủ tệp. Tải JS/CSS mới không tự làm Node nạp lại các module đã require. Sau khi git merge và npm ci thành công, phải restart đúng tiến trình phục vụ tên miền. Với cấu hình dịch vụ đang có trong workflow của repository, tên dịch vụ là `vpanel-node@1-2.service`; dùng tài khoản có quyền restart dịch vụ hoặc thao tác đúng ứng dụng trong vPanel. Không chạy thêm một Node mới trên cổng đang dùng.
+
+Bản `scan-20261103-3` bổ sung GET `/api/scan/version` không yêu cầu đăng nhập, chỉ trả revision và photoFirst, không trả dữ liệu bài chấm. Sau restart, kiểm tra:
+
+```bash
+curl -fsS https://fptbnmonitor.online/api/scan/version
+```
+
+Cần thấy `revision: scan-20261103-3` và `photoFirst: true`. Nếu 401/404 hoặc HTML thì tiến trình/proxy đang chạy bản cũ hoặc sai ứng dụng; không cố nhập 20 đáp án để vượt lỗi. Nếu revision đúng nhưng iPhone còn giao diện cũ, đóng tab /scan và mở lại. Tệp JS/CSS có version và API dùng no-store để tránh lẫn bản.
+
+Nút chụp dùng endpoint riêng `/api/scan/capture-exams`. Giao diện kiểm tra capability trước khi tạo đợt, hiển thị cảnh báo cố định nếu máy chủ chưa xác nhận hỗ trợ. OCR chưa sẵn sàng là tình trạng độc lập: không cản tạo đợt/chụp/lưu ảnh, nhưng chưa thể nhận diện chữ tự động.
