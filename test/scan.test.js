@@ -491,7 +491,7 @@ test("deployment revision can be checked without login and reports actual photo-
   const { api, base } = await server(t);
   const publicVersion = await api("/version", null, "GET", "");
   assert.equal(publicVersion.status, 200);
-  assert.equal(publicVersion.data.revision, "scan-20261103-5");
+  assert.equal(publicVersion.data.revision, "scan-20261103-6");
   assert.equal(publicVersion.data.photoFirst, true);
   assert.deepEqual(Object.keys(publicVersion.data).sort(), [
     "photoFirst",

@@ -57,7 +57,7 @@
     let total=0, pending=0, correct=0;
     result.quiz.forEach((r,i)=> {
       if(r.uncertain || !r.answer) pending++;
-      else if(r.answer===key[i]) {total+=point;correct++;}
+      if(r.answer===key[i]) {total+=point;correct++;}
     });
     result.essays.forEach(e=>e.scores.forEach(x=> {if(x.score===null) pending++;else total+=x.score;}));
     return {total:round(total),pending,correct};

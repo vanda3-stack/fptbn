@@ -1,34 +1,40 @@
-# Demo chấm thử — scan-demo-20261103-1
+# Demo VietOCR — scan-demo-vietocr-20261103-2
 
-`/scan` hiện mở bản demo gọn, không đăng nhập và không gọi API dữ liệu chấm chính thức. Bản quản lý cũ vẫn ở `/scan-full.html`; API và dữ liệu khối/phòng không thay đổi.
+`/scan` mở bản demo dùng **VietOCR/Python trên VPS**, cùng bộ nhận diện đã có của hệ thống. Không nhập key AI và không gọi Gemini hoặc dịch vụ AI bên ngoài. Đăng nhập bằng tài khoản giáo viên hiện có để truy cập dịch vụ nhận diện riêng. Trang quản lý khối/phòng vẫn ở `/scan-full.html`.
 
-1. Dán Gemini API key, bấm **Kiểm tra kết nối**, chọn mô hình từ danh sách thực tế của key. Đọc danh sách thành công chưa khẳng định còn quota tạo nội dung. Không cung cấp key chung trong mã, không lưu key vào storage hoặc VPS.
-2. Dán đáp án TN (1–100 câu) và điểm/câu. Google Docs mở để sao chép phần đáp án; demo chưa tự tải tài liệu cần quyền Google. Tùy chọn thêm rubric TL 1/2, mỗi dòng `Nội dung ý | 0,5`. Tổng thang điểm không vượt 10.
-3. Nhập mã phách, chụp/tải 1 hoặc 2 mặt. Camera trực tiếp yêu cầu HTTPS và quyền camera; trên điện thoại có nút chụp/tải dùng camera hệ điều hành. Ảnh co cạnh dài tối đa 2400 px.
-4. **Chấm thử bằng AI** gửi ảnh và rubric trực tiếp từ trình duyệt tới Google Gemini. Không gửi đáp án chuẩn TN cho AI; JavaScript đối chiếu TN độc lập. Nội dung ảnh không được xem là chỉ dẫn cho mô hình. Chưa rõ, thiếu/trùng câu hoặc điểm TL không hợp lệ giữ pending.
-5. Kết quả dừng để GV so ảnh, sửa đáp án/điểm, xác nhận các mục chưa rõ. Chỉ lưu sau khi GV tích đã đối chiếu và không còn pending. Bấm **Quét bài tiếp theo** mới chuyển bài. Nút nhập thủ công ghi rõ chỉ thử tính điểm, không kiểm chứng OCR.
-6. Điểm và ảnh chỉ trong bộ nhớ tab, đóng/tải lại sẽ mất. Tải CSV hai cột trước khi đóng; chưa ghi Google Sheets. CSV giữ mã dạng chuỗi trong nội dung; khi nhập Excel/Sheets chọn cột mã là Text để giữ số 0 đầu.
+## Luồng thử
 
-Không cần cài VietOCR cho demo. Cần key Gemini có quyền và quota phù hợp; lỗi key, quota, mô hình, timeout đều báo lỗi thật, không tạo điểm giả. Chưa kiểm chứng độ chính xác chữ viết tay khi chưa có bài mẫu và key của người dùng.
+1. Đăng nhập GV; bấm **Kiểm tra bộ VietOCR**. Trạng thái được đọc từ `/api/scan/status`, không giả lập thành công. Chưa cấu hình hoặc worker chưa sẵn sàng sẽ báo đúng lỗi.
+2. Đọc link đáp án Google Docs bằng kết nối Google đã cấu hình trên VPS, hoặc dán đáp án. Bản VietOCR hiện hỗ trợ đúng **20 câu TN** và tối đa **2 câu TL**. Nhập điểm mỗi câu, tùy chọn rubric từng ý TL `Nội dung | 0,5`; tổng không quá 10. TN-only có thể chấm riêng phần điểm TN.
+3. Nhập mã phách, chụp/tải **1 hoặc 2 mặt**. Giảm cạnh dài tối đa 2400 px. Camera cần HTTPS và quyền camera; có nút chụp/tải cho điện thoại.
+4. **Chấm thử bằng VietOCR** gửi ảnh qua `/api/scan/trial/recognize` có xác thực GV. Node gọi worker bằng `SCAN_OCR_URL`/`SCAN_OCR_TOKEN` cấu hình trên máy chủ. Worker chỉ nhận ảnh, không nhận đáp án, rubric hay mã phách do người dùng nhập. Bài được xử lý tạm trong bộ nhớ, không ghi ảnh/metadata vào kho phòng chấm và không ghi Google Sheets.
+5. Bộ đối chiếu tính điểm TN từ đáp án đọc được. Điểm ban đầu là **tạm tính**; tất cả đề xuất VietOCR cần xác nhận/sửa theo ảnh. Thiếu/mờ/trùng mâu thuẫn không tự gán 0. VietOCR chỉ đọc chữ; TL hiển thị bản đọc để GV chấm từng ý. Chỉ bản đọc khớp đầy đủ nội dung chuẩn mới có điểm đề xuất từng ý, vẫn cần GV kiểm tra.
+6. Kết quả dừng lại để đối chiếu; chỉ lưu khi không còn mục chưa rõ và GV xác nhận đã kiểm tra. Bấm **Quét bài tiếp theo** mới chuyển bài. Nhập thủ công được ghi rõ chỉ thử tính điểm, không kiểm chứng OCR.
+7. Điểm chỉ giữ trong tab, tải CSV hai cột trước khi đóng/tải lại. Khi nhập Excel/Sheets, chọn cột mã là Text để giữ số 0 đầu.
 
-## Đưa demo lên VPS
+Demo không tự cài, tải weights hay khởi chạy Python trên VPS. Các bước cấu hình VietOCR có ở phần bên dưới. Trạng thái thực tế cần kiểm tra sau khi đăng nhập; chưa có bằng chứng worker/model đã sẵn sàng hay đủ chính xác với chữ viết HS.
 
-Chỉ cập nhật các file tĩnh, không đổi server/dependencies. Chạy lần lượt và dừng nếu có lỗi:
+## Cập nhật VPS
+
+Lần này có thêm endpoint Node, **phải khởi động lại NodeJS**, khác bản demo trước chỉ đổi giao diện. Chạy lần lượt và dừng nếu có lỗi:
 
 ```bash
 cd /home/u_fptbnmonitoronline_fa061ae2/fptbnmonitor.online
 git fetch origin feature/paper-scan
 git merge --ff-only origin/feature/paper-scan
+node --check server.js
+sudo /usr/bin/systemctl restart vpanel-node@1-2.service
 ```
 
-Sau đó tải lại `/scan`. Footer phải có `scan-demo-20261103-1`. API `/api/scan/version` vẫn có revision của bộ chấm chính thức vì API không thay đổi. Không cần restart Node cho riêng thay đổi file tĩnh này. Nếu merge báo diverged hoặc có thay đổi cục bộ, không reset hard; xử lý trạng thái Git trước.
+Hoặc restart đúng ứng dụng bằng vPanel. Không thêm dependencies Node; không cần npm ci cho riêng bản sửa này. Không reset hard nếu Git báo diverged hoặc có thay đổi cục bộ.
 
-## Kiểm chứng
+`/api/scan/version` phải trả `scan-20261103-6`. Footer trang phải hiện `scan-demo-vietocr-20261103-2`. Sau đó đăng nhập, kiểm tra bộ VietOCR và chấm một bài thật để đo nhận diện.
 
-- `node --check public/scan/demo.js` và `demo-core.js`.
-- `node --test test/scan.test.js test/scan-demo.test.js`: 29/29 đạt.
-- Toàn repo: 207/212 đạt; 5 lỗi cũng tái hiện trên commit gốc `4bbfeaf` trong các test luồng điền từ/báo cáo/chuyển giọng nói, ngoài phạm vi scan.
-- Trình duyệt từ xa không truy cập được máy preview nội bộ (connection refused). Chưa kiểm tra UI/camera/API Gemini thực tế. Cần chấm bài thật trên thiết bị sau triển khai.
+## Kiểm chứng bản sửa
+
+- 34/34 kiểm thử Node liên quan scan/demo/trial đạt; gồm xác thực GV, xử lý một/hai mặt, không chuyển đáp án sang worker, không lưu thử vào kho phòng chấm, lỗi worker và thử lại, điểm chưa rõ.
+- 2/2 kiểm thử Python protocol đạt với model giả; không thay thế kiểm chứng VietOCR trên bài viết tay thật.
+- Chưa kiểm tra UI/camera hoặc chạy inference model thực tế trên VPS trong phiên này. Trình duyệt từ xa không truy cập được preview nội bộ ở phiên trước.
 
 ---
 

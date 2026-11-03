@@ -31,3 +31,8 @@ test('CSV retains leading zero in content and neutralizes spreadsheet formula pr
   const s=C.csv([{code:'001',score:9.5},{code:'-CMD',score:0}]);
   assert.match(s,/"001","9.5"/);assert.match(s,/"'-CMD","0"/);
 });
+
+test('recognized matches contribute only to the provisional total while pending remains',()=>{
+ const r=C.normalize({quiz:[{number:1,answer:'A',uncertain:true}]},1,[[],[]]);
+ assert.deepEqual(C.score(['A'],.25,r),{total:.25,pending:1,correct:1});
+});
