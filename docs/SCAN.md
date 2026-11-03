@@ -1,3 +1,37 @@
+# Demo chấm thử — scan-demo-20261103-1
+
+`/scan` hiện mở bản demo gọn, không đăng nhập và không gọi API dữ liệu chấm chính thức. Bản quản lý cũ vẫn ở `/scan-full.html`; API và dữ liệu khối/phòng không thay đổi.
+
+1. Dán Gemini API key, bấm **Kiểm tra kết nối**, chọn mô hình từ danh sách thực tế của key. Đọc danh sách thành công chưa khẳng định còn quota tạo nội dung. Không cung cấp key chung trong mã, không lưu key vào storage hoặc VPS.
+2. Dán đáp án TN (1–100 câu) và điểm/câu. Google Docs mở để sao chép phần đáp án; demo chưa tự tải tài liệu cần quyền Google. Tùy chọn thêm rubric TL 1/2, mỗi dòng `Nội dung ý | 0,5`. Tổng thang điểm không vượt 10.
+3. Nhập mã phách, chụp/tải 1 hoặc 2 mặt. Camera trực tiếp yêu cầu HTTPS và quyền camera; trên điện thoại có nút chụp/tải dùng camera hệ điều hành. Ảnh co cạnh dài tối đa 2400 px.
+4. **Chấm thử bằng AI** gửi ảnh và rubric trực tiếp từ trình duyệt tới Google Gemini. Không gửi đáp án chuẩn TN cho AI; JavaScript đối chiếu TN độc lập. Nội dung ảnh không được xem là chỉ dẫn cho mô hình. Chưa rõ, thiếu/trùng câu hoặc điểm TL không hợp lệ giữ pending.
+5. Kết quả dừng để GV so ảnh, sửa đáp án/điểm, xác nhận các mục chưa rõ. Chỉ lưu sau khi GV tích đã đối chiếu và không còn pending. Bấm **Quét bài tiếp theo** mới chuyển bài. Nút nhập thủ công ghi rõ chỉ thử tính điểm, không kiểm chứng OCR.
+6. Điểm và ảnh chỉ trong bộ nhớ tab, đóng/tải lại sẽ mất. Tải CSV hai cột trước khi đóng; chưa ghi Google Sheets. CSV giữ mã dạng chuỗi trong nội dung; khi nhập Excel/Sheets chọn cột mã là Text để giữ số 0 đầu.
+
+Không cần cài VietOCR cho demo. Cần key Gemini có quyền và quota phù hợp; lỗi key, quota, mô hình, timeout đều báo lỗi thật, không tạo điểm giả. Chưa kiểm chứng độ chính xác chữ viết tay khi chưa có bài mẫu và key của người dùng.
+
+## Đưa demo lên VPS
+
+Chỉ cập nhật các file tĩnh, không đổi server/dependencies. Chạy lần lượt và dừng nếu có lỗi:
+
+```bash
+cd /home/u_fptbnmonitoronline_fa061ae2/fptbnmonitor.online
+git fetch origin feature/paper-scan
+git merge --ff-only origin/feature/paper-scan
+```
+
+Sau đó tải lại `/scan`. Footer phải có `scan-demo-20261103-1`. API `/api/scan/version` vẫn có revision của bộ chấm chính thức vì API không thay đổi. Không cần restart Node cho riêng thay đổi file tĩnh này. Nếu merge báo diverged hoặc có thay đổi cục bộ, không reset hard; xử lý trạng thái Git trước.
+
+## Kiểm chứng
+
+- `node --check public/scan/demo.js` và `demo-core.js`.
+- `node --test test/scan.test.js test/scan-demo.test.js`: 29/29 đạt.
+- Toàn repo: 207/212 đạt; 5 lỗi cũng tái hiện trên commit gốc `4bbfeaf` trong các test luồng điền từ/báo cáo/chuyển giọng nói, ngoài phạm vi scan.
+- Trình duyệt từ xa không truy cập được máy preview nội bộ (connection refused). Chưa kiểm tra UI/camera/API Gemini thực tế. Cần chấm bài thật trên thiết bị sau triển khai.
+
+---
+
 # Chấm bài giấy — scan-20261103-5
 
 ## Luồng chính

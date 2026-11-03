@@ -1,25 +1,47 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#123b38" />
-    <title>Chấm bài giấy · FPTBN Monitor</title>
-    <link rel="stylesheet" href="/scan/style.css?v=20261103-5" />
-  </head>
-  <body>
-    <header>
-      <a href="/" class="brand"
-        ><span class="brand-icon">F</span
-        ><span>FPTBN <b>MONITOR</b><small>Không gian chấm bài</small></span></a
-      >
-      <div class="user">
-        <span id="identity"></span
-        ><button id="logout" class="ghost" hidden>Đăng xuất</button>
-      </div>
-    </header>
-    <main id="app"></main>
-    <div id="toast" role="status" aria-live="polite" hidden></div>
-    <script src="/scan/app.js?v=20261103-5" defer></script>
-  </body>
-</html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123b38">
+<title>Chấm thử bài giấy · FPTBN Monitor</title>
+<link rel="stylesheet" href="/scan/style.css?v=20261103-demo1">
+<link rel="stylesheet" href="/scan/demo.css?v=20261103-demo1">
+</head>
+<body>
+<header><a class="brand" href="/"><span class="brand-icon">F</span><span>FPTBN <b>MONITOR</b><small>Chấm bài giấy</small></span></a><span class="badge">BẢN DEMO</span></header>
+<main>
+<div class="hero"><div><span class="eyebrow">THỬ TRÊN BÀI THẬT</span><h1>Quét một bài. Kiểm tra kết quả.</h1><p class="muted">Nhập đáp án → Chụp 1–2 mặt → Chấm thử → Đối chiếu.</p></div></div>
+<p class="notice">Bản thử không cần đăng nhập. Bài và điểm chỉ giữ trong tab này; tải CSV trước khi đóng hoặc tải lại trang. Chưa ghi Google Sheets.</p>
+<div class="demo-grid">
+<section class="card"><h2>1. Đáp án & kết nối AI</h2><fieldset id="settings">
+<label>Gemini API key<input id="apiKey" type="password" autocomplete="off" placeholder="Dán API key của thầy tại đây"></label>
+<p class="help">Key chỉ giữ trong tab, không lưu lên máy chủ. Khi bấm chấm, ảnh bài và thang điểm được gửi trực tiếp đến Google Gemini.</p>
+<div class="toolbar"><button id="connect" type="button">Kiểm tra kết nối</button><label class="model-label">Mô hình<select id="model"><option value="">Kiểm tra kết nối để chọn</option></select></label></div>
+<p id="connection" role="status" class="help"></p>
+<details><summary>Đáp án từ Google Docs</summary><label>Link tài liệu<input id="docLink" type="url" placeholder="https://docs.google.com/document/d/..."></label><button id="openDoc" type="button">Mở đáp án</button><p class="help">Sao chép phần đáp án trong tài liệu và dán bên dưới để chấm thử. Chỉ nhập đáp án của đúng mã đề.</p></details>
+<label>Đáp án trắc nghiệm<textarea id="answerKey" rows="3" placeholder="1.A 2.B 3.C 4.D ... hoặc A B C D ..."></textarea></label>
+<label>Điểm mỗi câu trắc nghiệm<input id="point" type="number" min="0.01" max="10" step="0.01" value="0.25" inputmode="decimal"></label>
+<details><summary>Thêm thang điểm tự luận (tùy chọn)</summary><p class="help">Mỗi dòng: Nội dung ý cần đạt | điểm. Chỉ nhập những câu có trong bài.</p>
+<label>Tự luận câu 1<textarea id="rubric1" rows="3" placeholder="Nêu đúng khái niệm ... | 0,5"></textarea></label>
+<label>Tự luận câu 2<textarea id="rubric2" rows="3" placeholder="Giải thích được ... | 0,5"></textarea></label></details>
+<button id="prepare" type="button">Xác nhận đáp án</button><p id="keyStatus" class="help" role="status">Chưa có đáp án.</p>
+</fieldset></section>
+<section class="card"><h2>2. Quét bài thi</h2><label>Mã phách<input id="code" maxlength="40" placeholder="Ví dụ: 001" autocomplete="off"></label>
+<div class="toolbar"><button id="cameraOn" type="button">Bật camera</button><button id="cameraOff" type="button" hidden>Tắt camera</button></div>
+<div id="cameraBox" hidden><video id="video" autoplay playsinline muted></video><div class="toolbar"><button id="snap1">Chụp mặt 1</button><button id="snap2">Chụp mặt 2</button></div></div>
+<div class="photo-grid">
+<div><label class="button file-button">Chụp / tải mặt 1<input id="file1" type="file" accept="image/*" capture="environment"></label><img id="preview1" alt="Ảnh mặt 1" hidden><button id="remove1" type="button" hidden>Xóa mặt 1</button></div>
+<div><label class="button file-button">Thêm mặt 2<input id="file2" type="file" accept="image/*" capture="environment"></label><img id="preview2" alt="Ảnh mặt 2" hidden><button id="remove2" type="button" hidden>Xóa mặt 2</button></div>
+</div>
+<p class="help">Đặt giấy phẳng, chụp rõ toàn bộ phần bài làm. Mặt 2 chỉ thêm khi cần. Ảnh đứng yên sau khi chụp để thầy kiểm tra.</p>
+<div class="toolbar"><button id="grade" class="primary" type="button">Chấm thử bằng AI</button><button id="manual" type="button">Nhập đáp án HS để thử tính điểm</button></div>
+<p id="progress" role="status" aria-live="polite"></p>
+</section>
+</div>
+<section id="result" class="card" hidden><h2>3. Đối chiếu kết quả</h2><p id="resultMode" class="help"></p><div id="score" class="demo-score" aria-live="polite"></div><p class="help">Đối chiếu với ảnh phía trên. Sửa trực tiếp đáp án đọc sai; ô vàng cần thầy xác nhận. Điểm tự luận là gợi ý và cần được kiểm tra.</p><div class="table-wrap"><table><thead><tr><th>Câu</th><th>Đáp án chuẩn</th><th>AI đọc / HS trả lời</th><th>Đối chiếu</th></tr></thead><tbody id="quizRows"></tbody></table></div><div id="essayRows"></div>
+<label class="confirm"><input id="verified" type="checkbox"> Tôi đã đối chiếu bài làm và kiểm tra điểm.</label>
+<div class="toolbar"><button id="save" class="primary">Lưu điểm thử</button><button id="next">Quét bài tiếp theo</button></div></section>
+<section class="card"><div class="hero"><div><h2>Điểm chấm thử <span id="savedCount">(0)</span></h2><p class="help">Giữ mã phách dạng văn bản khi mở CSV để không mất số 0 đầu.</p></div><button id="export" disabled>Tải bảng điểm CSV</button></div><div id="savedRows" class="table-wrap"><p class="muted">Chưa lưu bài nào.</p></div></section>
+<p class="help">Bản quản lý khối/phòng hiện có: <a href="/scan-full.html">Mở trang quản lý</a> · scan-demo-20261103-1</p>
+</main><div id="toast" role="alert" hidden></div>
+<script src="/scan/demo-core.js?v=20261103-demo1" defer></script><script src="/scan/demo.js?v=20261103-demo1" defer></script>
+</body></html>
