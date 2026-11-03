@@ -120,3 +120,17 @@ curl -fsS https://fptbnmonitor.online/api/scan/version
 Cần thấy `revision: scan-20261103-3` và `photoFirst: true`. Nếu 401/404 hoặc HTML thì tiến trình/proxy đang chạy bản cũ hoặc sai ứng dụng; không cố nhập 20 đáp án để vượt lỗi. Nếu revision đúng nhưng iPhone còn giao diện cũ, đóng tab /scan và mở lại. Tệp JS/CSS có version và API dùng no-store để tránh lẫn bản.
 
 Nút chụp dùng endpoint riêng `/api/scan/capture-exams`. Giao diện kiểm tra capability trước khi tạo đợt, hiển thị cảnh báo cố định nếu máy chủ chưa xác nhận hỗ trợ. OCR chưa sẵn sàng là tình trạng độc lập: không cản tạo đợt/chụp/lưu ảnh, nhưng chưa thể nhận diện chữ tự động.
+
+## Bố cục theo phòng thi (scan-20261103-4)
+
+Mỗi phòng/bộ chấm là một bản ghi độc lập: nhập **Phòng thi**, **Bài thi/mã đề**, **link đáp án Docs**, **link Sheets nhận điểm**. Nếu một phòng dùng nhiều mã đề, tạo một bộ chấm riêng cho từng mã đề và ghi rõ trong tên bài thi. Chọn phòng ở đầu trang trước khi chụp/chấm. Bộ chấm cũ không có roomCode vẫn giữ dữ liệu; tên đợt cũ được dùng để hiển thị.
+
+1. **Phòng & đáp án:** đọc link Google Docs, kiểm tra đáp án trong mục thu gọn rồi lưu phòng. Có nút lưu phòng để chụp trước khi đọc được đáp án. Phòng và hai link được giữ lại; bổ sung đáp án sau.
+2. **Chụp 2 ảnh/bài:** mã phách + ảnh mặt 1 + ảnh mặt 2, lưu rồi sang HS tiếp theo. Bài được giữ trong phòng đang chọn. Mã trùng trong cùng phòng bị chặn; cùng mã ở phòng khác được phép vì khóa có ID phòng/bộ chấm.
+3. **Chấm & Google Sheets:** đối chiếu từng câu với đáp án, GV duyệt phần tự luận, chốt điểm rồi bấm **Ghi điểm phòng lên Sheets** để ghi theo lô các bài đã chốt. Chỉ ghi phòng đang chọn.
+
+Nguồn ví dụ được kiểm tra là Google Docs `17xH-yDghEmgrb3S881JW8cauT_cl6et-Y5xbuqv10us` (ĐÁP ÁN ĐỀ 2, Tin học 8). Parser hỗ trợ bảng 1–10 / A–D, 11–20 / A–D sau khi Docs xuất thành các dòng; bảng tự luận Nội dung / Điểm; Câu 1 và Câu 2; vẫn giữ hỗ trợ nhập dạng `1. A`, `TL1`, `0,5 | ý`. Với tài liệu mẫu, kết quả mong đợi là đủ 20 đáp án, 0,25 điểm/TN, hai TL mỗi câu 5 ý × 0,5. Không nhúng đáp án mẫu làm dữ liệu dự phòng: tài liệu vẫn phải đọc thực sự từ link hoặc được dán vào. Quyền Google Drive của ChatGPT không tự cấp quyền đọc cho VPS.
+
+Google Sheets thêm cột **K: Phòng thi** vào tab FPTBN_SCAN. Header cũ 10 cột được nâng lên 11 cột, giữ nguyên vị trí/giá trị các cột A–J và điểm của các phòng khác. Khóa vẫn là ID bộ chấm + mã phách, nên đồng bộ lại không gộp các phòng có cùng mã phách. Link Sheets chưa điền/cấp quyền thì lưu ảnh và điểm tại máy chủ; bấm ghi Sheets sẽ báo lý do, không giả báo đồng bộ thành công.
+
+Vùng đọc OCR và bảng chỉnh đáp án được đưa vào mục thu gọn để giao diện điện thoại ưu tiên phòng, link và chụp bài. Điều này không tự cài OCR hoặc thay đổi độ chính xác của mô hình; dịch vụ OCR và quyền Google vẫn cần được cấu hình trên VPS. Sau cập nhật, restart Node và kiểm tra `/api/scan/version` trả revision `scan-20261103-4`.

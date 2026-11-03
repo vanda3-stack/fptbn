@@ -301,7 +301,7 @@ test("Sheets sync batches 1000 reviewed rows, preserves leading zero and clears 
   assert(writes.every((w) => w.valueInputOption === "RAW"));
   const data = writes.flatMap((w) => w.data);
   const reopened = data.find((d) => d.values[0][1] === "00125");
-  assert.equal(reopened.range, "FPTBN_SCAN!A2:J2");
+  assert.equal(reopened.range, "FPTBN_SCAN!A2:K2");
   assert.equal(reopened.values[0][5], "");
   assert.equal(reopened.values[0][8], "Chờ duyệt lại");
   assert(data.some((d) => d.values[0][1] === "00001"));
@@ -491,7 +491,7 @@ test("deployment revision can be checked without login and reports actual photo-
   const { api, base } = await server(t);
   const publicVersion = await api("/version", null, "GET", "");
   assert.equal(publicVersion.status, 200);
-  assert.equal(publicVersion.data.revision, "scan-20261103-3");
+  assert.equal(publicVersion.data.revision, "scan-20261103-4");
   assert.equal(publicVersion.data.photoFirst, true);
   assert.deepEqual(Object.keys(publicVersion.data).sort(), [
     "photoFirst",
@@ -519,4 +519,188 @@ test("dedicated photo-first endpoint does not enter answer-key validation, and s
     (await api("/exams", { title: "Đề chấm cần đáp án" })).status,
     400,
   );
+});
+
+test("reads the provided Tin 8 answer-document table layout: 20 keys and five half-point ideas per essay", () => {
+  const expected = [
+    "B",
+    "B",
+    "D",
+    "B",
+    "C",
+    "B",
+    "A",
+    "A",
+    "B",
+    "D",
+    "D",
+    "B",
+    "A",
+    "B",
+    "C",
+    "B",
+    "C",
+    "D",
+    "C",
+    "D",
+  ];
+  const text =
+    "ĐÁP ÁN VÀ THANG ĐIỂM\r\nA. PHẦN TRẮC NGHIỆM (5,0 điểm)\r\nMỗi câu trả lời đúng được 0,25 điểm.\r\n" +
+    Array.from({ length: 10 }, (_, i) => i + 1).join("\r\n\t") +
+    "\r\n\t" +
+    expected.slice(0, 10).join("\r\n\t") +
+    "\r\n\t" +
+    Array.from({ length: 10 }, (_, i) => i + 11).join("\r\n\t") +
+    "\r\n\t" +
+    expected.slice(10).join("\r\n\t") +
+    "\r\nB. PHẦN TỰ LUẬN (5,0 điểm)\r\nCâu 1 (2,5 điểm): Em hãy nêu bốn cách đánh giá độ tin cậy và một ví dụ.\r\nNội dung\r\n\tĐiểm\r\nKiểm tra nguồn và uy tín nơi cung cấp.\r\n\t0,5\r\nPhân biệt ý kiến với sự kiện.\r\n\t0,5\r\nKiểm tra chứng cứ của kết luận.\r\n\t0,5\r\nXem thời điểm công bố, cập nhật.\r\n\t0,5\r\nVí dụ: Kiểm tra tin nghỉ học qua thông báo mới của trường.\r\n\t0,5\r\nCâu 2 (2,5 điểm): Em hãy nêu năm lưu ý khi tạo sản phẩm số.\r\nNội dung\r\n\tĐiểm\r\nDùng thông tin đã kiểm chứng.\r\n\t0,5\r\nKhông nhận sản phẩm của người khác là của mình.\r\n\t0,5\r\nƯu tiên tư liệu tự tạo; xin phép hoặc mua quyền sử dụng khi cần.\r\n\t0,5\r\nGhi nguồn và tên tác giả.\r\n\t0,5\r\nDùng từ ngữ, hình ảnh phù hợp; tôn trọng riêng tư.\r\n\t0,5\r\nLưu ý: Chấp nhận cách diễn đạt khác đúng.";
+  const d = Core.parseDoc(text);
+  assert.deepEqual(d.key, expected);
+  assert.equal(d.quizPoint, 0.25);
+  assert.equal(d.complete, true);
+  assert.deepEqual(
+    d.essays.map((e) => e.ideas.length),
+    [5, 5],
+  );
+  assert(d.essays.flatMap((e) => e.ideas).every((x) => x.points === 0.5));
+  assert.equal(
+    Core.validateExam({
+      ...exam(),
+      key: d.key,
+      essays: d.essays,
+      quizPoint: d.quizPoint,
+    }).maximum,
+    10,
+  );
+});
+test("different rooms isolate the same anonymous code and export room with score", async (t) => {
+  const { api, upload } = await server(t);
+  const rooms = [];
+  for (const roomCode of ["Phòng 01", "Phòng 02"]) {
+    const {
+      data: { exam: e },
+    } = await api("/exams", { ...exam(), roomCode });
+    rooms.push(e);
+    const {
+      data: { paper: p },
+    } = await upload(e.id, "00125");
+    const r = await api(
+      "/exams/" + e.id + "/papers/" + p.id + "/review",
+      { ...review(), approve: true },
+      "PUT",
+    );
+    assert.equal(r.status, 200);
+    assert.equal(Core.sheetRow(e, r.data.paper)[10], roomCode);
+    assert.equal((await api("/exams/" + e.id + "/papers")).data.total, 1);
+  }
+  assert.notEqual(rooms[0].id, rooms[1].id);
+  const draft = await api("/capture-exams", {
+    title: "Tin 8",
+    roomCode: "Phòng 03",
+    docUrl:
+      "https://docs.google.com/document/d/17xH-yDghEmgrb3S881JW8cauT_cl6et-Y5xbuqv10us/edit?tab=t.0",
+    sheetUrl: "https://docs.google.com/spreadsheets/d/abcdefghijk/edit",
+  });
+  assert.equal(draft.data.exam.roomCode, "Phòng 03");
+  assert(draft.data.exam.docUrl.includes("17xH-y"));
+  assert(draft.data.exam.sheetUrl);
+});
+test("Sheets migration accepts the earlier ten-column header and appends room without moving old scores", async () => {
+  const calls = [],
+    old = Core.columns.slice(0, 10);
+  const fetcher = async (url, options) => {
+    calls.push({ url, options });
+    if (url.includes("?fields="))
+      return Response.json({
+        sheets: [
+          {
+            properties: {
+              title: "FPTBN_SCAN",
+              sheetId: 7,
+              gridProperties: { rowCount: 2000, columnCount: 10 },
+            },
+          },
+        ],
+      });
+    if (url.includes("/values/FPTBN_SCAN"))
+      return Response.json({
+        values: [
+          old,
+          ["other-room", "00125", 5, 2.5, 2.5, 10, "", "", "Đã chốt", "Old"],
+        ],
+      });
+    return Response.json({});
+  };
+  const e = {
+      ...exam(),
+      id: "new-room",
+      roomCode: "Phòng 02",
+      sheetUrl: "https://docs.google.com/spreadsheets/d/abcdefghijk/edit",
+    },
+    p = { status: "approved", review: Core.review(exam(), review(), true) };
+  await require("../lib/scan-google")
+    .createGoogle({}, fetcher, async () => "test")
+    .sync(e, [p]);
+  const writes = calls
+    .filter((c) => c.url.endsWith("/values:batchUpdate"))
+    .flatMap((c) => JSON.parse(c.options.body).data);
+  assert.equal(writes[0].range, "FPTBN_SCAN!A1:K1");
+  assert.equal(writes[1].range, "FPTBN_SCAN!A3:K3");
+  assert.equal(writes[1].values[0][10], "Phòng 02");
+  assert(
+    calls.some(
+      (c) =>
+        c.url.endsWith(":batchUpdate") &&
+        JSON.parse(c.options.body).requests[0].appendDimension?.dimension ===
+          "COLUMNS",
+    ),
+  );
+});
+
+test("room can configure OCR crop regions after taking photos, before any derived result", async (t) => {
+  const { api, upload } = await server(t);
+  const config = { ...exam(), roomCode: "Phòng 04" };
+  const {
+    data: { exam: e },
+  } = await api("/exams", config);
+  const {
+    data: { paper: p },
+  } = await upload(e.id);
+  const changed = {
+    ...config,
+    layout: { q1: { page: 0, x: 0.1, y: 0.1, w: 0.1, h: 0.1 } },
+  };
+  assert.equal((await api("/exams/" + e.id, changed, "PUT")).status, 200);
+  await api(
+    "/exams/" + e.id + "/papers/" + p.id + "/review",
+    { ...review(), approve: true },
+    "PUT",
+  );
+  assert.equal(
+    (
+      await api(
+        "/exams/" + e.id,
+        {
+          ...changed,
+          layout: { q1: { page: 0, x: 0.2, y: 0.1, w: 0.1, h: 0.1 } },
+        },
+        "PUT",
+      )
+    ).status,
+    409,
+  );
+});
+
+test("network error reading Docs is reported as a source connection problem, not a disk-permission error", async (t) => {
+  const { api } = await server(t, {
+    fetcher: async () => {
+      throw new TypeError("fetch failed");
+    },
+  });
+  const result = await api("/import-doc", {
+    url: "https://docs.google.com/document/d/17xH-yDghEmgrb3S881JW8cauT_cl6et-Y5xbuqv10us/edit?tab=t.0",
+  });
+  assert.equal(result.status, 502);
+  assert.match(result.data.message, /Google Docs/);
+  assert.doesNotMatch(result.data.message, /quyền ghi/);
 });
