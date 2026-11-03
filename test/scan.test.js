@@ -307,3 +307,182 @@ test("Sheets sync batches 1000 reviewed rows, preserves leading zero and clears 
   assert(data.some((d) => d.values[0][1] === "00001"));
   assert.equal(data.length, 1001);
 });
+
+test("phone-first capture draft saves two faces without OCR; key may be supplied later and is then locked", async (t) => {
+  const { api, upload, feature } = await server(t);
+  const {
+    data: { exam: e },
+  } = await api("/exams", { title: "Chụp trước", captureOnly: true });
+  assert.equal(e.captureOnly, true);
+  assert(e.key.every((a) => a === ""));
+  assert.equal(e.maximum, null);
+  const {
+    data: { paper: p },
+  } = await upload(e.id);
+  assert.equal(p.status, "review");
+  assert(feature.idle());
+  assert(!p.ocr);
+  const prefix = "/exams/" + e.id;
+  assert.equal(
+    (
+      await api(
+        prefix + "/papers/" + p.id + "/review",
+        { ...review(), approve: true },
+        "PUT",
+      )
+    ).status,
+    400,
+  );
+  assert.equal((await api(prefix + "/recognize", {})).status, 400);
+  assert.equal((await api(prefix, exam(), "PUT")).data.exam.captureOnly, false);
+  assert.equal(
+    (await api(prefix, { ...exam(), key: Array(20).fill("B") }, "PUT")).status,
+    409,
+  );
+  assert.equal(
+    (
+      await api(
+        prefix + "/papers/" + p.id + "/review",
+        { ...review(), approve: true },
+        "PUT",
+      )
+    ).status,
+    200,
+  );
+});
+
+async function unzip(buffer) {
+  const yauzl = require("yauzl");
+  return new Promise((resolve, reject) =>
+    yauzl.fromBuffer(buffer, { lazyEntries: true }, (error, zip) => {
+      if (error) return reject(error);
+      const files = {};
+      zip.on("error", reject);
+      zip.on("end", () => resolve(files));
+      zip.on("entry", (entry) =>
+        zip.openReadStream(entry, (error, stream) => {
+          if (error) return reject(error);
+          const chunks = [];
+          stream.on("data", (b) => chunks.push(b));
+          stream.on("error", reject);
+          stream.on("end", () => {
+            files[entry.fileName] = Buffer.concat(chunks);
+            zip.readEntry();
+          });
+        }),
+      );
+      zip.readEntry();
+    }),
+  );
+}
+
+test("human-verified training stores only selected crops, keeps writers pseudonymous, exports no paper code, supports withdrawal and invalidation", async (t) => {
+  const { api, base, feature } = await server(t),
+    Training = require("../lib/scan-training");
+  const {
+    data: { exam: e },
+  } = await api("/exams", exam());
+  const jpeg = await require("sharp")({
+    create: { width: 400, height: 600, channels: 3, background: "#fff" },
+  })
+    .jpeg()
+    .toBuffer();
+  const form = new FormData();
+  form.append("code", "PHACH_SECRET_125");
+  form.append("writerTag", "W001");
+  for (let n = 0; n < 2; n++)
+    form.append("pages", new Blob([jpeg], { type: "image/jpeg" }), "page.jpg");
+  const {
+    data: { paper: p },
+  } = await api("/exams/" + e.id + "/papers", form);
+  const prefix = "/exams/" + e.id + "/papers/" + p.id;
+  const sample = {
+    field: "q1",
+    label: "A",
+    box: { page: 0, x: 0.1, y: 0.1, w: 0.1, h: 0.05 },
+    verified: true,
+  };
+  assert.equal((await api(prefix + "/training", sample)).status, 409);
+  assert.equal(
+    (
+      await api(
+        prefix + "/review",
+        { ...review(), code: "PHACH_SECRET_125", approve: true },
+        "PUT",
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await api(prefix + "/training", { ...sample, label: "B" })).status,
+    400,
+  );
+  assert.equal(
+    (await api(prefix + "/training", { ...sample, field: "code" })).status,
+    400,
+  );
+  assert.equal(
+    (await api(prefix + "/training", { ...sample, verified: false })).status,
+    400,
+  );
+  assert.equal(
+    (
+      await api(prefix + "/training", {
+        ...sample,
+        box: { page: 0, x: 0, y: 0, w: 1, h: 1 },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await api(prefix + "/training", sample, "POST", "two")).status,
+    404,
+  );
+  const {
+    data: { sample: s },
+  } = await api(prefix + "/training", sample);
+  assert(s.id);
+  assert.equal((await api(prefix + "/training", sample)).status, 409);
+  const response = await fetch(
+    base + "/api/scan/exams/" + e.id + "/training/export",
+    { headers: { Authorization: "Bearer one" } },
+  );
+  assert.equal(response.status, 200);
+  const files = await unzip(Buffer.from(await response.arrayBuffer()));
+  const manifest = files["manifest.jsonl"].toString();
+  assert(!manifest.includes("PHACH_SECRET"));
+  assert(!manifest.includes("W001"));
+  assert(!manifest.includes(p.id));
+  const row = JSON.parse(manifest.trim());
+  assert.equal(row.label, "A");
+  assert.equal(row.unit, "character");
+  const meta = await require("sharp")(files[row.image]).metadata();
+  assert.equal(meta.width, 40);
+  assert.equal(meta.height, 30);
+  assert.equal((await api("/exams/" + e.id + "/training")).data.total, 1);
+  assert.equal(
+    (await api(prefix + "/training/" + s.id, { included: false }, "PUT"))
+      .status,
+    200,
+  );
+  assert.equal((await api("/exams/" + e.id + "/training")).data.total, 0);
+  await api(prefix + "/training/" + s.id, { included: true }, "PUT");
+  await api(prefix + "/reopen", {});
+  assert.equal((await api("/exams/" + e.id + "/training")).data.total, 0);
+  const changed = {
+    ...review(),
+    code: "PHACH_SECRET_125",
+    answers: ["B", ...Array(19).fill("A")],
+    approve: true,
+  };
+  await api(prefix + "/review", changed, "PUT");
+  assert.equal((await api("/exams/" + e.id + "/training")).data.total, 0);
+  assert.equal(
+    Training.writerGroup(feature.store, 1, "W001", "other"),
+    p.writerGroup,
+  );
+  assert.notEqual(
+    Training.writerGroup(feature.store, 2, "W001", "other"),
+    p.writerGroup,
+  );
+});

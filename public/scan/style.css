@@ -509,3 +509,43 @@ dialog::backdrop {
     transition: background 0.15s;
   }
 }
+.training-dialog {
+  width: min(1150px, 96vw);
+  padding: 24px;
+}
+.training-dialog .canvas-wrap {
+  max-height: none;
+}
+.training-dialog canvas {
+  width: 100%;
+  height: auto;
+}
+.training-sample {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.training-sample span {
+  overflow-wrap: anywhere;
+}
+#captureState {
+  margin-top: 20px;
+}
+@media (max-width: 850px) {
+  .training-dialog {
+    padding: 14px;
+  }
+  .toolbar button {
+    min-height: 44px;
+  }
+  .drop input {
+    padding: 10px 0;
+  }
+  #saveNext {
+    width: 100%;
+  }
+}

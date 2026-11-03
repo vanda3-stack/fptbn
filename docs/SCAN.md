@@ -94,3 +94,15 @@ Sheet dùng tab riêng `FPTBN_SCAN`, không ghi các tab hiện có. Khóa dòng
 ## Kiểm thử trước khi chấm thật
 
 Thử tối thiểu 50 bài đa dạng chữ viết, đối chiếu từng đáp án và mã phách với ảnh. Đo riêng lỗi OCR, sai số điểm, thời gian/bài và số bài cần sửa. Không cam kết tốc độ hay chính xác cho 1.000 bài khi chưa có kết quả đo. Bộ test mã nguồn không thay cho kiểm chứng mô hình chữ viết tay.
+
+## Bổ sung: chụp bằng điện thoại trước, chấm và tích lũy dữ liệu sau
+
+- Nút **Chụp trước, nhập đáp án sau** tạo đợt chỉ lưu ảnh, không tạo đáp án giả và không chạy OCR. Điện thoại chụp hai mặt rồi bấm **Lưu & chụp HS tiếp theo**. Chỉ coi ảnh đã lưu khi máy chủ xác nhận thành công. Cần mạng khi lưu; chưa hỗ trợ chụp ngoại tuyến.
+- Sau đó đăng nhập cùng tài khoản giáo viên trên máy tính để mở lại đợt. Vào **Đáp án & vùng đọc** để nhập đáp án/rubric. Khi đã chuyển sang đợt chấm, đáp án bị khóa để không đổi điểm của bài cũ. Bấm **Bắt đầu nhận diện các bài đã lưu** để xếp hàng các bài mới; không tự nhận diện ngay khi chụp.
+- Mã phách liên kết hai mặt và bảng điểm. **Mã nhóm chữ viết** tùy chọn (ví dụ W001) dùng để nhóm cùng người viết qua các đợt; không suy đoán danh tính từ mã phách. Mã nhóm được biến đổi bằng HMAC với khóa riêng từng GV; chỉ mã nhóm biến đổi được lưu. Nếu không có mã nhóm, mỗi bài là một nhóm riêng. Tải ảnh hàng loạt không tự gán chung người viết.
+- Sau khi sửa/chốt bài, bấm **Lưu mẫu chữ viết**: kéo khung gọn quanh một ký tự TN hoặc đúng một dòng TL, nhập bản chép đúng và xác nhận. Không dùng đáp án đề làm nhãn chữ viết: nhãn TN phải đúng câu HS thực sự viết, kể cả khi HS chọn sai. Dòng TL phải có trong bản chép đã sửa/chốt. Không lấy vùng mã phách hoặc vùng thông tin cá nhân.
+- Lưu vùng cắt JPG cùng nhãn tại thư mục `training` riêng của bài; ảnh gốc vẫn được giữ. Lưu mẫu là lựa chọn riêng từng mẫu, không đưa mọi bài đã chụp vào tập huấn luyện.
+- Nút **Tải dữ liệu chữ viết** xuất ZIP gồm ảnh cắt, `manifest.jsonl`, `train.txt`, `validation.txt`, `test.txt` theo định dạng `image_path<TAB>transcript`. Tên ảnh là UUID, manifest không chứa mã phách, tên HS hay mã bài. Tối đa 20.000 mẫu trong một lần xuất. Chỉ mẫu của bài đã chốt và bản chép không thay đổi mới được xuất; có thể bỏ chọn/chọn lại mẫu. Nếu sửa bản chép, chọn lại vùng và tạo mẫu mới sau khi chốt. Ảnh trùng được gộp; nhãn mâu thuẫn phải kiểm tra trước khi xuất.
+- Đây là **chuẩn bị dữ liệu**, chưa có tác vụ tự huấn luyện. Mô hình nền phải đọc được nhiều nét chữ; không cần huấn luyện riêng cho từng HS ngay từ đầu. Ưu tiên thêm các kiểu chữ và lỗi OCR đa dạng đã được GV sửa.
+- Trước khi fine-tune: kiểm tra ảnh cắt/nhãn; gom cùng người viết vào cùng nhóm; tách nhóm thành train/validation/test; so CER/WER, tỷ lệ đọc đúng A–D và mã phách trên tập kiểm thử không dùng để học. Nếu không có mã nhóm nhất quán, cần rà soát nhóm người viết thủ công để tránh rò rỉ giữa các tập. Tập nhỏ có thể có split rỗng; không dùng để kết luận chất lượng.
+- Chỉ triển khai weights mới khi kiểm thử đạt và giữ weights cũ để quay lại. Không có cam kết cứ lưu thêm ảnh là nhận diện tốt lên. Dữ liệu được lưu riêng trên VPS, không tự gửi tới nhà cung cấp mô hình.

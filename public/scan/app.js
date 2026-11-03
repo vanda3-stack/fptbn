@@ -139,7 +139,7 @@
     $("#identity").textContent = name;
     $("#logout").hidden = false;
     $("#app").innerHTML =
-      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm nhanh. Duyệt chắc.</h1><p class="muted">20 câu trắc nghiệm · 2 câu tự luận · 2 mặt mỗi bài</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar"><label style="flex:1;margin:0">Đợt chấm<select id="examSelect"><option value="">Tạo đợt chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newExam">＋ Đợt mới</button></div><nav class="tabs" aria-label="Các bước chấm">${[
+      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm nhanh. Duyệt chắc.</h1><p class="muted">20 câu trắc nghiệm · 2 câu tự luận · 2 mặt mỗi bài</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar"><label style="flex:1;margin:0">Đợt chấm<select id="examSelect"><option value="">Tạo đợt chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newCapture" class="primary">Chụp trước, nhập đáp án sau</button><button id="newExam">＋ Đợt mới</button></div><nav class="tabs" aria-label="Các bước chấm">${[
         ["setup", "01 · Đáp án & vùng đọc"],
         ["capture", "02 · Chụp bài"],
         ["results", "03 · Duyệt & điểm"],
@@ -155,6 +155,17 @@
       pages = [null, null];
       tab = exam ? "capture" : "setup";
       render();
+    });
+    $("#newCapture").onclick = run(async () => {
+      if (busy) return;
+      const d = await api("/exams", {
+        title: "Đợt chụp " + new Date().toLocaleString("vi-VN"),
+        captureOnly: true,
+      });
+      exam = d.exam;
+      tab = "capture";
+      await init();
+      toast("Đã tạo đợt lưu ảnh. Nhập đáp án sau khi chụp xong.");
     });
     $("#newExam").onclick = () => {
       if (busy) return;
@@ -184,7 +195,7 @@
       samplePage = 0,
       selection = "code",
       drag = null;
-    const locked = !!exam?.count;
+    const locked = !!exam?.count && !exam?.captureOnly;
     $("#content").innerHTML =
       `<div class="grid wide"><section><div class="card"><span class="eyebrow">Nguồn đáp án</span><h2>Lấy từ Google Docs</h2><label>Đường dẫn tài liệu<input id="docUrl" type="url" placeholder="https://docs.google.com/document/d/…" value="${esc(exam?.docUrl || "")}"></label><button id="importDoc">Đọc tài liệu</button><details><summary>Hoặc dán đáp án / xem định dạng hỗ trợ</summary><p class="help">Trắc nghiệm: 1. A, 2. B… Tự luận: tiêu đề TL1 và TL2; mỗi ý một dòng: 0,5 | Nội dung. Định dạng khác có thể nhập tay trong bảng bên dưới.</p><textarea id="sourceText" placeholder="1. A\n2. B\n…\nTL1\n0,5 | Ý thứ nhất\nTL2\n0,5 | Ý thứ nhất"></textarea><button id="parseText">Trích xuất nội dung</button></details><p id="sourceNote" class="help">Đọc xong cần kiểm tra lại đáp án. Tài liệu riêng tư cần cấp quyền đọc cho tài khoản Google của máy chủ.</p></div><div class="card"><h2>Đáp án & thang điểm</h2>${locked ? '<p class="status">Đợt đã có bài: đáp án và vùng đọc đã khóa. Có thể cập nhật link Sheets; muốn đổi mã đề hãy tạo đợt mới.</p>' : ""}<label>Tên đợt / mã đề<input id="title" value="${esc(exam?.title || "")}" placeholder="Giữa kỳ I · Tin học 9 · Đề 01" ${locked ? "disabled" : ""}></label><label>Điểm mỗi câu trắc nghiệm<input id="quizPoint" type="number" min="0.01" max="0.5" step="0.01" value="${exam?.quizPoint ?? 0.25}" ${locked ? "disabled" : ""}></label><div class="key-grid">${Array.from({ length: 20 }, (_, i) => `<label>Câu ${i + 1}<select id="key${i}" ${locked ? "disabled" : ""}><option value="">—</option>${["A", "B", "C", "D"].map((a) => `<option ${exam?.key[i] === a ? "selected" : ""}>${a}</option>`).join("")}</select></label>`).join("")}</div>${[0, 1].map((i) => `<label style="margin-top:20px">Tự luận ${i + 1} · mỗi dòng: điểm | nội dung ý<textarea id="rubric${i}" ${locked ? "disabled" : ""} placeholder="0,5 | Nêu được khái niệm\n1 | Giải thích đúng">${esc((exam?.essays[i].ideas || []).map((x) => x.points + " | " + x.text).join("\n"))}</textarea></label>`).join("")}<p class="help">Tổng trắc nghiệm và tự luận phải bằng 10. Tự luận được GV cho điểm từng ý sau khi xem ảnh.</p></div></section><aside><div class="card"><h2>Vùng đọc hai mặt</h2><p class="help">Dùng ảnh mẫu cùng loại giấy. Chọn mặt, chọn trường rồi kéo khung trên ảnh. Giữ vị trí và hướng chụp giống ảnh mẫu; phiên bản này chưa tự căn phối cảnh.</p><label>Ảnh mẫu<input id="sampleFile" type="file" accept="image/jpeg,image/png" ${locked ? "disabled" : ""}></label><div class="row"><label>Mặt<select id="samplePage" ${locked ? "disabled" : ""}><option value="0">Mặt 1</option><option value="1">Mặt 2</option></select></label><label>Vùng<select id="region" ${locked ? "disabled" : ""}>${fields.map((k) => `<option value="${k}">${fieldLabel(k)}</option>`).join("")}</select></label></div><div class="canvas-wrap"><canvas id="template" width="600" height="400"></canvas></div><div class="toolbar"><span id="regionCount" class="badge"></span><button id="clearRegion" ${locked ? "disabled" : ""}>Xóa vùng đang chọn</button></div><p class="help">Tự luận mỗi câu hiện hỗ trợ một vùng trên một mặt. Nếu câu trải qua hai mặt, GV đọc ảnh để chấm thủ công.</p></div><div class="card"><h2>Bảng điểm</h2><label>Google Sheets (có thể thêm sau)<input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" value="${esc(exam?.sheetUrl || "")}"></label><p class="help">Ghi vào tab FPTBN_SCAN theo mã đợt + mã phách. Cần cấp quyền chỉnh sửa Sheet cho tài khoản máy chủ; không sửa các tab khác.</p><button class="primary" id="saveExam">${exam ? "Lưu cấu hình" : "Tạo đợt chấm"}</button><p class="help">Có thể tạo đợt chưa đặt vùng đọc và chấm thủ công trên ảnh. Cần đủ 23 vùng để chạy OCR.</p></div></aside></div>`;
     const canvas = $("#template"),
@@ -388,13 +399,18 @@
   function capture() {
     pages = [null, null];
     $("#content").innerHTML =
-      `<div class="grid wide"><section><div class="card"><span class="eyebrow">${esc(exam.title)}</span><h2>Chụp đủ hai mặt, giữ cùng mã phách</h2><label>Mã phách<input id="code" placeholder="Ví dụ: 00125" maxlength="40" autocomplete="off"></label><div class="grid">${[0, 1].map((i) => `<div class="drop"><strong>Mặt ${i + 1}</strong><img id="preview${i}" alt="Ảnh mặt ${i + 1}" hidden><label>Chọn ảnh / chụp bằng điện thoại<input id="page${i}" type="file" accept="image/jpeg,image/png" capture="environment"></label><button data-camera="${i}">Mở camera trực tiếp</button></div>`).join("")}</div><div id="camera" hidden><video id="video" playsinline autoplay muted></video><div class="toolbar"><button id="shutter" class="accent">Chụp mặt <span id="cameraSide"></span></button><button id="stopCamera">Đóng camera</button></div></div><label class="checkline" style="margin-top:20px"><input id="autoOcr" type="checkbox" ${status.ocr?.ready && Object.keys(exam.layout).length === 23 ? "checked" : ""} ${!status.ocr?.ready ? "disabled" : ""}>Đưa vào hàng đợi nhận diện sau khi lưu</label><div class="toolbar"><button class="primary" id="savePaper">Lưu bài & xem kết quả</button><button id="saveNext">Lưu & chụp bài tiếp</button></div><p class="help">Camera dừng sau mỗi lần chụp để thầy kiểm tra ảnh. Ảnh phải rõ, đúng hướng và đủ vùng bài làm.</p></div></section><aside><div class="card soft"><span class="eyebrow">Chấm theo đợt</span><h2>Đưa nhiều bài vào cùng lúc</h2><p class="muted">Chọn thư mục ảnh đã chụp. Mỗi mã phách cần một cặp ảnh, tên dạng <b>00125_1.jpg</b> và <b>00125_2.jpg</b>.</p><label>Ảnh hàng loạt<input id="batch" type="file" accept="image/jpeg,image/png" multiple></label><button id="uploadBatch">Kiểm tra & tải cả đợt</button><p id="batchProgress" role="status" class="help">Tải tuần tự, tối đa 2.000 bài/đợt. Không đóng trang khi đang tải.</p></div><div class="card"><h3>Trước khi đưa bài vào</h3><p class="help">① Đúng đợt và mã đề.<br>② Hai mặt cùng một bài.<br>③ Mã phách rõ, không mất số 0 đầu.<br>④ Ảnh cùng chiều và vị trí với ảnh mẫu.</p><button id="toResults">Xem danh sách bài →</button></div></aside></div>`;
+      `<div class="grid wide"><section><div class="card"><span class="eyebrow">${esc(exam.title)}</span><h2>Chụp trước. Chấm sau.</h2><p class="help">Chụp bằng điện thoại, kiểm tra hai mặt rồi lưu. Bài được lưu trên máy chủ để thầy mở lại và chấm sau.</p><label>Mã phách<input id="code" placeholder="Ví dụ: 00125" maxlength="40" autocomplete="off"></label><label>Mã nhóm chữ viết (tùy chọn)<input id="writerTag" placeholder="Ví dụ W001 · không cần nhập tên HS" maxlength="40" autocomplete="off"></label><div class="grid">${[0, 1].map((i) => `<div class="drop"><strong>Mặt ${i + 1}</strong><img id="preview${i}" alt="Ảnh mặt ${i + 1}" hidden><label>Chọn ảnh / chụp bằng điện thoại<input id="page${i}" type="file" accept="image/jpeg,image/png" capture="environment"></label><button data-camera="${i}">Mở camera trực tiếp</button></div>`).join("")}</div><div id="camera" hidden><video id="video" playsinline autoplay muted></video><div class="toolbar"><button id="shutter" class="accent">Chụp mặt <span id="cameraSide"></span></button><button id="stopCamera">Đóng camera</button></div></div><p class="status" id="captureState">Đã có 0/2 mặt. Ảnh chưa được lưu.</p><div class="toolbar"><button class="primary" id="savePaper">Lưu bài · chấm sau</button><button id="saveNext">Lưu & chụp HS tiếp theo</button></div><p class="help">Camera dừng sau mỗi lần chụp để thầy kiểm tra ảnh. Ảnh phải rõ, đúng hướng và đủ vùng bài làm.</p></div></section><aside><div class="card soft"><span class="eyebrow">Chấm theo đợt</span><h2>Đưa nhiều bài vào cùng lúc</h2><p class="muted">Chọn thư mục ảnh đã chụp. Mỗi mã phách cần một cặp ảnh, tên dạng <b>00125_1.jpg</b> và <b>00125_2.jpg</b>.</p><label>Ảnh hàng loạt<input id="batch" type="file" accept="image/jpeg,image/png" multiple></label><button id="uploadBatch">Kiểm tra & tải cả đợt</button><p id="batchProgress" role="status" class="help">Tải tuần tự, tối đa 2.000 bài/đợt. Không đóng trang khi đang tải.</p></div><div class="card"><h3>Trước khi đưa bài vào</h3><p class="help">① Đúng đợt và mã đề.<br>② Hai mặt cùng một bài.<br>③ Mã phách rõ, không mất số 0 đầu.<br>④ Ảnh cùng chiều và vị trí với ảnh mẫu.</p><button id="toResults">Xem danh sách bài →</button></div></aside></div>`;
     async function setPage(i, blob) {
       pages[i] = blob;
       const u = URL.createObjectURL(blob);
       imageURLs.push(u);
       $("#preview" + i).src = u;
       $("#preview" + i).hidden = false;
+      $("#captureState").textContent =
+        "Đã có " +
+        pages.filter(Boolean).length +
+        "/2 mặt. " +
+        (pages.every(Boolean) ? "Sẵn sàng lưu." : "Chụp tiếp mặt còn lại.");
     }
     [0, 1].forEach(
       (i) =>
@@ -442,20 +458,12 @@
       stopCamera();
       toast("Đã chụp mặt " + (side + 1) + ". Kiểm tra ảnh trước khi lưu.");
     });
-    async function upload(code, blobs) {
+    async function upload(code, blobs, writerTag = "") {
       const form = new FormData();
       form.append("code", code);
+      form.append("writerTag", writerTag);
       blobs.forEach((b, i) => form.append("pages", b, "page" + i + ".jpg"));
       const d = await api("/exams/" + exam.id + "/papers", form);
-      if ($("#autoOcr").checked)
-        try {
-          await api(
-            "/exams/" + exam.id + "/papers/" + d.paper.id + "/recognize",
-            {},
-          );
-        } catch (e) {
-          toast("Đã lưu ảnh. " + e.message);
-        }
       return d.paper;
     }
     async function save(next) {
@@ -464,7 +472,7 @@
       busy = true;
       $("#savePaper").disabled = $("#saveNext").disabled = true;
       try {
-        const p = await upload($("#code").value, pages);
+        const p = await upload($("#code").value, pages, $("#writerTag").value);
         exam.count = (exam.count || 0) + 1;
         stopCamera();
         if (next) {
@@ -473,7 +481,7 @@
         } else {
           tab = "results";
           render();
-          await openPaper(p.id);
+          toast("Đã lưu hai mặt. Thầy có thể chấm sau trên thiết bị khác.");
         }
       } finally {
         busy = false;
@@ -549,6 +557,21 @@
       }
     });
   }
+  async function download(route, filename) {
+    const r = await fetch("/api/scan" + route, {
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!r.ok) {
+      const d = await r.json();
+      throw Error(d.message || "Không tải được dữ liệu.");
+    }
+    const u = URL.createObjectURL(await r.blob()),
+      a = document.createElement("a");
+    a.href = u;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(u), 1000);
+  }
   async function results() {
     const d = await api(
       "/exams/" +
@@ -560,7 +583,7 @@
     );
     if (tab !== "results" || reviewPaper) return;
     $("#content").innerHTML =
-      `<div class="stats"><div class="stat"><b>${d.total}</b><span>Bài đã lưu</span></div><div class="stat"><b>${(d.counts.queued || 0) + (d.counts.processing || 0)}</b><span>Đang nhận diện</span></div><div class="stat"><b>${(d.counts.review || 0) + (d.counts.error || 0)}</b><span>Cần kiểm tra</span></div><div class="stat"><b>${d.counts.approved || 0}</b><span>Đã chốt điểm</span></div></div><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Bài thi · ${esc(exam.title)}</h2><button id="export">Tải CSV</button><button class="primary" id="sync">Ghi Google Sheets</button></div><div class="toolbar"><label style="margin:0">Trạng thái<select id="filter"><option value="">Tất cả</option>${Object.entries(
+      `<div class="stats"><div class="stat"><b>${d.total}</b><span>Bài đã lưu</span></div><div class="stat"><b>${(d.counts.queued || 0) + (d.counts.processing || 0)}</b><span>Đang nhận diện</span></div><div class="stat"><b>${(d.counts.review || 0) + (d.counts.error || 0)}</b><span>Cần kiểm tra</span></div><div class="stat"><b>${d.counts.approved || 0}</b><span>Đã chốt điểm</span></div></div><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">Bài thi · ${esc(exam.title)}</h2><button id="startOcr">Bắt đầu nhận diện các bài đã lưu</button><button id="datasetExport">Tải dữ liệu chữ viết</button><button id="export">Tải CSV</button><button class="primary" id="sync">Ghi Google Sheets</button></div><div class="toolbar"><label style="margin:0">Trạng thái<select id="filter"><option value="">Tất cả</option>${Object.entries(
         states,
       )
         .map(
@@ -570,6 +593,27 @@
         .join(
           "",
         )}</select></label><button id="reload">Làm mới</button><span class="help">Chỉ bài đã chốt được xuất điểm. Chênh lệch = điểm đã duyệt − điểm chấm tay.</span></div><div class="table-wrap"><table><thead><tr><th>Mã phách</th><th>Trạng thái</th><th>Tổng</th><th>Chênh lệch</th><th></th></tr></thead><tbody>${d.papers.map((p) => `<tr><td><b>${esc(p.code)}</b></td><td><span class="badge ${p.status === "error" ? "warn" : ""}">${states[p.status] || esc(p.status)}</span></td><td>${p.total ?? "—"}</td><td class="${p.difference ? "error" : ""}">${p.difference ?? "—"}</td><td><button data-open="${p.id}">Mở bài →</button></td></tr>`).join("")}</tbody></table>${!d.papers.length ? '<div class="empty">Chưa có bài trong danh sách này. Chọn Chụp bài để bắt đầu.</div>' : ""}</div><div class="toolbar"><button id="prev" ${listPage === 0 ? "disabled" : ""}>← Trước</button><span class="help">Trang ${listPage + 1} · ${d.filtered} bài</span><button id="next" ${(listPage + 1) * 50 >= d.filtered ? "disabled" : ""}>Tiếp →</button></div><p id="syncNote" class="help"></p></div>`;
+    $("#startOcr").onclick = run(async (e) => {
+      e.target.disabled = true;
+      try {
+        const d = await api("/exams/" + exam.id + "/recognize", {});
+        toast("Đã xếp hàng " + d.count + " bài.");
+        await results();
+      } finally {
+        if ($("#startOcr")) $("#startOcr").disabled = false;
+      }
+    });
+    $("#datasetExport").onclick = run(async () =>
+      download(
+        "/exams/" + exam.id + "/training/export",
+        "FPTBN-handwriting-dataset.zip",
+      ),
+    );
+    if (exam.captureOnly) {
+      $("#startOcr").disabled = true;
+      $("#syncNote").textContent =
+        "Đã lưu ảnh. Vào Đáp án & vùng đọc để nhập đáp án trước khi chấm.";
+    }
     $("#filter").onchange = run(async (e) => {
       filter = e.target.value;
       listPage = 0;
@@ -619,6 +663,31 @@
     imageURLs = [];
     const d = await api("/exams/" + exam.id + "/papers/" + id);
     reviewPaper = d.paper;
+    if (exam.captureOnly) {
+      $("#content").innerHTML =
+        '<div class="card"><h2>Ảnh đã lưu · ' +
+        esc(d.paper.code) +
+        '</h2><p>Đợt chưa có đáp án. Thầy có thể kiểm tra ảnh, nhập đáp án rồi chấm sau.</p><button id="draftBack">← Danh sách bài</button> <button id="draftSetup" class="primary">Nhập đáp án & thang điểm</button><div class="grid" style="margin-top:20px"><img id="draftPage0" class="review-image" alt="Mặt 1 đã lưu"><img id="draftPage1" class="review-image" alt="Mặt 2 đã lưu"></div></div>';
+      for (let n = 0; n < 2; n++) {
+        const r = await fetch(
+          "/api/scan/exams/" + exam.id + "/papers/" + id + "/pages/" + n,
+          { headers: { Authorization: "Bearer " + token } },
+        );
+        if (!r.ok) throw Error("Không tải được ảnh.");
+        const u = URL.createObjectURL(await r.blob());
+        imageURLs.push(u);
+        $("#draftPage" + n).src = u;
+      }
+      $("#draftBack").onclick = run(async () => {
+        reviewPaper = null;
+        await results();
+      });
+      $("#draftSetup").onclick = () => {
+        tab = "setup";
+        render();
+      };
+      return;
+    }
     const p = reviewPaper,
       approved = p.status === "approved",
       inFlight = ["queued", "processing"].includes(p.status),
@@ -636,7 +705,7 @@
       r.essayScores || exam.essays.map((e) => e.ideas.map(() => null));
     const texts = r.texts || [ocr.essay1?.text || "", ocr.essay2?.text || ""];
     $("#content").innerHTML =
-      `<div class="toolbar"><button id="backList">← Danh sách bài</button><span class="badge">${states[p.status]}</span><span class="help">Mã nhập lúc chụp: ${esc(p.code)}</span></div>${p.error ? '<p class="status">' + esc(p.error) + "</p>" : ""}${inFlight ? '<p class="status">Đang xử lý OCR. Bấm cập nhật sau khi hoàn tất.</p>' : ""}<div class="grid wide"><section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Bài làm gốc</h2><button data-side="0" class="selected-page">Mặt 1</button><button data-side="1">Mặt 2</button></div><img id="reviewImage" class="review-image" alt="Ảnh bài làm gốc"><p class="help">Chạm ảnh để phóng to. Đối chiếu cả hai mặt trước khi chốt.</p><div class="toolbar"><button id="ocr" ${approved || r.answers || inFlight ? "disabled" : ""}>${p.ocr ? "Nhận diện lại" : "Nhận diện chữ viết"}</button><button id="refreshPaper">Cập nhật trạng thái</button>${approved ? '<button id="reopen">Mở lại để sửa</button>' : ""}</div><details><summary>Nhật ký nhận diện và chỉnh sửa</summary><pre>${esc(JSON.stringify({ ocr: p.ocr || "Chưa chạy", history: p.history || [] }, null, 2))}</pre></details></section><section class="card review-pane"><h2>Kiểm tra & cho điểm</h2><p class="help">OCR là bản đọc đề xuất. Tự luận cần GV đối chiếu nội dung theo từng ý. Điểm chưa chốt không được xuất.</p><fieldset ${approved || inFlight ? "disabled" : ""} style="border:0;padding:0;margin:0"><label>Mã phách đã kiểm tra<input id="reviewCode" value="${esc(r.code || p.code)}" maxlength="40"></label>${ocr.code ? '<p class="help">OCR đọc mã: ' + esc(ocr.code.text) + " · đối chiếu với mã nhập khi chụp.</p>" : ""}<h3>20 câu trắc nghiệm</h3><p class="help">“Bỏ trống” và “Nhiều đáp án” được tính 0 điểm. “Chưa xác định” cần kiểm tra trước khi chốt.</p><div class="key-grid">${answers
+      `<div class="toolbar"><button id="backList">← Danh sách bài</button><span class="badge">${states[p.status]}</span><span class="help">Mã nhập lúc chụp: ${esc(p.code)}</span></div>${p.error ? '<p class="status">' + esc(p.error) + "</p>" : ""}${inFlight ? '<p class="status">Đang xử lý OCR. Bấm cập nhật sau khi hoàn tất.</p>' : ""}<div class="grid wide"><section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Bài làm gốc</h2><button data-side="0" class="selected-page">Mặt 1</button><button data-side="1">Mặt 2</button></div><img id="reviewImage" class="review-image" alt="Ảnh bài làm gốc"><p class="help">Chạm ảnh để phóng to. Đối chiếu cả hai mặt trước khi chốt.</p><div class="toolbar"><button id="ocr" ${approved || r.answers || inFlight ? "disabled" : ""}>${p.ocr ? "Nhận diện lại" : "Nhận diện chữ viết"}</button><button id="refreshPaper">Cập nhật trạng thái</button>${approved ? '<button id="trainingOpen">Lưu mẫu chữ viết</button>' : ""}${approved ? '<button id="reopen">Mở lại để sửa</button>' : ""}</div><details><summary>Nhật ký nhận diện và chỉnh sửa</summary><pre>${esc(JSON.stringify({ ocr: p.ocr || "Chưa chạy", history: p.history || [] }, null, 2))}</pre></details></section><section class="card review-pane"><h2>Kiểm tra & cho điểm</h2><p class="help">OCR là bản đọc đề xuất. Tự luận cần GV đối chiếu nội dung theo từng ý. Điểm chưa chốt không được xuất.</p><fieldset ${approved || inFlight ? "disabled" : ""} style="border:0;padding:0;margin:0"><label>Mã phách đã kiểm tra<input id="reviewCode" value="${esc(r.code || p.code)}" maxlength="40"></label>${ocr.code ? '<p class="help">OCR đọc mã: ' + esc(ocr.code.text) + " · đối chiếu với mã nhập khi chụp.</p>" : ""}<h3>20 câu trắc nghiệm</h3><p class="help">“Bỏ trống” và “Nhiều đáp án” được tính 0 điểm. “Chưa xác định” cần kiểm tra trước khi chốt.</p><div class="key-grid">${answers
         .map(
           (a, i) =>
             `<label>Câu ${i + 1} · ĐA ${exam.key[i]}<select data-answer="${i}">${[
@@ -681,6 +750,8 @@
         );
     }
     await show(0);
+    if ($("#trainingOpen"))
+      $("#trainingOpen").onclick = run(() => trainingEditor(p, image));
     document
       .querySelectorAll("[data-side]")
       .forEach((b) => (b.onclick = run(() => show(Number(b.dataset.side)))));
@@ -790,6 +861,168 @@
     }
     $("#saveDraft").onclick = run(() => save(false));
     $("#approve").onclick = run(() => save(true));
+  }
+  async function trainingEditor(p, image) {
+    $("#trainingDialog")?.remove();
+    const dialog = document.createElement("dialog");
+    dialog.id = "trainingDialog";
+    dialog.className = "training-dialog";
+    dialog.innerHTML = `<div class="toolbar"><h2 style="flex:1;margin:0">Dữ liệu chữ viết đã sửa</h2><button id="trainingClose">Đóng</button></div><p class="help">Chọn một chữ A–D hoặc đúng một dòng tự luận. Chép chính xác chữ HS viết, không chép đáp án mẫu. Chỉ ảnh cắt và nhãn đã xác nhận được xuất để huấn luyện sau.</p><div class="grid"><section><div class="row"><label>Mặt ảnh<select id="trainingPage"><option value="0">Mặt 1</option><option value="1">Mặt 2</option></select></label><label>Nội dung<select id="trainingField">${Array.from({ length: 20 }, (_, i) => `<option value="q${i + 1}">TN ${i + 1} · HS viết ${esc(p.review.answers[i] || "?")}</option>`).join("")}<option value="essay1">Một dòng tự luận 1</option><option value="essay2">Một dòng tự luận 2</option></select></label></div><div class="canvas-wrap"><canvas id="trainingCanvas" width="600" height="800"></canvas></div><p id="trainingRegionNote" class="help">Kéo khung sát quanh chữ hoặc một dòng cần lưu; tránh mã phách và thông tin cá nhân.</p></section><section><label>Chữ đúng trong ảnh cắt<input id="trainingLabel" maxlength="200" autocomplete="off" placeholder="Chép đúng một dòng HS viết"></label><label class="checkline"><input type="checkbox" id="trainingVerified">Tôi đã kiểm tra ảnh cắt và bản chép khớp nhau, không chứa thông tin nhận dạng HS.</label><button id="trainingSave" class="primary">Lưu mẫu đã xác nhận</button><p id="trainingNote" role="status" class="help"></p><div class="status">Lưu dữ liệu không tự huấn luyện hay thay mô hình. Cần huấn luyện theo đợt và so sánh trên tập kiểm thử độc lập.</div><h3>Mẫu đã lưu của bài</h3><div id="trainingSamples"></div><p class="help">Mở lại/sửa nội dung bài sẽ tạm loại các mẫu cũ khỏi bản xuất nếu bản chép thay đổi. Mẫu có thể bỏ chọn hoặc chọn lại.</p></section></div>`;
+    $("#content").append(dialog);
+    dialog.showModal();
+    $("#trainingClose").onclick = () => {
+      dialog.close();
+      dialog.remove();
+    };
+    const canvas = $("#trainingCanvas"),
+      ctx = canvas.getContext("2d");
+    let page = 0,
+      field = "q1",
+      box = null,
+      source = null,
+      drag = null;
+    function draw(temp) {
+      if (!source) return;
+      canvas.width = source.naturalWidth;
+      canvas.height = source.naturalHeight;
+      ctx.drawImage(source, 0, 0);
+      const b = temp || box;
+      if (b && b.page === page) {
+        ctx.strokeStyle = "#ee7a38";
+        ctx.lineWidth = Math.max(3, canvas.width / 300);
+        ctx.strokeRect(
+          b.x * canvas.width,
+          b.y * canvas.height,
+          b.w * canvas.width,
+          b.h * canvas.height,
+        );
+      }
+      $("#trainingRegionNote").textContent = box
+        ? "Đã chọn vùng · kiểm tra ảnh và nhãn trước khi lưu."
+        : "Kéo khung sát quanh một chữ hoặc một dòng cần lưu.";
+    }
+    async function showPage() {
+      const img = new Image();
+      img.src = await image(page);
+      await img.decode();
+      source = img;
+      draw();
+    }
+    async function selectField() {
+      field = $("#trainingField").value;
+      const preset = exam.layout?.[field];
+      box = field.startsWith("q") && preset ? structuredClone(preset) : null;
+      if (box) page = box.page;
+      $("#trainingPage").value = String(page);
+      $("#trainingLabel").value =
+        field.startsWith("q") &&
+        /^[ABCD]$/.test(p.review.answers[Number(field.slice(1)) - 1])
+          ? p.review.answers[Number(field.slice(1)) - 1]
+          : "";
+      $("#trainingVerified").checked = false;
+      await showPage();
+    }
+    const point = (e) => {
+      const b = canvas.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)),
+        y: Math.max(0, Math.min(1, (e.clientY - b.top) / b.height)),
+      };
+    };
+    canvas.onpointerdown = (e) => {
+      drag = point(e);
+      canvas.setPointerCapture(e.pointerId);
+    };
+    canvas.onpointermove = (e) => {
+      if (!drag) return;
+      const p = point(e);
+      draw({
+        page,
+        x: Math.min(p.x, drag.x),
+        y: Math.min(p.y, drag.y),
+        w: Math.abs(p.x - drag.x),
+        h: Math.abs(p.y - drag.y),
+      });
+    };
+    canvas.onpointerup = (e) => {
+      if (!drag) return;
+      const p = point(e);
+      box = {
+        page,
+        x: Math.min(p.x, drag.x),
+        y: Math.min(p.y, drag.y),
+        w: Math.abs(p.x - drag.x),
+        h: Math.abs(p.y - drag.y),
+      };
+      drag = null;
+      $("#trainingVerified").checked = false;
+      draw();
+    };
+    canvas.onpointercancel = () => {
+      drag = null;
+      draw();
+    };
+    $("#trainingField").onchange = run(selectField);
+    $("#trainingPage").onchange = run(async (e) => {
+      page = Number(e.target.value);
+      box = null;
+      $("#trainingVerified").checked = false;
+      await showPage();
+    });
+    $("#trainingLabel").oninput = () =>
+      ($("#trainingVerified").checked = false);
+    function renderSamples() {
+      const samples = p.training?.samples || [];
+      $("#trainingSamples").innerHTML = samples.length
+        ? samples
+            .map(
+              (s) =>
+                `<div class="training-sample"><span>${esc(s.label)}<small>${s.unit === "character" ? "Ký tự" : "Dòng chữ"} · ${s.withdrawnAt ? "Đã bỏ chọn" : "Đã chọn"}</small></span><button data-training-id="${s.id}" data-include="${!!s.withdrawnAt}">${s.withdrawnAt ? "Chọn lại" : "Bỏ chọn"}</button></div>`,
+            )
+            .join("")
+        : '<p class="help">Chưa có mẫu. Ưu tiên chữ OCR đọc sai đã được thầy sửa.</p>';
+      dialog.querySelectorAll("[data-training-id]").forEach(
+        (b) =>
+          (b.onclick = run(async () => {
+            const included = b.dataset.include === "true";
+            await api(
+              "/exams/" +
+                exam.id +
+                "/papers/" +
+                p.id +
+                "/training/" +
+                b.dataset.trainingId,
+              { included },
+              "PUT",
+            );
+            const s = samples.find((s) => s.id === b.dataset.trainingId);
+            s.withdrawnAt = included ? null : new Date().toISOString();
+            renderSamples();
+          })),
+      );
+    }
+    $("#trainingSave").onclick = run(async (e) => {
+      if (!box) throw Error("Chọn vùng chữ trên ảnh trước.");
+      if (!$("#trainingVerified").checked)
+        throw Error("Kiểm tra ảnh và xác nhận bản chép trước khi lưu.");
+      e.target.disabled = true;
+      try {
+        const d = await api(
+          "/exams/" + exam.id + "/papers/" + p.id + "/training",
+          { field, label: $("#trainingLabel").value, box, verified: true },
+        );
+        p.training ||= { samples: [] };
+        p.training.samples.push(d.sample);
+        $("#trainingVerified").checked = false;
+        $("#trainingNote").textContent =
+          "Đã lưu mẫu. Có thể xuất dữ liệu ở danh sách bài sau.";
+        renderSamples();
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+    renderSamples();
+    await selectField();
   }
   $("#logout").onclick = () => {
     token = "";
