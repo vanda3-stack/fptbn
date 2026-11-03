@@ -1,28 +1,50 @@
-# Chấm bài giấy tại /scan
+# Chấm bài giấy — scan-20261103-5
 
-Trang dùng tài khoản giáo viên hiện có, độc lập với luồng giám sát lớp học. Không thu tiền API. Đây là phiên bản chấm có GV duyệt; nhận diện chữ viết chưa được kiểm chứng trên bài thi thực tế và không tự chấm ý tự luận.
+## Luồng chính
 
-## Cập nhật Node trên VPS
+1. **Tạo khối chấm:** ví dụ Khối 6/7/8/9, chỉ tạo khối GV chọn.
+2. **Tạo phòng:** mỗi phòng thuộc đúng một khối, tên phòng không trùng trong khối.
+3. **Nhập link đáp án:** Google Docs chứa 20 câu TN và 2 câu TL. Bấm Đọc đáp án và lưu phòng. Có mục thu gọn để sửa đáp án hoặc dán văn bản khi không đọc được link.
+4. **Quét bài:** mã phách + ảnh mặt 1 bắt buộc; bấm Thêm mặt 2 nếu cần. Lưu và quét tiếp. Có thể chụp trên điện thoại rồi đăng nhập cùng tài khoản trên máy tính để chấm.
+5. **Chấm điểm:** bấm Chấm bài. VietOCR đọc ảnh, thuật toán đối chiếu TN; TL áp dụng rubric có sẵn hoặc khớp đầy đủ nội dung chuẩn. Câu chưa đủ căn cứ giữ trạng thái cần kiểm tra, không tự gán 0. GV có thể mở bài, sửa bản đọc/điểm theo từng ý và chốt.
+6. **Lưu Google Sheets:** một file cho mỗi khối, mỗi phòng là một tab. Chỉ có hai cột:
 
-Chạy từ thư mục đang chứa server.js của fptbn, bằng tài khoản đang chạy ứng dụng:
+| Mã phách | Điểm chấm tự động |
+| --- | --- |
+
+Bài chưa có điểm để trống ô điểm. Điểm đã được GV chốt ưu tiên hơn điểm đề xuất của bộ chấm. Khi mở lại bài, kết quả chưa được chốt lại sẽ không được ghi như điểm đã chốt. Cùng mã phách ở hai phòng khác nhau là hai bản ghi độc lập. Đồng bộ lại cập nhật dòng theo mã phách, không thêm trùng.
+
+Thư mục đích cố định do người dùng chỉ định: https://drive.google.com/drive/folders/1VAs8HYRjY-nCqRFVkE8I0AmiUkLqEVej (TEST CHẤM THI). File của khối được tạo khi bấm Tạo bảng điểm khối hoặc Lưu Google Sheets lần đầu. Không tạo các khối/Sheet mẫu chưa được chọn. Không sửa/xóa các bảng cũ FPTBN_SCAN nhiều cột.
+
+## Cập nhật VPS
 
 ```bash
-git pull --ff-only origin feature/outline-essay-grading
-npm ci --ignore-scripts
-npm test
+cd /home/u_fptbnmonitoronline_fa061ae2/fptbnmonitor.online
+git fetch origin feature/paper-scan
+git merge --ff-only origin/feature/paper-scan
+npm ci --omit=dev --no-audit --no-fund
+node --check server.js
 ```
 
-Sau đó khởi động lại Node bằng trình quản lý ứng dụng vPanel đang sử dụng. Nếu dùng PM2, dùng `pm2 list` để xác định đúng tên ứng dụng rồi `pm2 restart TEN_UNG_DUNG --update-env`. Không chạy thêm bản server mới trên cùng cổng.
+Chạy các lệnh theo thứ tự, dừng nếu lỗi; không reset hard. Restart đúng ứng dụng trong vPanel. Cấu hình service của repo là `vpanel-node@1-2.service`; tài khoản có quyền có thể dùng `sudo /usr/bin/systemctl restart vpanel-node@1-2.service`. Nếu worker Python đang chạy, cũng restart worker sau khi cập nhật mã worker.
 
-Đảm bảo LiteSpeed chuyển cả `/scan`, `/scan/*` và `/api/scan/*` tới Node; giới hạn upload tối thiểu 25 MB (multipart). Các tuyến POST của ứng dụng phải qua proxy Node giống tuyến đăng nhập giáo viên; nếu POST bị LiteSpeed chặn thì không chỉ sửa mã frontend.
+Kiểm tra `curl -fsS https://fptbnmonitor.online/api/scan/version` phải có `scan-20261103-5`. Giao diện phát hiện thiếu capability grades/flexiblePages và báo cần cập nhật/restart thay vì gửi yêu cầu sai giao thức.
 
-## Dữ liệu và dung lượng
+Đảm bảo LiteSpeed proxy `/scan`, `/scan/*`, `/api/scan/*` tới Node và cho phép upload tối thiểu 25 MB. POST phải đến Node, không bị LiteSpeed chặn. Giao diện có phiên bản asset để tránh lẫn mã cũ.
 
-Mặc định lưu `data/scan/<teacherId>/<examId>/`, ngoài public, hoặc đặt `SCAN_DATA_DIR` tới thư mục tuyệt đối có quyền ghi. Metadata JSON ghi bằng rename nguyên tử, hai ảnh gốc được giữ riêng. Sao lưu cả thư mục này, không chỉ MySQL. Một tiến trình Node quản lý hàng đợi và ghi Sheet; dùng PM2 `instances: 1` (không cluster). Với 1.000 bài × 2 ảnh cần đo kích thước ảnh thực tế để dự trù ổ đĩa; ảnh trên trình duyệt được giảm cạnh dài tối đa 2.400 px. Đặt thư mục scan trên ổ riêng khi cần. Không tự xóa ảnh hoặc bài đã chấm.
+## Kết nối Google trên VPS — một lần
 
-## Thiết lập VietOCR miễn phí (tùy chọn)
+Quyền Google của ChatGPT không tự chuyển cho VPS. Để tạo/lưu bảng tính, cần credentials Google hợp lệ có quyền đọc đáp án, tạo file trong thư mục TEST CHẤM THI và sửa Sheets.
 
-Khuyên dùng Python 3.10 hoặc 3.11 trong virtualenv riêng. PyTorch/VietOCR có thể không tương thích Python/macOS quá cũ. Máy VPS phải đủ RAM để nạp mô hình; tốc độ phải đo trên bài thật. Cài PyTorch theo https://pytorch.org/get-started/locally/ cho CPU hoặc GPU đang dùng trước khi cài requirements.
+- Cấu hình `SCAN_GOOGLE_CREDENTIALS_FILE=/duong/dan/bao/mat/google-credentials.json`, ngoài public và ngoài Git. GoogleAuth hỗ trợ cấu hình service account hoặc authorized-user OAuth phù hợp.
+- Bật Drive API và Sheets API. Scopes trong mã: Drive read-only (đọc tài liệu), Drive file (tạo/quản lý file ứng dụng tạo), Spreadsheets (ghi điểm). Với authorized-user OAuth, refresh token phải được cấp đúng scopes từ trước; thay biến môi trường không tự cấp thêm quyền.
+- Chia sẻ quyền phù hợp cho tài khoản ứng dụng trong thư mục đích/Docs. Tài khoản cần quyền tạo file và đáp ứng yêu cầu lưu trữ của Google. Nếu Google từ chối tạo file, lỗi được báo; không giả tạo link thành công. Với thư mục My Drive, kiểm chứng quyền tạo bằng chính loại tài khoản cấu hình.
+- File mới có appProperties gắn ID khối để tìm lại khi thử lại. Nếu một lần tạo bị gián đoạn và chưa xác nhận file có tồn tại, ứng dụng chặn tạo lại mù để tránh file trùng.
+- Chưa kết nối Google vẫn tạo khối/phòng, lưu ảnh và điểm trên VPS được. Nút tạo/lưu Google báo cần cấu hình. Không đưa credentials vào trình duyệt hoặc gửi trong chat.
+
+## VietOCR miễn phí trên máy chủ — một lần
+
+Dùng môi trường Python riêng (khuyên 3.10/3.11), cài PyTorch phù hợp CPU/GPU rồi:
 
 ```bash
 cd services/scan-ocr
@@ -31,106 +53,38 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Đặt cùng `SCAN_OCR_TOKEN` ngẫu nhiên dài ít nhất 24 ký tự trong môi trường dịch vụ Python và Node. Không đưa secret vào Git, mã trình duyệt hay log. Node cần:
+Cùng secret ngẫu nhiên dài ít nhất 24 ký tự trong Node và worker:
 
 ```text
 SCAN_OCR_URL=http://127.0.0.1:8010
-SCAN_OCR_TOKEN=<cung-secret-voi-python>
+SCAN_OCR_TOKEN=<secret-rieng>
 ```
 
-Python cần:
-
-```text
-SCAN_OCR_TOKEN=<cung-secret-voi-node>
-SCAN_OCR_DEVICE=cpu
-SCAN_OCR_MODEL=vgg_seq2seq
-```
-
-Chạy worker riêng bằng supervisor/systemd/PM2:
+Worker thêm `SCAN_OCR_DEVICE=cpu`, `SCAN_OCR_MODEL=vgg_seq2seq`; tùy chọn `SCAN_OCR_WEIGHTS` trỏ weights tương thích đã tải.
 
 ```bash
 uvicorn app:app --host 127.0.0.1 --port 8010 --workers 1
 ```
 
-Lần đầu VietOCR tải weights nên cần Internet; có thể dùng `SCAN_OCR_WEIGHTS` để trỏ tới weights tương thích đã tải. Không mở cổng 8010 ra Internet. Nếu chạy máy khác, dùng mạng riêng/VPN hoặc HTTPS có xác thực; không public worker HTTP. Trang hiển thị sức khỏe worker sau đăng nhập, không giả lập kết quả khi chưa cài mô hình.
+Lần đầu cần Internet để tải weights. Không mở cổng OCR ra Internet. Nếu worker ở máy khác, dùng mạng riêng/VPN hoặc HTTPS có xác thực.
 
-Engine ban đầu là VietOCR cho cả chữ rời và dòng chữ. CNN/EMNIST A–D chưa tích hợp vì chưa kiểm thử ảnh thực tế. Có thể thay worker sau khi so sánh trên bộ ảnh đã gán nhãn. `modelScore` chỉ là chỉ số nội bộ của mô hình, không phải xác suất đọc đúng đã hiệu chuẩn. Toàn bộ OCR cần người duyệt.
+Worker nhận **1 hoặc 2 ảnh**. Nếu chưa có template vùng đọc, dùng phân đoạn dòng để đọc toàn trang và dò số câu A–D/các mốc Câu 1, Câu 2 hoặc Câu 21, Câu 22. Vùng không đọc được hoặc mâu thuẫn không bị ép thành một đáp án. Chế độ template trước đây vẫn hoạt động; vùng thuộc mặt 2 nhưng bài chỉ có mặt 1 được đánh dấu thiếu, không tự suy ra.
 
-## Google Docs và Google Sheets
+Đây là nhận diện đề xuất, chưa được kiểm chứng trên chữ viết tay thật của trường. Không có cam kết 1.000 bài nhanh/chính xác khi chưa đo trên phần cứng và bộ ảnh thật. Kiểm thử parser/HTTP bằng dữ liệu giả không thay thế kiểm thử mô hình. Tự luận không dùng phép đếm từ khóa chung để giả lập hiểu nội dung; câu chưa có quy tắc phù hợp cần GV kiểm tra. Phần nhập đáp án hỗ trợ bảng Docs của tài liệu Tin 8 Đề 2 đã cung cấp.
 
-- Docs chia sẻ đọc bằng liên kết: nhập URL, bấm Đọc tài liệu, không cần API key.
-- Docs riêng tư và ghi Sheets: tạo Google Cloud service account, bật Drive API và Sheets API, đặt JSON credentials ngoài public và ngoài Git. Node dùng `SCAN_GOOGLE_CREDENTIALS_FILE=/duong/dan/bao/mat/service-account.json`. Chia sẻ Docs quyền đọc, Sheet quyền sửa cho email `client_email` của service account. Không đưa JSON lên giao diện.
-- Việc cấp quyền Google cho ChatGPT không tự cấp quyền cho VPS. Nếu Workspace chặn chia sẻ service account, cần quản trị viên cho phép hoặc dán đáp án và xuất CSV.
-- Lấy đáp án chỉ là trích xuất có quy tắc; không suy đoán đề không đọc được. Docs có định dạng khác: dán hoặc nhập trực tiếp 20 đáp án và 2 thang điểm. Hỗ trợ tốt nhất:
+## Dữ liệu và tương thích
 
-```text
-1. A
-2. B
-...
-20. D
-TL1
-0,5 | Ý thứ nhất
-1 | Ý thứ hai
-TL2
-0,5 | Ý thứ nhất
-```
+- Metadata khối: `data/scan/<teacherId>/grades.json`; phòng/bài giữ cấu trúc cũ theo UUID. Ảnh nằm ngoài public, API yêu cầu đăng nhập và kiểm tra chủ sở hữu.
+- Sao lưu cả `data/scan`, không chỉ MySQL. Có thể đổi bằng `SCAN_DATA_DIR`. Dùng một tiến trình Node, không cluster, để khóa hàng đợi/tạo file/đồng bộ có hiệu lực.
+- Tối đa 2.000 bài/phòng, 12 MB/ảnh trên API. Trình duyệt giảm cạnh dài tối đa 2.400 px. Cần mạng để lưu; chưa có chụp ngoại tuyến. HEIC cần chuyển JPG/PNG.
+- Bài cũ không có khối được giữ trong mục Bài đã lưu trước đây; không xóa hoặc viết đè bảng điểm cũ.
+- Dữ liệu ảnh cắt/nhãn huấn luyện và API xuất dữ liệu đã có vẫn được giữ, không đưa lên giao diện chính. Không tự huấn luyện hoặc đổi weights.
 
-Thang điểm tổng phải bằng 10; ví dụ mặc định 20 × 0,25 + mỗi TL 2,5. Kiểm tra lại đáp án trước khi tạo đợt. Mỗi mã đề tạo đợt riêng.
-
-Sheet dùng tab riêng `FPTBN_SCAN`, không ghi các tab hiện có. Khóa dòng là **mã đợt + mã phách**. Dùng RAW để giữ số 0 đầu và tránh công thức. Sau khi mở lại bài đã chốt, bấm đồng bộ để xóa điểm cũ trên dòng đó và đánh dấu Chờ duyệt lại; sau khi chốt lại cần đồng bộ lần nữa. Mã phách đã từng chốt được khóa để giữ đúng liên kết Sheet; không tự ghi lên Sheet sau mỗi thay đổi. Nếu lỗi giữa đợt đồng bộ, bấm đồng bộ lại để cập nhật đúng các dòng, tránh thêm trùng. Không chỉnh/sắp xếp tab trong khi đồng bộ.
-
-## Luồng sử dụng
-
-1. Truy cập `/scan`, đăng nhập giáo viên.
-2. Tạo đợt: lấy đáp án từ Docs hoặc nhập tay; nhập rubric điểm | nội dung cho 2 câu.
-3. Muốn OCR: trước khi có bài, tải ảnh mẫu mỗi mặt, chọn từng trường (mã phách, TN1–20, TL1–2), kéo khung; cần đủ 23 vùng. Mẫu lưu tọa độ tương đối. Chụp cùng chiều, cùng tỉ lệ và vị trí; hiện chưa tự phát hiện trang, căn phối cảnh hoặc dò bố cục tự do. Mỗi TL chỉ một vùng trên một mặt; câu kéo dài qua hai mặt cần đọc tay.
-4. Chụp/chọn hai mặt, nhập mã phách. Camera dừng sau mỗi lần chụp. Lưu và xem hoặc lưu bài tiếp. Ảnh HEIC cần chuyển JPG/PNG.
-5. Với ảnh có sẵn, chọn nhiều ảnh tên `00125_1.jpg`, `00125_2.jpg`; kiểm tra đủ cặp rồi tải tuần tự. Giữ trang mở đến hết. Nếu tải gián đoạn, chọn lại: mã đã lưu bị chặn trùng, những bài còn lại tiếp tục.
-6. OCR chạy tuần tự và lưu tiến độ; Node khởi động lại sẽ tiếp tục việc chưa xong. Mã phách nhập khi chụp là khóa ban đầu; OCR mã phách chỉ để đối chiếu, không tự thay khóa.
-7. Mở bài: xem cả hai mặt, sửa 20 đáp án; chỗ bỏ trống hoặc nhiều đáp án được ghi tường minh. Kiểm tra văn bản OCR, cho điểm từng ý tự luận. Điểm máy thuần không tồn tại cho tự luận: đây là **điểm GV duyệt có OCR hỗ trợ**. OCR thô được lưu riêng, không dùng điểm chấm tay để sinh đáp án.
-8. Nhập điểm chấm tay nếu cần, xem chênh lệch, xác nhận và chốt. Bài chưa đủ đáp án/điểm hoặc chưa xác nhận không được chốt. Điểm chấm tay được lưu riêng.
-9. Xuất CSV hoặc ghi Google Sheets. Chỉ điểm đã chốt được xuất.
-
-## Kiểm thử trước khi chấm thật
-
-Thử tối thiểu 50 bài đa dạng chữ viết, đối chiếu từng đáp án và mã phách với ảnh. Đo riêng lỗi OCR, sai số điểm, thời gian/bài và số bài cần sửa. Không cam kết tốc độ hay chính xác cho 1.000 bài khi chưa có kết quả đo. Bộ test mã nguồn không thay cho kiểm chứng mô hình chữ viết tay.
-
-## Bổ sung: chụp bằng điện thoại trước, chấm và tích lũy dữ liệu sau
-
-- Nút **Chụp trước, nhập đáp án sau** tạo đợt chỉ lưu ảnh, không tạo đáp án giả và không chạy OCR. Điện thoại chụp hai mặt rồi bấm **Lưu & chụp HS tiếp theo**. Chỉ coi ảnh đã lưu khi máy chủ xác nhận thành công. Cần mạng khi lưu; chưa hỗ trợ chụp ngoại tuyến.
-- Sau đó đăng nhập cùng tài khoản giáo viên trên máy tính để mở lại đợt. Vào **Đáp án & vùng đọc** để nhập đáp án/rubric. Khi đã chuyển sang đợt chấm, đáp án bị khóa để không đổi điểm của bài cũ. Bấm **Bắt đầu nhận diện các bài đã lưu** để xếp hàng các bài mới; không tự nhận diện ngay khi chụp.
-- Mã phách liên kết hai mặt và bảng điểm. **Mã nhóm chữ viết** tùy chọn (ví dụ W001) dùng để nhóm cùng người viết qua các đợt; không suy đoán danh tính từ mã phách. Mã nhóm được biến đổi bằng HMAC với khóa riêng từng GV; chỉ mã nhóm biến đổi được lưu. Nếu không có mã nhóm, mỗi bài là một nhóm riêng. Tải ảnh hàng loạt không tự gán chung người viết.
-- Sau khi sửa/chốt bài, bấm **Lưu mẫu chữ viết**: kéo khung gọn quanh một ký tự TN hoặc đúng một dòng TL, nhập bản chép đúng và xác nhận. Không dùng đáp án đề làm nhãn chữ viết: nhãn TN phải đúng câu HS thực sự viết, kể cả khi HS chọn sai. Dòng TL phải có trong bản chép đã sửa/chốt. Không lấy vùng mã phách hoặc vùng thông tin cá nhân.
-- Lưu vùng cắt JPG cùng nhãn tại thư mục `training` riêng của bài; ảnh gốc vẫn được giữ. Lưu mẫu là lựa chọn riêng từng mẫu, không đưa mọi bài đã chụp vào tập huấn luyện.
-- Nút **Tải dữ liệu chữ viết** xuất ZIP gồm ảnh cắt, `manifest.jsonl`, `train.txt`, `validation.txt`, `test.txt` theo định dạng `image_path<TAB>transcript`. Tên ảnh là UUID, manifest không chứa mã phách, tên HS hay mã bài. Tối đa 20.000 mẫu trong một lần xuất. Chỉ mẫu của bài đã chốt và bản chép không thay đổi mới được xuất; có thể bỏ chọn/chọn lại mẫu. Nếu sửa bản chép, chọn lại vùng và tạo mẫu mới sau khi chốt. Ảnh trùng được gộp; nhãn mâu thuẫn phải kiểm tra trước khi xuất.
-- Đây là **chuẩn bị dữ liệu**, chưa có tác vụ tự huấn luyện. Mô hình nền phải đọc được nhiều nét chữ; không cần huấn luyện riêng cho từng HS ngay từ đầu. Ưu tiên thêm các kiểu chữ và lỗi OCR đa dạng đã được GV sửa.
-- Trước khi fine-tune: kiểm tra ảnh cắt/nhãn; gom cùng người viết vào cùng nhóm; tách nhóm thành train/validation/test; so CER/WER, tỷ lệ đọc đúng A–D và mã phách trên tập kiểm thử không dùng để học. Nếu không có mã nhóm nhất quán, cần rà soát nhóm người viết thủ công để tránh rò rỉ giữa các tập. Tập nhỏ có thể có split rỗng; không dùng để kết luận chất lượng.
-- Chỉ triển khai weights mới khi kiểm thử đạt và giữ weights cũ để quay lại. Không có cam kết cứ lưu thêm ảnh là nhận diện tốt lên. Dữ liệu được lưu riêng trên VPS, không tự gửi tới nhà cung cấp mô hình.
-
-## Nếu Chụp trước vẫn báo "Cần đủ 20 đáp án A–D"
-
-Đây là dấu hiệu giao diện mới nhưng Node đang chạy mã cũ, hoặc chưa cập nhật đủ tệp. Tải JS/CSS mới không tự làm Node nạp lại các module đã require. Sau khi git merge và npm ci thành công, phải restart đúng tiến trình phục vụ tên miền. Với cấu hình dịch vụ đang có trong workflow của repository, tên dịch vụ là `vpanel-node@1-2.service`; dùng tài khoản có quyền restart dịch vụ hoặc thao tác đúng ứng dụng trong vPanel. Không chạy thêm một Node mới trên cổng đang dùng.
-
-Bản `scan-20261103-3` bổ sung GET `/api/scan/version` không yêu cầu đăng nhập, chỉ trả revision và photoFirst, không trả dữ liệu bài chấm. Sau restart, kiểm tra:
+## Kiểm thử
 
 ```bash
-curl -fsS https://fptbnmonitor.online/api/scan/version
+node --test test/scan.test.js
+python services/scan-ocr/test_protocol.py
 ```
 
-Cần thấy `revision: scan-20261103-3` và `photoFirst: true`. Nếu 401/404 hoặc HTML thì tiến trình/proxy đang chạy bản cũ hoặc sai ứng dụng; không cố nhập 20 đáp án để vượt lỗi. Nếu revision đúng nhưng iPhone còn giao diện cũ, đóng tab /scan và mở lại. Tệp JS/CSS có version và API dùng no-store để tránh lẫn bản.
-
-Nút chụp dùng endpoint riêng `/api/scan/capture-exams`. Giao diện kiểm tra capability trước khi tạo đợt, hiển thị cảnh báo cố định nếu máy chủ chưa xác nhận hỗ trợ. OCR chưa sẵn sàng là tình trạng độc lập: không cản tạo đợt/chụp/lưu ảnh, nhưng chưa thể nhận diện chữ tự động.
-
-## Bố cục theo phòng thi (scan-20261103-4)
-
-Mỗi phòng/bộ chấm là một bản ghi độc lập: nhập **Phòng thi**, **Bài thi/mã đề**, **link đáp án Docs**, **link Sheets nhận điểm**. Nếu một phòng dùng nhiều mã đề, tạo một bộ chấm riêng cho từng mã đề và ghi rõ trong tên bài thi. Chọn phòng ở đầu trang trước khi chụp/chấm. Bộ chấm cũ không có roomCode vẫn giữ dữ liệu; tên đợt cũ được dùng để hiển thị.
-
-1. **Phòng & đáp án:** đọc link Google Docs, kiểm tra đáp án trong mục thu gọn rồi lưu phòng. Có nút lưu phòng để chụp trước khi đọc được đáp án. Phòng và hai link được giữ lại; bổ sung đáp án sau.
-2. **Chụp 2 ảnh/bài:** mã phách + ảnh mặt 1 + ảnh mặt 2, lưu rồi sang HS tiếp theo. Bài được giữ trong phòng đang chọn. Mã trùng trong cùng phòng bị chặn; cùng mã ở phòng khác được phép vì khóa có ID phòng/bộ chấm.
-3. **Chấm & Google Sheets:** đối chiếu từng câu với đáp án, GV duyệt phần tự luận, chốt điểm rồi bấm **Ghi điểm phòng lên Sheets** để ghi theo lô các bài đã chốt. Chỉ ghi phòng đang chọn.
-
-Nguồn ví dụ được kiểm tra là Google Docs `17xH-yDghEmgrb3S881JW8cauT_cl6et-Y5xbuqv10us` (ĐÁP ÁN ĐỀ 2, Tin học 8). Parser hỗ trợ bảng 1–10 / A–D, 11–20 / A–D sau khi Docs xuất thành các dòng; bảng tự luận Nội dung / Điểm; Câu 1 và Câu 2; vẫn giữ hỗ trợ nhập dạng `1. A`, `TL1`, `0,5 | ý`. Với tài liệu mẫu, kết quả mong đợi là đủ 20 đáp án, 0,25 điểm/TN, hai TL mỗi câu 5 ý × 0,5. Không nhúng đáp án mẫu làm dữ liệu dự phòng: tài liệu vẫn phải đọc thực sự từ link hoặc được dán vào. Quyền Google Drive của ChatGPT không tự cấp quyền đọc cho VPS.
-
-Google Sheets thêm cột **K: Phòng thi** vào tab FPTBN_SCAN. Header cũ 10 cột được nâng lên 11 cột, giữ nguyên vị trí/giá trị các cột A–J và điểm của các phòng khác. Khóa vẫn là ID bộ chấm + mã phách, nên đồng bộ lại không gộp các phòng có cùng mã phách. Link Sheets chưa điền/cấp quyền thì lưu ảnh và điểm tại máy chủ; bấm ghi Sheets sẽ báo lý do, không giả báo đồng bộ thành công.
-
-Vùng đọc OCR và bảng chỉnh đáp án được đưa vào mục thu gọn để giao diện điện thoại ưu tiên phòng, link và chụp bài. Điều này không tự cài OCR hoặc thay đổi độ chính xác của mô hình; dịch vụ OCR và quyền Google vẫn cần được cấu hình trên VPS. Sau cập nhật, restart Node và kiểm tra `/api/scan/version` trả revision `scan-20261103-4`.
+Test Python kiểm tra bộ tách văn bản một/hai mặt bằng model giả, không tải weights. Trước dùng thật, lấy mẫu chữ đa dạng để đo lỗi mã phách, từng đáp án, phân đoạn TL, điểm và thời gian xử lý. Chấm thử/duyệt trước khi xuất điểm chính thức.

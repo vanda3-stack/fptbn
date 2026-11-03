@@ -160,7 +160,7 @@ test("HTTP auth, private two-sided uploads, duplicate rejection, approval, reope
   } = await api("/exams", exam());
   const prefix = "/exams/" + e.id;
   assert.equal((await api(prefix, null, "GET", "two")).status, 404);
-  assert.equal((await upload(e.id, "00125", 1)).status, 400);
+  assert.equal((await upload(e.id, "00124", 1)).status, 200);
   const {
     data: { paper: p },
   } = await upload(e.id);
@@ -491,7 +491,7 @@ test("deployment revision can be checked without login and reports actual photo-
   const { api, base } = await server(t);
   const publicVersion = await api("/version", null, "GET", "");
   assert.equal(publicVersion.status, 200);
-  assert.equal(publicVersion.data.revision, "scan-20261103-4");
+  assert.equal(publicVersion.data.revision, "scan-20261103-5");
   assert.equal(publicVersion.data.photoFirst, true);
   assert.deepEqual(Object.keys(publicVersion.data).sort(), [
     "photoFirst",
@@ -703,4 +703,172 @@ test("network error reading Docs is reported as a source connection problem, not
   assert.equal(result.status, 502);
   assert.match(result.data.message, /Google Docs/);
   assert.doesNotMatch(result.data.message, /quyền ghi/);
+});
+
+test("grade creation persists hierarchy, isolates owners and forbids duplicate room inside a grade", async (t) => {
+  const { api } = await server(t);
+  const {
+    data: { grade: g },
+  } = await api("/grades", { name: "Khối 8" });
+  assert(g.id);
+  assert.equal((await api("/grades", { name: "Khối 8" })).status, 409);
+  const a = await api("/exams", {
+    ...exam(),
+    gradeId: g.id,
+    roomCode: "Phòng 01",
+  });
+  assert.equal(a.status, 200);
+  assert.equal(a.data.exam.gradeId, g.id);
+  assert.equal(
+    (await api("/exams", { ...exam(), gradeId: g.id, roomCode: "Phòng 01" }))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await api(
+        "/exams",
+        { ...exam(), gradeId: g.id, roomCode: "Phòng 02" },
+        "POST",
+        "two",
+      )
+    ).status,
+    404,
+  );
+  assert.equal((await api("/grades")).data.grades[0].rooms, 1);
+  assert.deepEqual((await api("/grades", null, "GET", "two")).data.grades, []);
+  const pending = await api("/grades/" + g.id + "/sheet", {});
+  assert.equal(pending.status, 503);
+});
+
+test("one- and two-face uploads persist real page count; unavailable second image is never served", async (t) => {
+  const { api, upload, base } = await server(t);
+  const {
+    data: { exam: e },
+  } = await api("/exams", exam());
+  const {
+    data: { paper: p },
+  } = await upload(e.id, "00125", 1);
+  assert.equal(p.imageTypes.length, 1);
+  const response = await fetch(
+    base + "/api/scan/exams/" + e.id + "/papers/" + p.id + "/pages/1",
+    { headers: { Authorization: "Bearer one" } },
+  );
+  assert.equal(response.status, 404);
+  assert.equal(
+    (await api("/exams/" + e.id + "/papers")).data.papers[0].pageCount,
+    1,
+  );
+  assert.equal(
+    (await upload(e.id, "00126", 2)).data.paper.imageTypes.length,
+    2,
+  );
+});
+
+test("automatic assessment leaves unresolved writing ungraded instead of assigning guessed zero", () => {
+  const assess = require("../lib/scan-assess"),
+    e = exam();
+  const fields = Object.fromEntries(
+    Array.from({ length: 20 }, (_, i) => ["q" + (i + 1), { text: "A" }]),
+  );
+  assert.equal(assess(e, { fields }).total, null);
+  fields.essay1 = { text: "Ý 1" };
+  fields.essay2 = { text: "Ý 2" };
+  assert.equal(assess(e, { fields }).total, 10);
+  fields.q1 = { text: "A hoặc B" };
+  assert.equal(assess(e, { fields }).total, null);
+});
+
+test("one workbook per grade is created inside target folder, one tab per room, two RAW columns, repeat save updates exact row", async () => {
+  const create = require("../lib/scan-grade-sheets"),
+    folder = create.FOLDER_ID,
+    calls = [],
+    tabs = [],
+    dataByTitle = new Map();
+  let fileCreated = 0;
+  const request = async (url, opts = {}) => {
+    calls.push({ url, opts });
+    const body = opts.body ? JSON.parse(opts.body) : null;
+    if (url.includes("/drive/v3/files/" + folder))
+      return Response.json({
+        id: folder,
+        mimeType: "application/vnd.google-apps.folder",
+        capabilities: { canAddChildren: true },
+      });
+    if (url.includes("/drive/v3/files/book-id"))
+      return Response.json({
+        id: "book-id",
+        mimeType: "application/vnd.google-apps.spreadsheet",
+        parents: [folder],
+      });
+    if (url.includes("/drive/v3/files?q=")) return Response.json({ files: [] });
+    if (url.includes("/drive/v3/files?fields=") && opts.method === "POST") {
+      fileCreated++;
+      assert.deepEqual(body.parents, [folder]);
+      assert.equal(body.name, "Khối 8");
+      return Response.json({
+        id: "book-id",
+        webViewLink: "https://docs.google.com/spreadsheets/d/book-id/edit",
+        parents: [folder],
+      });
+    }
+    if (url.includes("?fields=sheets.properties"))
+      return Response.json({ sheets: tabs });
+    if (url.endsWith(":batchUpdate") && !url.includes("/values")) {
+      const p = body.requests[0].addSheet?.properties;
+      if (p) {
+        tabs.push({ properties: p });
+        return Response.json({ replies: [{ addSheet: { properties: p } }] });
+      }
+      return Response.json({});
+    }
+    if (url.includes("/values/") && !url.endsWith("batchUpdate")) {
+      const range = decodeURIComponent(url.split("/values/")[1]),
+        title = range.match(/^'(.+)'!/)[1];
+      return Response.json({ values: dataByTitle.get(title) || [] });
+    }
+    if (url.endsWith("/values:batchUpdate")) {
+      assert.equal(body.valueInputOption, "RAW");
+      for (const entry of body.data) {
+        assert(entry.values.every((row) => row.length === 2));
+        const title = entry.range.match(/^'(.+)'!/)[1],
+          n = Number(entry.range.match(/!A(\d+):/)[1]),
+          rows = dataByTitle.get(title) || [];
+        rows[n - 1] = entry.values[0];
+        dataByTitle.set(title, rows);
+      }
+      return Response.json({});
+    }
+    throw Error(url);
+  };
+  const google = create({ request }),
+    g = { id: crypto.randomUUID(), name: "Khối 8" },
+    save = () => {};
+  const p = { code: "00125", status: "review", automatic: { total: 9 } };
+  const a = { id: crypto.randomUUID(), roomCode: "Phòng 01" },
+    b = { id: crypto.randomUUID(), roomCode: "Phòng 02" };
+  await google.syncRoom(g, a, [p], save);
+  await google.syncRoom(g, b, [{ ...p, automatic: { total: null } }], save);
+  p.automatic.total = 9.5;
+  await google.syncRoom(g, a, [p], save);
+  assert.equal(fileCreated, 1);
+  assert.equal(tabs.length, 2);
+  assert.deepEqual(dataByTitle.get("Phòng 01"), [
+    ["Mã phách", "Điểm chấm tự động"],
+    ["00125", 9.5],
+  ]);
+  assert.deepEqual(dataByTitle.get("Phòng 02"), [
+    ["Mã phách", "Điểm chấm tự động"],
+    ["00125", ""],
+  ]);
+});
+
+test('a single uploaded face reaches OCR unchanged and produces a provisional automatic score',async t=>{
+ let pages;
+ const fields=Object.fromEntries(Array.from({length:20},(_,i)=>['q'+(i+1),{text:'A'}]));fields.essay1={text:'Ý 1'};fields.essay2={text:'Ý 2'};
+ const {api,upload,feature}=await server(t,{env:{SCAN_OCR_URL:'http://worker',SCAN_OCR_TOKEN:'test'},fetcher:async(url,options)=>{pages=JSON.parse(options.body).pages;return Response.json({fields,engine:'contract-test'})}});
+ const {data:{exam:e}}=await api('/exams',exam());const {data:{paper:p}}=await upload(e.id,'00125',1);
+ assert.equal((await api('/exams/'+e.id+'/papers/'+p.id+'/recognize',{})).status,200);
+ for(let i=0;i<30&&!feature.idle();i++)await new Promise(resolve=>setTimeout(resolve,10));
+ assert.equal(pages.length,1);assert.equal((await api('/exams/'+e.id+'/papers/'+p.id)).data.paper.automatic.total,10);
 });

@@ -646,3 +646,88 @@ details.card[open] > summary {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.grade-card {
+  padding: 24px;
+  text-align: left;
+  border-radius: 12px;
+  background: #f8faf5;
+}
+.grade-card b {
+  display: block;
+  font-size: 22px;
+}
+.grade-card span {
+  display: block;
+  color: var(--muted);
+  margin-top: 10px;
+}
+.compact-form {
+  max-width: 850px;
+}
+.compact-capture {
+  max-width: 1000px;
+}
+.advanced-scan {
+  max-width: 850px;
+}
+#gradeName {
+  flex: 1;
+  min-width: 160px;
+  width: auto;
+  margin-top: 0;
+}
+#trainingOpen {
+  display: none;
+}
+.compact-capture #addFace2 {
+  margin-top: 14px;
+}
+.compact-form details {
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+  margin-top: 20px;
+}
+@media (max-width: 850px) {
+  .hero {
+    display: block;
+  }
+  .hero > .button {
+    margin-top: 8px;
+  }
+  .grade-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .grade-card {
+    padding: 18px;
+  }
+  .grade-card b {
+    font-size: 20px;
+  }
+  .compact-capture .toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .compact-capture .toolbar button {
+    width: 100%;
+  }
+  .toolbar > h2 {
+    flex-basis: 100% !important;
+  }
+  .table-wrap td {
+    padding: 12px 6px;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+}
+@media (max-width: 390px) {
+  .grade-grid {
+    grid-template-columns: 1fr;
+  }
+}

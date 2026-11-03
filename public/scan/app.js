@@ -18,6 +18,8 @@
   let token = sessionStorage.getItem("ot-teacher-token") || "",
     name = sessionStorage.getItem("ot-teacher-name") || "",
     exams = [],
+    grades = [],
+    grade = null,
     exam = null,
     tab = "setup",
     status = {},
@@ -116,7 +118,7 @@
     $("#identity").textContent = "";
     $("#logout").hidden = true;
     $("#app").innerHTML =
-      `<div class="login"><span class="eyebrow">FPTBN · Chấm bài giấy</span><h1>Từ bài viết tay<br>đến bảng điểm.</h1><p class="muted">Chụp hai mặt. Kiểm tra đáp án. Chốt điểm theo mã phách.</p><form class="card" id="login"><label>Email giáo viên<input name="email" type="email" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button class="primary">Đăng nhập</button><p id="loginError" class="error" role="alert"></p></form><p class="help">Sử dụng tài khoản giáo viên FPTBN Monitor.</p></div>`;
+      `<div class="login"><span class="eyebrow">FPTBN · Chấm bài giấy</span><h1>Từ bài viết tay<br>đến bảng điểm.</h1><p class="muted">Chụp 1–2 mặt. Kiểm tra đáp án. Chốt điểm theo mã phách.</p><form class="card" id="login"><label>Email giáo viên<input name="email" type="email" autocomplete="username" required></label><label>Mật khẩu<input name="password" type="password" autocomplete="current-password" required></label><button class="primary">Đăng nhập</button><p id="loginError" class="error" role="alert"></p></form><p class="help">Sử dụng tài khoản giáo viên FPTBN Monitor.</p></div>`;
     $("#login").onsubmit = async (e) => {
       e.preventDefault();
       e.submitter.disabled = true;
@@ -145,11 +147,18 @@
     };
   }
   async function init() {
-    [status, { exams }] = await Promise.all([api("/status"), api("/exams")]);
-    status.requiresRestart =
-      status.capabilities?.photoFirst !== true ||
-      status.capabilities?.rooms !== true;
-    if (exam) exam = exams.find((e) => e.id === exam.id) || null;
+    status = await api("/status");
+    status.requiresRestart = !(
+      status.capabilities?.grades && status.capabilities?.flexiblePages
+    );
+    if (!status.requiresRestart) {
+      const [r, g] = await Promise.all([api("/exams"), api("/grades")]);
+      exams = r.exams;
+      grades = g.grades;
+      if (grade && grade.id !== "legacy")
+        grade = grades.find((g) => g.id === grade.id) || null;
+      if (exam) exam = exams.find((e) => e.id === exam.id) || null;
+    }
     render();
   }
   function render() {
@@ -158,44 +167,151 @@
     $("#identity").textContent = name;
     $("#logout").hidden = false;
     $("#app").innerHTML =
-      `<div class="hero"><div><span class="eyebrow">Chấm bài giấy / Scan</span><h1>Chấm bài theo phòng.</h1><p class="muted">Link đáp án → 2 ảnh mỗi bài → Điểm theo mã phách</p></div><span class="badge ${status.ocr?.ready ? "" : "warn"}">${status.ocr?.ready ? "● OCR đã kết nối" : "● OCR chưa sẵn sàng · vẫn có thể chấm trên ảnh"}</span></div><div class="toolbar scan-exam-toolbar"><label style="flex:1;margin:0">Phòng chấm<select id="examSelect"><option value="">Tạo phòng chấm mới…</option>${exams.map((e) => `<option value="${e.id}" ${exam?.id === e.id ? "selected" : ""}>${esc(e.roomCode ? e.roomCode + " · " + e.title : e.title)} · ${e.count} bài</option>`).join("")}</select></label><button id="newExam" class="primary">＋ Tạo phòng chấm</button></div>${status.requiresRestart ? '<p class="status" role="alert">Giao diện đã cập nhật nhưng máy chủ chưa xác nhận hỗ trợ phòng chấm mới. Cần khởi động lại NodeJS trên VPS rồi tải lại trang. Có thể lưu phòng để chụp trước khi đọc đáp án.</p>' : ""}<nav class="tabs" aria-label="Các bước chấm">${[
-        ["setup", "01 · Phòng & đáp án"],
-        ["capture", "02 · Chụp 2 ảnh/bài"],
-        ["results", "03 · Chấm & Google Sheets"],
+      `<div class="hero"><div><span class="eyebrow">FPTBN · Chấm bài giấy</span><h1>${esc(exam?.roomCode || grade?.name || "Chấm bài thi")}</h1><p class="muted">Khối → Phòng → Quét bài → Chấm điểm</p></div><a class="button" href="https://drive.google.com/drive/folders/1VAs8HYRjY-nCqRFVkE8I0AmiUkLqEVej" target="_blank" rel="noopener noreferrer">Thư mục bảng điểm ↗</a></div><div id="content"></div>`;
+    if (status.requiresRestart) {
+      $("#content").innerHTML =
+        '<div class="card"><h2>Cần cập nhật máy chủ</h2><p>Giao diện mới cần NodeJS phiên bản scan-20261103-5. Cập nhật mã và restart NodeJS trên VPS rồi mở lại trang.</p><button id="retry">Kiểm tra lại</button></div>';
+      $("#retry").onclick = run(init);
+      return;
+    }
+    if (!grade) {
+      gradeList();
+      return;
+    }
+    const nav = document.createElement("div");
+    nav.className = "toolbar";
+    nav.innerHTML =
+      '<button id="backGrades">← Khối chấm</button>' +
+      (exam ? '<button id="backRooms">← Phòng chấm</button>' : "") +
+      (grade.sheetUrl
+        ? '<a class="button" href="' +
+          esc(grade.sheetUrl) +
+          '" target="_blank" rel="noopener noreferrer">Bảng điểm ' +
+          esc(grade.name) +
+          " ↗</a>"
+        : "");
+    $("#content").before(nav);
+    $("#backGrades").onclick = () => {
+      grade = null;
+      exam = null;
+      tab = "rooms";
+      render();
+    };
+    if ($("#backRooms"))
+      $("#backRooms").onclick = () => {
+        exam = null;
+        tab = "rooms";
+        render();
+      };
+    if (!exam && tab !== "setup") {
+      roomList();
+      return;
+    }
+    if (exam) {
+      const tabs = document.createElement("nav");
+      tabs.className = "tabs";
+      tabs.innerHTML = [
+        ["setup", "Đáp án"],
+        ["capture", "Quét bài"],
+        ["results", "Chấm & lưu điểm"],
       ]
         .map(
           ([id, label]) =>
-            `<button data-tab="${id}" class="${tab === id ? "active" : ""}" ${!exam && id !== "setup" ? "disabled" : ""}>${label}</button>`,
+            `<button data-tab="${id}" class="${tab === id ? "active" : ""}">${label}</button>`,
         )
-        .join("")}</nav><div id="content"></div>`;
-    $("#examSelect").onchange = run(async (e) => {
-      if (busy) return;
-      exam = exams.find((x) => x.id === e.target.value) || null;
-      pages = [null, null];
-      tab = exam ? "capture" : "setup";
-      render();
-    });
-    $("#newExam").onclick = () => {
-      if (busy) return;
-      exam = null;
-      tab = "setup";
-      pages = [null, null];
-      render();
-    };
-    document.querySelectorAll("[data-tab]").forEach(
-      (b) =>
-        (b.onclick = () => {
-          if (busy) {
-            toast("Chờ thao tác hiện tại hoàn tất.");
-            return;
-          }
-          tab = b.dataset.tab;
-          render();
-        }),
-    );
+        .join("");
+      $("#content").before(tabs);
+      tabs.querySelectorAll("button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            if (busy) return;
+            tab = b.dataset.tab;
+            render();
+          }),
+      );
+    }
     if (tab === "setup") setup();
     else if (tab === "capture") capture();
     else run(results)();
+  }
+  function gradeList() {
+    $("#content").innerHTML =
+      `<section class="card"><h2>Khối chấm</h2><form id="gradeForm" class="toolbar"><input id="gradeName" placeholder="Ví dụ: Khối 8" maxlength="80" required aria-label="Tên khối"><button class="primary">＋ Tạo khối</button></form><div class="grade-grid">${grades.map((g) => `<button class="grade-card" data-grade="${g.id}"><b>${esc(g.name)}</b><span>${g.rooms} phòng</span></button>`).join("")}</div>${!grades.length ? '<p class="muted">Tạo khối để bắt đầu.</p>' : ""}</section>${
+        exams.some((e) => !e.gradeId)
+          ? '<details class="card"><summary>Bài đã lưu trước đây</summary>' +
+            exams
+              .filter((e) => !e.gradeId)
+              .map(
+                (e) =>
+                  '<button data-legacy="' +
+                  e.id +
+                  '">' +
+                  esc(e.roomCode || e.title) +
+                  "</button>",
+              )
+              .join(" ") +
+            "</details>"
+          : ""
+      }`;
+    $("#gradeForm").onsubmit = run(async (e) => {
+      e.preventDefault();
+      e.submitter.disabled = true;
+      try {
+        const d = await api("/grades", { name: $("#gradeName").value });
+        grade = d.grade;
+        tab = "rooms";
+        await init();
+      } finally {
+        e.submitter.disabled = false;
+      }
+    });
+    document.querySelectorAll("[data-grade]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          grade = grades.find((g) => g.id === b.dataset.grade);
+          tab = "rooms";
+          render();
+        }),
+    );
+    document.querySelectorAll("[data-legacy]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          grade = { id: "legacy", name: "Bài cũ" };
+          exam = exams.find((e) => e.id === b.dataset.legacy);
+          tab = "results";
+          render();
+        }),
+    );
+  }
+  function roomList() {
+    const rooms = exams.filter((e) => e.gradeId === grade.id);
+    $("#content").innerHTML =
+      `<section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Phòng chấm · ${esc(grade.name)}</h2><button id="newRoom" class="primary">＋ Tạo phòng</button>${!grade.sheetUrl ? '<button id="createWorkbook">Tạo bảng điểm khối</button>' : ""}</div><p class="help">Một bảng tính cho khối; mỗi phòng một tab. Chỉ hai cột: Mã phách và Điểm chấm tự động.</p><div class="grade-grid">${rooms.map((e) => `<button class="grade-card" data-room="${e.id}"><b>${esc(e.roomCode)}</b><span>${e.count} bài · ${e.approved} đã chốt</span></button>`).join("")}</div>${!rooms.length ? '<p class="muted">Chưa có phòng chấm.</p>' : ""}</section>`;
+    $("#newRoom").onclick = () => {
+      exam = null;
+      tab = "setup";
+      render();
+    };
+    document.querySelectorAll("[data-room]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          exam = rooms.find((e) => e.id === b.dataset.room);
+          tab = "capture";
+          render();
+        }),
+    );
+    if ($("#createWorkbook"))
+      $("#createWorkbook").onclick = run(async (e) => {
+        e.target.disabled = true;
+        try {
+          const d = await api("/grades/" + grade.id + "/sheet", {});
+          grade = d.grade;
+          await init();
+          toast("Đã tạo bảng điểm trong thư mục TEST CHẤM THI.");
+        } finally {
+          e.target.disabled = false;
+        }
+      });
   }
   function setup() {
     let layout = structuredClone(exam?.layout || {}),
@@ -206,7 +322,7 @@
     const locked = !!exam?.count && !exam?.captureOnly;
     const layoutLocked = !!exam?.hasDerived;
     $("#content").innerHTML =
-      `<div class="grid wide"><section><div class="card room-setup"><span class="eyebrow">Bước 1 · Thiết lập phòng chấm</span><h2>Phòng thi & nguồn đáp án</h2><div class="row"><label>Phòng thi<input id="roomCode" maxlength="60" placeholder="Ví dụ: Phòng 01" value="${esc(exam?.roomCode || (exam?.count ? exam.title : ""))}" ${locked ? "disabled" : ""}></label><label>Bài thi / mã đề<input id="title" placeholder="Tin học 8 · Đề 2" value="${esc(exam?.title || "")}" ${locked ? "disabled" : ""}></label></div><label>Link đáp án trên Google Drive / Google Docs<input id="docUrl" type="url" placeholder="https://docs.google.com/document/d/…" value="${esc(exam?.docUrl || sourceExample)}" ${locked ? "disabled" : ""}></label><div class="toolbar"><button id="importDoc" ${locked ? "disabled" : ""}>Đọc đáp án từ link</button><a class="button ghost" id="openSource" href="${esc(exam?.docUrl || sourceExample)}" target="_blank" rel="noopener noreferrer">Mở tài liệu</a></div><p id="sourceNote" class="status">${exam && !exam.captureOnly ? "Đã lưu đáp án: 20 câu trắc nghiệm + 2 câu tự luận." : "Dán link → Đọc đáp án → Kiểm tra 20 câu TN và thang điểm 2 câu TL."}</p><label>Link Google Sheets nhận điểm<input id="sheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" value="${esc(exam?.sheetUrl || "")}"></label><p class="help">Kết quả gồm phòng thi, mã phách, điểm TN, TL1, TL2 và tổng điểm. Có thể thêm link Sheets sau khi chụp; cần cấp quyền chỉnh sửa cho tài khoản Google của máy chủ.</p><div class="toolbar"><button class="primary" id="saveExam">${exam ? "Lưu phòng & chuyển sang chụp" : "Tạo phòng & chuyển sang chụp"}</button>${!locked && (!exam || exam.captureOnly) ? '<button id="captureRoom">Lưu phòng, chụp trước khi có đáp án</button>' : ""}</div>${locked ? '<p class="help">Đã có bài chấm: giữ nguyên phòng và đáp án. Muốn dùng mã đề khác, tạo phòng/bộ chấm mới.</p>' : ""}</div><details class="card" id="answerEditor"><summary>Kiểm tra / chỉnh đáp án đã đọc</summary><label style="margin-top:16px">Điểm mỗi câu trắc nghiệm<input id="quizPoint" type="number" min="0.01" max="0.5" step="0.01" value="${exam?.quizPoint ?? 0.25}" ${locked ? "disabled" : ""}></label><div class="key-grid">${Array.from({ length: 20 }, (_, i) => `<label>Câu ${i + 1}<select id="key${i}" ${locked ? "disabled" : ""}><option value="">—</option>${["A", "B", "C", "D"].map((a) => `<option ${exam?.key[i] === a ? "selected" : ""}>${a}</option>`).join("")}</select></label>`).join("")}</div>${[0, 1].map((i) => `<label style="margin-top:20px">Tự luận ${i + 1} · mỗi dòng: điểm | nội dung ý<textarea id="rubric${i}" ${locked ? "disabled" : ""}>${esc((exam?.essays[i].ideas || []).map((x) => x.points + " | " + x.text).join("\n"))}</textarea></label>`).join("")}<p class="help">Tổng thang điểm TN và TL phải bằng 10. Tự luận được GV duyệt theo từng ý.</p></details><details class="card"><summary>Không đọc được link? Dán nội dung đáp án</summary><p class="help">Dán toàn bộ nội dung tài liệu để đọc bảng đáp án và thang điểm.</p><textarea id="sourceText" placeholder="Dán nội dung từ Google Docs"></textarea><button id="parseText" ${locked ? "disabled" : ""}>Đọc nội dung đã dán</button></details></section><aside><div class="card soft"><span class="eyebrow">Một phòng · Một bộ chấm</span><h2>Chụp từng bài, đủ 2 ảnh</h2><ol class="room-flow"><li><b>Thiết lập phòng</b><span>Link đáp án và Google Sheets nhận điểm.</span></li><li><b>Chụp bài</b><span>Nhập mã phách → ảnh mặt 1 → ảnh mặt 2 → lưu bài.</span></li><li><b>Chấm & ghi điểm</b><span>Nhận diện, so với đáp án, kiểm tra rồi ghi điểm cả phòng lên Sheet.</span></li></ol><p class="help">Mỗi phòng quản lý bài riêng. Cùng mã phách ở hai phòng khác nhau không bị gộp.</p></div><details class="card"><summary>Thiết lập vùng đọc ảnh cho OCR</summary><p class="help">Dùng ảnh mẫu cùng loại giấy, chọn mặt và kéo khung từng vùng. Đây là cấu hình cho bộ OCR; không cần để lưu hai ảnh.</p><label>Ảnh mẫu<input id="sampleFile" type="file" accept="image/jpeg,image/png" ${layoutLocked ? "disabled" : ""}></label><div class="row"><label>Mặt<select id="samplePage" ${layoutLocked ? "disabled" : ""}><option value="0">Mặt 1</option><option value="1">Mặt 2</option></select></label><label>Vùng<select id="region" ${layoutLocked ? "disabled" : ""}>${fields.map((k) => `<option value="${k}">${fieldLabel(k)}</option>`).join("")}</select></label></div><div class="canvas-wrap"><canvas id="template" width="600" height="400"></canvas></div><div class="toolbar"><span id="regionCount" class="badge"></span><button id="clearRegion" ${layoutLocked ? "disabled" : ""}>Xóa vùng đang chọn</button></div></details></aside></div>`;
+      `<div class="card compact-form"><h2>${exam ? "Đáp án phòng" : "Tạo phòng chấm"}</h2><label>Tên phòng<input id="roomCode" placeholder="Ví dụ: Phòng 01" value="${esc(exam?.roomCode || "")}" maxlength="60" ${locked ? "disabled" : ""}></label><input id="title" type="hidden" value="${esc(exam?.title || "")}"><input id="sheetUrl" type="hidden" value="${esc(exam?.sheetUrl || "")}"><label>Link đáp án Google Docs<input id="docUrl" type="url" value="${esc(exam?.docUrl || "")}" placeholder="https://docs.google.com/document/d/…" ${locked ? "disabled" : ""}></label><div class="toolbar"><button id="importDoc" ${locked ? "disabled" : ""}>Đọc đáp án</button><a id="openSource" class="button ghost" href="${esc(exam?.docUrl || sourceExample)}" target="_blank" rel="noopener noreferrer">Mở tài liệu</a></div><p id="sourceNote" class="help">${exam && !exam.captureOnly ? "Đã có 20 câu TN và 2 câu TL." : "Nhập link rồi bấm Đọc đáp án."}</p><button id="saveExam" class="primary">${exam ? "Lưu đáp án" : "Lưu phòng"}</button><details id="answerEditor"><summary>Kiểm tra / sửa đáp án</summary><label>Điểm mỗi câu TN<input id="quizPoint" type="number" value="${exam?.quizPoint ?? 0.25}" min="0.01" max="0.5" step="0.01" ${locked ? "disabled" : ""}></label><div class="key-grid">${Array.from({ length: 20 }, (_, i) => `<label>Câu ${i + 1}<select id="key${i}" ${locked ? "disabled" : ""}><option value="">—</option>${["A", "B", "C", "D"].map((a) => `<option ${exam?.key[i] === a ? "selected" : ""}>${a}</option>`).join("")}</select></label>`).join("")}</div>${[0, 1].map((i) => `<label>Tự luận ${i + 1}<textarea id="rubric${i}" ${locked ? "disabled" : ""}>${esc((exam?.essays[i].ideas || []).map((x) => x.points + " | " + x.text).join("\n"))}</textarea></label>`).join("")}</details><details><summary>Dán nội dung nếu không đọc được link</summary><textarea id="sourceText"></textarea><button id="parseText">Đọc nội dung</button></details></div><details class="card advanced-scan"><summary>Tùy chọn vùng đọc ảnh</summary><label>Ảnh mẫu<input id="sampleFile" type="file" accept="image/jpeg,image/png" ${layoutLocked ? "disabled" : ""}></label><div class="row"><label>Mặt<select id="samplePage"><option value="0">Mặt 1</option><option value="1">Mặt 2</option></select></label><label>Vùng<select id="region">${fields.map((k) => `<option value="${k}">${fieldLabel(k)}</option>`).join("")}</select></label></div><div class="canvas-wrap"><canvas id="template" width="600" height="400"></canvas></div><div class="toolbar"><span id="regionCount"></span><button id="clearRegion">Xóa vùng</button></div></details>`;
     const canvas = $("#template"),
       ctx = canvas.getContext("2d");
     function draw(temp) {
@@ -380,13 +496,18 @@
           tab = "capture";
           await init();
           toast(
-            "Đã lưu phòng " + roomCode + ". Chụp đủ 2 ảnh cho mỗi mã phách.",
+            "Đã lưu phòng " + roomCode + ". Chụp 1–2 ảnh cho mỗi mã phách.",
           );
         } finally {
           e.target.disabled = false;
         }
       });
     $("#saveExam").onclick = run(async (e) => {
+      if (
+        !Array.from({ length: 20 }, (_, i) => $("#key" + i).value).some(Boolean)
+      )
+        applySource(await api("/import-doc", { url: $("#docUrl").value }));
+
       if (status.requiresRestart)
         throw Error("Cần cập nhật và restart NodeJS để dùng phòng chấm mới.");
       if (!$("#roomCode").value.trim())
@@ -415,6 +536,9 @@
           {
             title: $("#title").value.trim() || $("#roomCode").value.trim(),
             roomCode: $("#roomCode").value.trim(),
+            gradeId:
+              grade?.id === "legacy" ? "" : grade?.id || exam?.gradeId || "",
+
             key: Array.from({ length: 20 }, (_, i) => $("#key" + i).value),
             quizPoint: Number($("#quizPoint").value),
             essays,
@@ -427,7 +551,7 @@
         exam = d.exam;
         tab = "capture";
         await init();
-        toast("Đã lưu phòng. Chụp 2 ảnh cho từng mã phách.");
+        toast("Đã lưu phòng. Chụp 1–2 ảnh cho từng mã phách.");
       } finally {
         e.target.disabled = false;
       }
@@ -466,7 +590,7 @@
   function capture() {
     pages = [null, null];
     $("#content").innerHTML =
-      `<div class="grid wide"><section><div class="card"><span class="eyebrow">${esc(exam.roomCode || exam.title)}</span><h2>Chụp 2 ảnh cho từng bài</h2><p class="help">Chụp bằng điện thoại, kiểm tra hai mặt rồi lưu. Bài được lưu trên máy chủ để thầy mở lại và chấm sau.</p><label>Mã phách<input id="code" placeholder="Ví dụ: 00125" maxlength="40" autocomplete="off"></label><label>Mã nhóm chữ viết (tùy chọn)<input id="writerTag" placeholder="Ví dụ W001 · không cần nhập tên HS" maxlength="40" autocomplete="off"></label><div class="grid">${[0, 1].map((i) => `<div class="drop"><strong>Mặt ${i + 1}</strong><img id="preview${i}" alt="Ảnh mặt ${i + 1}" hidden><label>Chọn ảnh / chụp bằng điện thoại<input id="page${i}" type="file" accept="image/jpeg,image/png" capture="environment"></label><button data-camera="${i}">Mở camera trực tiếp</button></div>`).join("")}</div><div id="camera" hidden><video id="video" playsinline autoplay muted></video><div class="toolbar"><button id="shutter" class="accent">Chụp mặt <span id="cameraSide"></span></button><button id="stopCamera">Đóng camera</button></div></div><p class="status" id="captureState">Đã có 0/2 mặt. Ảnh chưa được lưu.</p><div class="toolbar"><button class="primary" id="savePaper">Lưu bài · chấm sau</button><button id="saveNext">Lưu & chụp HS tiếp theo</button></div><p class="help">Camera dừng sau mỗi lần chụp để thầy kiểm tra ảnh. Ảnh phải rõ, đúng hướng và đủ vùng bài làm.</p></div></section><aside><div class="card soft"><span class="eyebrow">Chấm theo đợt</span><h2>Đưa nhiều bài vào cùng lúc</h2><p class="muted">Chọn thư mục ảnh đã chụp. Mỗi mã phách cần một cặp ảnh, tên dạng <b>00125_1.jpg</b> và <b>00125_2.jpg</b>.</p><label>Ảnh hàng loạt<input id="batch" type="file" accept="image/jpeg,image/png" multiple></label><button id="uploadBatch">Kiểm tra & tải cả đợt</button><p id="batchProgress" role="status" class="help">Tải tuần tự, tối đa 2.000 bài/đợt. Không đóng trang khi đang tải.</p></div><div class="card"><h3>Trước khi đưa bài vào</h3><p class="help">① Đúng đợt và mã đề.<br>② Hai mặt cùng một bài.<br>③ Mã phách rõ, không mất số 0 đầu.<br>④ Ảnh cùng chiều và vị trí với ảnh mẫu.</p><button id="toResults">Xem danh sách bài →</button></div></aside></div>`;
+      `<div class="card compact-capture"><h2>Quét bài thi</h2><label>Mã phách<input id="code" placeholder="Nhập mã phách" maxlength="40" autocomplete="off"></label><input type="hidden" id="writerTag" value=""><div class="grid"><div class="drop"><strong>Mặt 1</strong><img id="preview0" alt="Mặt 1" hidden><label>Chụp / chọn ảnh<input id="page0" type="file" accept="image/jpeg,image/png" capture="environment"></label></div><div class="drop" id="face2" hidden><strong>Mặt 2 (tùy chọn)</strong><img id="preview1" alt="Mặt 2" hidden><label>Chụp / chọn ảnh<input id="page1" type="file" accept="image/jpeg,image/png" capture="environment"></label><button id="removeFace2">Bỏ mặt 2</button></div></div><button id="addFace2" class="ghost">＋ Thêm mặt 2</button><div id="camera" hidden><video id="video" playsinline autoplay muted></video><button id="shutter">Chụp mặt <span id="cameraSide"></span></button><button id="stopCamera">Đóng camera</button></div><p id="captureState" class="help">Chụp mặt 1; thêm mặt 2 nếu bài còn nội dung.</p><div class="toolbar"><button id="saveNext" class="primary">Lưu & quét bài tiếp</button><button id="savePaper">Lưu & xem danh sách</button></div></div><div class="toolbar"><button id="toResults">Chấm & lưu điểm →</button></div><details class="card"><summary>Tải nhiều ảnh có sẵn</summary><p class="help">Tên ảnh: 00125_1.jpg và 00125_2.jpg (mặt 2 tùy chọn).</p><input id="batch" type="file" accept="image/jpeg,image/png" multiple><button id="uploadBatch">Tải ảnh</button><p id="batchProgress" class="help"></p></details>`;
     async function setPage(i, blob) {
       pages[i] = blob;
       const u = URL.createObjectURL(blob);
@@ -476,9 +600,22 @@
       $("#captureState").textContent =
         "Đã có " +
         pages.filter(Boolean).length +
-        "/2 mặt. " +
-        (pages.every(Boolean) ? "Sẵn sàng lưu." : "Chụp tiếp mặt còn lại.");
+        " ảnh. Bấm lưu khi đã đủ nội dung bài.";
     }
+    $("#addFace2").onclick = () => {
+      $("#face2").hidden = false;
+      $("#addFace2").hidden = true;
+    };
+    $("#removeFace2").onclick = () => {
+      pages[1] = null;
+      $("#page1").value = "";
+      $("#preview1").hidden = true;
+      $("#face2").hidden = true;
+      $("#addFace2").hidden = false;
+      $("#captureState").textContent = pages[0]
+        ? "Đã có 1 ảnh. Có thể lưu bài."
+        : "Chụp mặt 1 trước.";
+    };
     [0, 1].forEach(
       (i) =>
         ($("#page" + i).onchange = run(async (e) => {
@@ -535,11 +672,15 @@
     }
     async function save(next) {
       if (busy) return;
-      if (!pages.every(Boolean)) throw Error("Cần chụp đủ 2 mặt.");
+      if (!pages[0]) throw Error("Chụp mặt 1 trước khi lưu.");
       busy = true;
       $("#savePaper").disabled = $("#saveNext").disabled = true;
       try {
-        const p = await upload($("#code").value, pages, $("#writerTag").value);
+        const p = await upload(
+          $("#code").value,
+          pages.filter(Boolean),
+          $("#writerTag").value,
+        );
         exam.count = (exam.count || 0) + 1;
         stopCamera();
         if (next) {
@@ -548,7 +689,7 @@
         } else {
           tab = "results";
           render();
-          toast("Đã lưu hai mặt. Thầy có thể chấm sau trên thiết bị khác.");
+          toast("Đã lưu bài. Thầy có thể chấm sau trên thiết bị khác.");
         }
       } finally {
         busy = false;
@@ -581,7 +722,7 @@
         groups.set(key, g);
       }
       for (const [code, g] of groups)
-        if (!g[0] || !g[1]) throw Error("Thiếu một mặt của mã " + code);
+        if (!g[0]) throw Error("Thiếu mặt 1 của mã " + code);
       if (groups.size > 2000) throw Error("Tối đa 2.000 bài/đợt.");
       busy = true;
       e.target.disabled = true;
@@ -598,10 +739,12 @@
             " · " +
             code;
           try {
-            await upload(code, [
-              await normalized(g[0]),
-              await normalized(g[1]),
-            ]);
+            await upload(
+              code,
+              g[1]
+                ? [await normalized(g[0]), await normalized(g[1])]
+                : [await normalized(g[0])],
+            );
             done++;
             exam.count = (exam.count || 0) + 1;
           } catch (error) {
@@ -640,51 +783,45 @@
     setTimeout(() => URL.revokeObjectURL(u), 1000);
   }
   async function results() {
-    const d = await api(
-      "/exams/" +
-        exam.id +
-        "/papers?page=" +
-        listPage +
-        "&filter=" +
-        encodeURIComponent(filter),
-    );
+    const d = await api("/exams/" + exam.id + "/papers?page=" + listPage);
     if (tab !== "results" || reviewPaper) return;
     $("#content").innerHTML =
-      `<div class="stats"><div class="stat"><b>${d.total}</b><span>Bài đã lưu</span></div><div class="stat"><b>${(d.counts.queued || 0) + (d.counts.processing || 0)}</b><span>Đang nhận diện</span></div><div class="stat"><b>${(d.counts.review || 0) + (d.counts.error || 0)}</b><span>Cần kiểm tra</span></div><div class="stat"><b>${d.counts.approved || 0}</b><span>Đã chốt điểm</span></div></div><div class="card"><div class="toolbar"><h2 style="margin:0;flex:1">${esc(exam.roomCode || exam.title)}</h2><button id="startOcr">Bắt đầu nhận diện các bài đã lưu</button><button id="datasetExport">Tải dữ liệu chữ viết</button><button id="export">Tải CSV</button><button class="primary" id="sync">Ghi điểm phòng lên Sheets</button></div><div class="toolbar"><label style="margin:0">Trạng thái<select id="filter"><option value="">Tất cả</option>${Object.entries(
-        states,
-      )
-        .map(
-          ([k, v]) =>
-            `<option value="${k}" ${filter === k ? "selected" : ""}>${v}</option>`,
-        )
-        .join(
-          "",
-        )}</select></label><button id="reload">Làm mới</button><span class="help">Chỉ bài đã chốt được xuất điểm. Chênh lệch = điểm đã duyệt − điểm chấm tay.</span></div><div class="table-wrap"><table><thead><tr><th>Mã phách</th><th>Trạng thái</th><th>Tổng</th><th>Chênh lệch</th><th></th></tr></thead><tbody>${d.papers.map((p) => `<tr><td><b>${esc(p.code)}</b></td><td><span class="badge ${p.status === "error" ? "warn" : ""}">${states[p.status] || esc(p.status)}</span></td><td>${p.total ?? "—"}</td><td class="${p.difference ? "error" : ""}">${p.difference ?? "—"}</td><td><button data-open="${p.id}">Mở bài →</button></td></tr>`).join("")}</tbody></table>${!d.papers.length ? '<div class="empty">Chưa có bài trong danh sách này. Chọn Chụp 2 ảnh/bài để bắt đầu.</div>' : ""}</div><div class="toolbar"><button id="prev" ${listPage === 0 ? "disabled" : ""}>← Trước</button><span class="help">Trang ${listPage + 1} · ${d.filtered} bài</span><button id="next" ${(listPage + 1) * 50 >= d.filtered ? "disabled" : ""}>Tiếp →</button></div><p id="syncNote" class="help"></p></div>`;
+      `<section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">${esc(exam.roomCode)} · ${d.total} bài</h2><button id="startOcr" class="primary" ${exam.captureOnly ? "disabled" : ""}>Chấm bài</button><button id="sync">Lưu Google Sheets</button></div>${!status.ocr?.ready ? '<p class="help">Chưa kết nối bộ nhận diện. Có thể lưu ảnh và kiểm tra bài.</p>' : ""}${exam.captureOnly ? '<p class="help">Nhập đáp án phòng trước khi chấm.</p>' : ""}<div class="table-wrap"><table><thead><tr><th>Mã phách</th><th>Điểm</th><th></th></tr></thead><tbody>${d.papers.map((p) => `<tr><td><b>${esc(p.code)}</b></td><td>${p.total ?? "—"}<small>${p.status === "approved" ? "Đã chốt" : p.status === "queued" || p.status === "processing" ? "Đang chấm" : p.automatic?.needsReview ? "Cần kiểm tra" : p.automatic?.total !== null && p.automatic?.total !== undefined ? "Tự động · cần kiểm tra" : "Đã lưu " + p.pageCount + " ảnh"}</small></td><td><button data-open="${p.id}">Kiểm tra</button></td></tr>`).join("")}</tbody></table></div>${!d.total ? '<p class="muted">Chưa có bài. Chọn Quét bài để bắt đầu.</p>' : ""}<div class="toolbar"><button id="prev" ${listPage === 0 ? "disabled" : ""}>←</button><span class="help">Trang ${listPage + 1}</span><button id="next" ${(listPage + 1) * 50 >= d.total ? "disabled" : ""}>→</button><button id="reload">Làm mới</button></div><p id="syncNote" role="status" class="help"></p></section>`;
     $("#startOcr").onclick = run(async (e) => {
       e.target.disabled = true;
       try {
-        const d = await api("/exams/" + exam.id + "/recognize", {});
-        toast("Đã xếp hàng " + d.count + " bài.");
+        const r = await api("/exams/" + exam.id + "/recognize", {});
+        toast("Đang chấm " + r.count + " bài.");
         await results();
       } finally {
         if ($("#startOcr")) $("#startOcr").disabled = false;
       }
     });
-    $("#datasetExport").onclick = run(async () =>
-      download(
-        "/exams/" + exam.id + "/training/export",
-        "FPTBN-handwriting-dataset.zip",
-      ),
-    );
-    if (exam.captureOnly) {
-      $("#startOcr").disabled = true;
-      $("#syncNote").textContent =
-        "Đã lưu ảnh. Vào Phòng & đáp án để đọc tài liệu trước khi chấm.";
-    }
-    $("#filter").onchange = run(async (e) => {
-      filter = e.target.value;
-      listPage = 0;
-      await results();
+    $("#sync").onclick = run(async (e) => {
+      e.target.disabled = true;
+      try {
+        const r = await api("/exams/" + exam.id + "/sync", {});
+        $("#syncNote").textContent =
+          "Đã lưu " +
+          r.count +
+          " mã phách; " +
+          (r.scored ?? r.count) +
+          " bài có điểm" +
+          (r.pending ? " · " + r.pending + " bài chờ kiểm tra" : "") +
+          ".";
+        if (r.url) {
+          grade.sheetUrl = r.url;
+          const a = document.createElement("a");
+          a.href = r.url;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = " Mở bảng điểm ↗";
+          $("#syncNote").append(a);
+        }
+        toast("Đã lưu Google Sheets.");
+      } finally {
+        e.target.disabled = false;
+      }
     });
     $("#reload").onclick = run(results);
     $("#prev").onclick = run(async () => {
@@ -698,33 +835,6 @@
     document
       .querySelectorAll("[data-open]")
       .forEach((b) => (b.onclick = run(() => openPaper(b.dataset.open))));
-    $("#export").onclick = run(async () => {
-      const response = await fetch("/api/scan/exams/" + exam.id + "/export", {
-        headers: { Authorization: "Bearer " + token },
-      });
-      if (!response.ok) throw Error("Không tải được CSV.");
-      const u = URL.createObjectURL(await response.blob()),
-        a = document.createElement("a");
-      a.href = u;
-      a.download = "FPTBN-scan.csv";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(u), 1000);
-    });
-    $("#sync").onclick = run(async (e) => {
-      e.target.disabled = true;
-      try {
-        const d = await api("/exams/" + exam.id + "/sync", {});
-        $("#syncNote").textContent =
-          "Đã ghi " +
-          d.count +
-          " bài phòng " +
-          (exam.roomCode || exam.title) +
-          " vào Google Sheets.";
-        toast("Đã đồng bộ Google Sheets.");
-      } finally {
-        e.target.disabled = false;
-      }
-    });
     if ((d.counts.queued || 0) + (d.counts.processing || 0) > 0)
       poll = setTimeout(() => run(results)(), 4000);
   }
@@ -739,7 +849,7 @@
         '<div class="card"><h2>Ảnh đã lưu · ' +
         esc(d.paper.code) +
         '</h2><p>Đợt chưa có đáp án. Thầy có thể kiểm tra ảnh, nhập đáp án rồi chấm sau.</p><button id="draftBack">← Danh sách bài</button> <button id="draftSetup" class="primary">Nhập đáp án & thang điểm</button><div class="grid" style="margin-top:20px"><img id="draftPage0" class="review-image" alt="Mặt 1 đã lưu"><img id="draftPage1" class="review-image" alt="Mặt 2 đã lưu"></div></div>';
-      for (let n = 0; n < 2; n++) {
+      for (let n = 0; n < d.paper.imageTypes.length; n++) {
         const r = await fetch(
           "/api/scan/exams/" + exam.id + "/papers/" + id + "/pages/" + n,
           { headers: { Authorization: "Bearer " + token } },
@@ -749,6 +859,7 @@
         imageURLs.push(u);
         $("#draftPage" + n).src = u;
       }
+      $("#draftPage1").hidden = d.paper.imageTypes.length < 2;
       $("#draftBack").onclick = run(async () => {
         reviewPaper = null;
         await results();
@@ -776,7 +887,7 @@
       r.essayScores || exam.essays.map((e) => e.ideas.map(() => null));
     const texts = r.texts || [ocr.essay1?.text || "", ocr.essay2?.text || ""];
     $("#content").innerHTML =
-      `<div class="toolbar"><button id="backList">← Danh sách bài</button><span class="badge">${states[p.status]}</span><span class="help">Mã nhập lúc chụp: ${esc(p.code)}</span></div>${p.error ? '<p class="status">' + esc(p.error) + "</p>" : ""}${inFlight ? '<p class="status">Đang xử lý OCR. Bấm cập nhật sau khi hoàn tất.</p>' : ""}<div class="grid wide"><section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Bài làm gốc</h2><button data-side="0" class="selected-page">Mặt 1</button><button data-side="1">Mặt 2</button></div><img id="reviewImage" class="review-image" alt="Ảnh bài làm gốc"><p class="help">Chạm ảnh để phóng to. Đối chiếu cả hai mặt trước khi chốt.</p><div class="toolbar"><button id="ocr" ${approved || r.answers || inFlight ? "disabled" : ""}>${p.ocr ? "Nhận diện lại" : "Nhận diện chữ viết"}</button><button id="refreshPaper">Cập nhật trạng thái</button>${approved ? '<button id="trainingOpen">Lưu mẫu chữ viết</button>' : ""}${approved ? '<button id="reopen">Mở lại để sửa</button>' : ""}</div><details><summary>Nhật ký nhận diện và chỉnh sửa</summary><pre>${esc(JSON.stringify({ ocr: p.ocr || "Chưa chạy", history: p.history || [] }, null, 2))}</pre></details></section><section class="card review-pane"><h2>Kiểm tra & cho điểm</h2><p class="help">OCR là bản đọc đề xuất. Tự luận cần GV đối chiếu nội dung theo từng ý. Điểm chưa chốt không được xuất.</p><fieldset ${approved || inFlight ? "disabled" : ""} style="border:0;padding:0;margin:0"><label>Mã phách đã kiểm tra<input id="reviewCode" value="${esc(r.code || p.code)}" maxlength="40"></label>${ocr.code ? '<p class="help">OCR đọc mã: ' + esc(ocr.code.text) + " · đối chiếu với mã nhập khi chụp.</p>" : ""}<h3>20 câu trắc nghiệm</h3><p class="help">“Bỏ trống” và “Nhiều đáp án” được tính 0 điểm. “Chưa xác định” cần kiểm tra trước khi chốt.</p><div class="key-grid">${answers
+      `<div class="toolbar"><button id="backList">← Danh sách bài</button><span class="badge">${states[p.status]}</span><span class="help">Mã nhập lúc chụp: ${esc(p.code)}</span></div>${p.error ? '<p class="status">' + esc(p.error) + "</p>" : ""}${inFlight ? '<p class="status">Đang xử lý OCR. Bấm cập nhật sau khi hoàn tất.</p>' : ""}<div class="grid wide"><section class="card"><div class="toolbar"><h2 style="flex:1;margin:0">Bài làm gốc</h2><button data-side="0" class="selected-page">Mặt 1</button><button data-side="1">Mặt 2</button></div><img id="reviewImage" class="review-image" alt="Ảnh bài làm gốc"><p class="help">Chạm ảnh để phóng to. Đối chiếu tất cả ảnh trước khi chốt.</p><div class="toolbar"><button id="ocr" ${approved || r.answers || inFlight ? "disabled" : ""}>${p.ocr ? "Nhận diện lại" : "Nhận diện chữ viết"}</button><button id="refreshPaper">Cập nhật trạng thái</button>${approved ? '<button id="trainingOpen">Lưu mẫu chữ viết</button>' : ""}${approved ? '<button id="reopen">Mở lại để sửa</button>' : ""}</div><details><summary>Nhật ký nhận diện và chỉnh sửa</summary><pre>${esc(JSON.stringify({ ocr: p.ocr || "Chưa chạy", history: p.history || [] }, null, 2))}</pre></details></section><section class="card review-pane"><h2>Kiểm tra & cho điểm</h2><p class="help">OCR là bản đọc đề xuất. Tự luận cần GV đối chiếu nội dung theo từng ý. Bài chưa đủ căn cứ được để trống điểm khi xuất.</p><fieldset ${approved || inFlight ? "disabled" : ""} style="border:0;padding:0;margin:0"><label>Mã phách đã kiểm tra<input id="reviewCode" value="${esc(r.code || p.code)}" maxlength="40"></label>${ocr.code ? '<p class="help">OCR đọc mã: ' + esc(ocr.code.text) + " · đối chiếu với mã nhập khi chụp.</p>" : ""}<h3>20 câu trắc nghiệm</h3><p class="help">“Bỏ trống” và “Nhiều đáp án” được tính 0 điểm. “Chưa xác định” cần kiểm tra trước khi chốt.</p><div class="key-grid">${answers
         .map(
           (a, i) =>
             `<label>Câu ${i + 1} · ĐA ${exam.key[i]}<select data-answer="${i}">${[
@@ -796,7 +907,7 @@
         )
         .join(
           "",
-        )}</div>${exam.essays.map((e, i) => `<h3 style="margin-top:22px">Tự luận ${i + 1}</h3><label>Nội dung đã nhận diện (có thể sửa)<textarea id="text${i}">${esc(texts[i])}</textarea></label>${e.ideas.map((idea, j) => `<label class="idea"><span>${esc(idea.text)}<small>Tối đa ${idea.points} điểm</small></span><input type="number" data-score="${i}-${j}" min="0" max="${idea.points}" step="0.01" aria-label="Điểm tự luận ${i + 1} ý ${j + 1}" value="${sheetScores[i][j] ?? ""}" placeholder="Chưa chấm"></label>`).join("")}`).join("")}<label style="margin-top:18px">Điểm chấm tay để đối chiếu (không bắt buộc)<input id="manualScore" type="number" min="0" max="10" step="0.01" value="${r.manualScore ?? ""}"></label><label>Ghi chú<textarea id="reviewNote">${esc(r.note || "")}</textarea></label><label class="checkline"><input id="verified" type="checkbox" ${r.verified ? "checked" : ""}>Tôi đã đối chiếu mã phách, hai mặt bài làm, đáp án và điểm từng ý.</label></fieldset><div class="card soft"><span class="eyebrow">Tổng điểm đang duyệt</span><div id="scoreSummary" class="score"></div><div id="difference" class="help"></div></div><div class="toolbar"><button id="saveDraft" ${approved || inFlight ? "disabled" : ""}>Lưu nháp</button><button id="approve" class="primary" ${approved || inFlight ? "disabled" : ""}>Chốt điểm bài này</button></div><p id="reviewNotice" role="status" class="help"></p></section></div><dialog id="zoom"><button id="closeZoom">Đóng ảnh</button><img alt="Ảnh bài làm phóng to" id="zoomImage"></dialog>`;
+        )}</div>${exam.essays.map((e, i) => `<h3 style="margin-top:22px">Tự luận ${i + 1}</h3><label>Nội dung đã nhận diện (có thể sửa)<textarea id="text${i}">${esc(texts[i])}</textarea></label>${e.ideas.map((idea, j) => `<label class="idea"><span>${esc(idea.text)}<small>Tối đa ${idea.points} điểm</small></span><input type="number" data-score="${i}-${j}" min="0" max="${idea.points}" step="0.01" aria-label="Điểm tự luận ${i + 1} ý ${j + 1}" value="${sheetScores[i][j] ?? ""}" placeholder="Chưa chấm"></label>`).join("")}`).join("")}<label hidden style="margin-top:18px">Điểm chấm tay để đối chiếu (không bắt buộc)<input id="manualScore" type="number" min="0" max="10" step="0.01" value="${r.manualScore ?? ""}"></label><label hidden>Ghi chú<textarea id="reviewNote">${esc(r.note || "")}</textarea></label><label class="checkline"><input id="verified" type="checkbox" ${r.verified ? "checked" : ""}>Tôi đã đối chiếu mã phách, các ảnh bài làm, đáp án và điểm từng ý.</label></fieldset><div class="card soft"><span class="eyebrow">Tổng điểm đang duyệt</span><div id="scoreSummary" class="score"></div><div id="difference" class="help"></div></div><div class="toolbar"><button id="saveDraft" ${approved || inFlight ? "disabled" : ""}>Lưu nháp</button><button id="approve" class="primary" ${approved || inFlight ? "disabled" : ""}>Chốt điểm bài này</button></div><p id="reviewNotice" role="status" class="help"></p></section></div><dialog id="zoom"><button id="closeZoom">Đóng ảnh</button><img alt="Ảnh bài làm phóng to" id="zoomImage"></dialog>`;
     let side = 0;
     const urls = {};
     async function image(n) {
@@ -821,6 +932,8 @@
         );
     }
     await show(0);
+    if (p.imageTypes.length < 2)
+      document.querySelector('[data-side="1"]').hidden = true;
     if ($("#trainingOpen"))
       $("#trainingOpen").onclick = run(() => trainingEditor(p, image));
     document
@@ -1100,6 +1213,9 @@
     sessionStorage.removeItem("ot-teacher-token");
     sessionStorage.removeItem("ot-teacher-name");
     exam = null;
+    grade = null;
+    grades = [];
+    exams = [];
     login();
   };
   window.addEventListener("pagehide", stopCamera);

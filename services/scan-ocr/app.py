@@ -106,15 +106,20 @@ def line_crops(image):
 def transcribe(payload):
     pages = payload.get("pages")
     layout = payload.get("layout")
-    if not isinstance(pages, list) or len(pages) != 2 or not isinstance(layout, dict) or len(layout) > 23:
-        raise ValueError("Expected two pages and at most 23 regions")
+    if not isinstance(pages, list) or len(pages) not in (1, 2) or not isinstance(layout, dict) or len(layout) > 23:
+        raise ValueError("Expected one or two pages and at most 23 regions")
     images = [read_page(p) for p in pages]
+    if not layout:
+        return transcribe_pages(images)
     fields = {}
     for key, box in layout.items():
         if not re.fullmatch(r"code|q(?:[1-9]|1[0-9]|20)|essay[12]", key):
             raise ValueError("Unknown region")
-        if box.get("page") not in (0, 1):
+        if box.get("page") not in (0,1):
             raise ValueError("Invalid page")
+        if box["page"] >= len(pages):
+            fields[key] = {"text":"", "requiresReview":True, "reason":"Bài chỉ có một mặt ảnh"}
+            continue
         image = images[box["page"]]
         x,y,w,h = [float(box[k]) for k in ("x","y","w","h")]
         if not (0 <= x < 1 and 0 <= y < 1 and .002 <= w <= 1 and .002 <= h <= 1 and x+w <= 1.001 and y+h <= 1.001):
@@ -129,6 +134,42 @@ def transcribe(payload):
         fields[key] = {"text": "\n".join(lines), "modelScore": min(scores) if scores else None,
                        "requiresReview": True}
     return {"engine": "VietOCR/" + os.environ.get("SCAN_OCR_MODEL", "vgg_seq2seq"), "fields": fields}
+
+
+def transcribe_pages(images):
+    """Read page lines when there is no template. Unresolved answers stay empty."""
+    fields, conflicts = {}, set()
+    essay_lines = {1: [], 2: []}
+    active = None
+    all_lines = []
+    for image in images:
+        for crop in line_crops(image):
+            text, score = MODEL.predict(crop, return_prob=True)
+            text = str(text).strip()
+            if not text:
+                continue
+            all_lines.append(text)
+            hits = list(re.finditer(r"(?:^|[\s;,|])(?:Câu\s*)?(\d{1,2})\s*[.):=\-]?\s*([ABCD])\b", text, re.I))
+            for hit in hits:
+                n = int(hit.group(1))
+                if 1 <= n <= 20:
+                    key, value = "q"+str(n), hit.group(2).upper()
+                    if key in fields and fields[key]["text"] != value:
+                        conflicts.add(key)
+                    fields[key] = {"text": value, "modelScore": float(score), "requiresReview": True}
+            heading = re.match(r"^\s*(?:Câu|TL|Tự luận)\s*(1|2|21|22)(?!\d)\s*[.):]?\s*", text, re.I)
+            if heading and not hits:
+                active = (int(heading.group(1))-1) % 20 + 1
+                tail = text[heading.end():].strip()
+                if active in essay_lines and tail:
+                    essay_lines[active].append(tail)
+            elif active in essay_lines and not hits:
+                essay_lines[active].append(text)
+    for key in conflicts:
+        fields[key] = {"text":"", "requiresReview":True, "reason":"Có nhiều đáp án khác nhau"}
+    for n, lines in essay_lines.items():
+        fields["essay"+str(n)] = {"text":"\n".join(lines), "requiresReview":True}
+    return {"engine":"VietOCR/page-lines", "fields":fields, "rawText":"\n".join(all_lines), "requiresReview":True}
 
 
 @app.post("/recognize")
