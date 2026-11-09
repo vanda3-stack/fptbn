@@ -11,7 +11,7 @@ test('Điền từ: gợi ý số từ không phải điều kiện chặn nộp
   assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').required, 4);
   assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').entered, 5);
   assert.doesNotMatch(studentSource, /OTBlankHints\.mismatch\s*\(/);
-  assert.match(studentSource, /Số từ chỉ là gợi ý/);
+  assert.match(studentSource, /Hệ thống vẫn chấm theo nội dung đáp án/);
 });
 test('Điền từ: các ô bắt buộc có nội dung trước khi kiểm tra', () => {
   assert.match(studentSource, /Em hãy điền đủ các ô trước khi kiểm tra/);

@@ -24,3 +24,20 @@ test("CLB page enables teacher screen and emits its room flag on join and reconn
   assert.doesNotMatch(html,/window\.FPTBN_EXAM_MODE = true/);
   assert.equal((js.match(/clbMode: window\.FPTBN_CLB_MODE === true/g)||[]).length,2);
 });
+
+test("CLB has only live-class assets and no study, exam, outline or practice UI",()=>{
+  const clb=fs.readFileSync(path.join(__dirname,"../public/clb.html"),"utf8");
+  const teacher=fs.readFileSync(path.join(__dirname,"../public/x.html"),"utf8");
+  const scripts=page=>[...page.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match=>match[1].split("?")[0]);
+  assert.deepEqual(scripts(clb),[
+    "/socket.io/socket.io.js",
+    "/js/screen-capture.js",
+    "/js/student.js",
+    "/js/class-resources.js"
+  ]);
+  assert.ok(scripts(teacher).includes("/js/class-resources.js"));
+  for(const forbidden of ["/ot/","/portal/","ôn tập","luyện tập","đề cương","thi thử","bài kiểm tra"]){
+    assert.ok(!clb.toLowerCase().includes(forbidden), "CLB includes "+forbidden);
+    assert.ok(!teacher.toLowerCase().includes(forbidden), "teacher portal includes "+forbidden);
+  }
+});
