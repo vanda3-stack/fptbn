@@ -198,8 +198,8 @@ socket.on(
 
 function examStudentLabel(student) {
     const originalClass = String(student?.originalClassCode || "").trim();
-    const isExam = typeof activeTeacherClass !== "undefined" && activeTeacherClass === "EXAM";
-    return isExam && originalClass ? student.name + " · " + originalClass : student.name;
+    const isMixedRoom = typeof activeTeacherClass !== "undefined" && ["EXAM", "CLB"].includes(activeTeacherClass);
+    return isMixedRoom && originalClass ? student.name + " · " + originalClass : student.name;
 }
 
 // =====================================================

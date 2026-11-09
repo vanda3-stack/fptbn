@@ -209,6 +209,7 @@ socket.on(
                 "student-join",
                 {
                     examMode: window.FPTBN_EXAM_MODE === true,
+                    clbMode: window.FPTBN_CLB_MODE === true,
                     device: {maxTouchPoints: Number(navigator.maxTouchPoints) || 0},
                     studentId:
                         studentId,
@@ -611,6 +612,7 @@ button.addEventListener(
                 "student-join",
                 {
                     examMode: window.FPTBN_EXAM_MODE === true,
+                    clbMode: window.FPTBN_CLB_MODE === true,
                     device: {maxTouchPoints: Number(navigator.maxTouchPoints) || 0},
                     studentId:
                         studentId,

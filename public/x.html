@@ -1269,7 +1269,7 @@
     =========================================== -->
 
     <script
-        src="/js/teacher.js"
+        src="/js/teacher.js?v=20261109-clb1"
     ></script>
 
     <script
@@ -1286,7 +1286,8 @@ const status=document.getElementById("rosterStatus");
 const search=document.getElementById("rosterSearch");
 const tabs=document.querySelector(".rosterTabs");
 let students=[],filter="missing",lastClass="",loading=false;
-const isExamRoom=()=>typeof activeTeacherClass!=="undefined"&&activeTeacherClass==="EXAM";
+const isMixedRoom=()=>typeof activeTeacherClass!=="undefined"&&["EXAM","CLB"].includes(activeTeacherClass);
+const isClbRoom=()=>typeof activeTeacherClass!=="undefined"&&activeTeacherClass==="CLB";
 const open=()=>{panel.classList.add("open");shade.classList.add("open");document.getElementById("rosterToggle").setAttribute("aria-expanded","true");refresh()};
 const close=()=>{panel.classList.remove("open");shade.classList.remove("open");document.getElementById("rosterToggle").setAttribute("aria-expanded","false")};
 document.getElementById("rosterToggle").addEventListener("click",()=>panel.classList.contains("open")?close():open());
@@ -1295,7 +1296,7 @@ shade.addEventListener("click",close);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open"))close()});
 
 function render(){
-    const exam=isExamRoom();
+    const exam=isMixedRoom();
     const online=students.filter(s=>s.online).length;
     const total=students.length;
     // EXAM has no assigned class roster. Count only students actually connected.
@@ -1306,7 +1307,7 @@ function render(){
     document.getElementById("rosterMissing").hidden=exam;
     tabs.hidden=exam;
     const title=panel.querySelector(".rosterTop strong");
-    title.textContent=exam?"👥 Học sinh tham gia phòng thi":"👥 Danh sách học sinh";
+    title.textContent=isClbRoom()?"👥 Học sinh tham gia CLB":exam?"👥 Học sinh tham gia phòng thi":"👥 Danh sách học sinh";
     document.querySelectorAll("[data-roster-filter]").forEach(b=>b.classList.toggle("selected",b.dataset.rosterFilter===filter));
     const q=search.value.trim().toLocaleLowerCase("vi");
     list.replaceChildren();
@@ -1325,7 +1326,7 @@ function render(){
     }
     if(!visible.length){
         const empty=document.createElement("p");
-        empty.textContent=exam?(q?"Không tìm thấy học sinh đang tham gia.":"Chưa có học sinh nào đang tham gia phòng thi."):"Không có học sinh phù hợp.";
+        empty.textContent=exam?(q?"Không tìm thấy học sinh đang tham gia.":isClbRoom()?"Chưa có học sinh nào đang tham gia CLB.":"Chưa có học sinh nào đang tham gia phòng thi."):"Không có học sinh phù hợp.";
         empty.style.color="#94a3b8";list.append(empty);
     }
 }
@@ -1335,7 +1336,7 @@ async function refresh(){
     const cls=typeof activeTeacherClass!=="undefined"?activeTeacherClass:"";
     const token=typeof teacherLoginToken!=="undefined"?teacherLoginToken:"";
     if(!cls||!token||loading)return;
-    if(lastClass!==cls){students=[];lastClass=cls;filter=cls==="EXAM"?"online":"missing";search.value="";render()}
+    if(lastClass!==cls){students=[];lastClass=cls;filter=["EXAM","CLB"].includes(cls)?"online":"missing";search.value="";render()}
     loading=true;
     try{
         const response=await fetch("/api/teacher/class-roster?classCode="+encodeURIComponent(cls),{headers:{"x-teacher-token":token},cache:"no-store"});
@@ -1346,7 +1347,7 @@ async function refresh(){
         }
         if(lastClass!==cls)return; // Ignore a response for a previously selected class.
         students=Array.isArray(data.students)?data.students:[];
-        status.textContent=cls==="EXAM"?"Danh sách học sinh đang trực tuyến · Tự cập nhật mỗi 5 giây":"Tự cập nhật mỗi 5 giây";
+        status.textContent=["EXAM","CLB"].includes(cls)?"Danh sách học sinh đang trực tuyến · Tự cập nhật mỗi 5 giây":"Tự cập nhật mỗi 5 giây";
         render();
     }catch(e){status.textContent="Không tải được danh sách: "+e.message}finally{loading=false}
 }

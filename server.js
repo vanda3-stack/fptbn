@@ -9,6 +9,7 @@ const multer = require("multer");
 const XLSX = require("xlsx");
 const { Server } = require("socket.io");
 const identifyStudentDevice = require("./lib/student-device");
+const clbRoom = require("./lib/clb-room");
 
 const app = express();
 const server = http.createServer(app);
@@ -129,6 +130,7 @@ app.use(express.json({ limit: "64kb" }));
 require("./lib/review-pages")(app, {path, root: __dirname});
 app.get("/scan", (req, res) => {res.set("Cache-Control", "no-store");res.sendFile(path.join(__dirname, "public/scan.html"));});
 app.get("/giaovien", (req, res) => res.sendFile(path.join(__dirname, "public/GV.html")));
+app.get("/clb", (req, res) => { res.set("Cache-Control", "no-store"); res.sendFile(path.join(__dirname, "public/clb.html")); });
 
 app.use(
     express.static(
@@ -4727,11 +4729,11 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         const classCode = normalizeClassCode(req.query.classCode);
         if (!token || !teacherLoginTokens.has(token)) return res.status(401).json({success:false,message:"Phiên giáo viên không hợp lệ"});
         if (!classCode) return res.status(400).json({success:false,message:"Thiếu mã lớp"});
-        if (classCode === "EXAM") {
-            const examStudents = Array.from(students.values())
-                .filter(x => x.classCode === "EXAM")
+        if (classCode === "EXAM" || classCode === "CLB") {
+            const roomStudents = Array.from(students.values())
+                .filter(x => x.classCode === classCode)
                 .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true,device:x.device || ""}));
-            return res.json({success:true,students:examStudents});
+            return res.json({success:true,students:roomStudents});
         }
 
         const [classes] = await db.execute(
@@ -4800,7 +4802,7 @@ app.get("/api/teacher/classes", async (req, res) => {
 
         res.json({
             success: true,
-            classes: rows
+            classes: clbRoom.teacherClasses(rows)
         });
 
 
@@ -5130,17 +5132,12 @@ io.on(
                     }
 
 
-                    // EXAM là phòng thi ảo, không cần bản ghi trong bảng classes.
-                    // Lớp học thông thường vẫn phải được xác thực qua database.
+                    // EXAM và CLB là phòng ảo; lớp hành chính vẫn xác thực qua DB.
                     let classRows;
+                    const virtualClass = clbRoom.teacherRoom(classCode);
 
-                    if (classCode === "EXAM") {
-                        classRows = [{
-                            id: 0,
-                            class_code: "EXAM",
-                            class_name: "Phòng thi chung (nhiều lớp)",
-                            school_year: ""
-                        }];
+                    if (virtualClass) {
+                        classRows = [virtualClass];
                     } else {
                         [classRows] = await db.query(
                             `
@@ -5386,8 +5383,9 @@ io.on(
 
 
                     const originalClassCode = normalizeClassCode(dbStudent.class_code);
-                    const examMode = data?.examMode === true;
-                    const classCode = examMode ? "EXAM" : originalClassCode;
+                    // Chỉ xác thực lớp gốc từ DB; EXAM và CLB là hai phòng ảo được hỗ trợ.
+                    const classCode = clbRoom.studentRoom(data, originalClassCode);
+                    const displayClassName = classCode === "CLB" ? "Lớp CLB (nhiều lớp)" : dbStudent.class_name;
 
 
                     // Chỉ cho phép một phiên đang hoạt động trên mỗi mã HS.
@@ -5458,7 +5456,7 @@ io.on(
                             originalClassCode,
 
                             className:
-                                dbStudent.class_name,
+                                displayClassName,
 
                             schoolYear:
                                 dbStudent.school_year,
@@ -5503,7 +5501,7 @@ io.on(
                             originalClassCode,
 
                             className:
-                                dbStudent.class_name,
+                                displayClassName,
 
                             schoolYear:
                                 dbStudent.school_year
@@ -5518,7 +5516,7 @@ io.on(
                             originalClassCode,
 
                             className:
-                                dbStudent.class_name,
+                                displayClassName,
 
                             schoolYear:
                                 dbStudent.school_year,
