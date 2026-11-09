@@ -23,10 +23,12 @@ test("exam page provides room information without external resource cards", () =
     assert.match(page, /src="\/js\/student\.js/);
 });
 
-test("exam roster lists active participants while ordinary classes keep absence filter", () => {
+test("EXAM and CLB rosters show online participants while ordinary classes keep absence filter", () => {
     const page = html("x.html");
     assert.match(page, /exam\?"👥 Học sinh tham gia phòng thi"/);
-    assert.match(page, /filter=cls==="EXAM"\?"online":"missing"/);
+    assert.match(page, /filter=\["EXAM","CLB"\]\.includes\(cls\)\?"online":"missing"/);
+    assert.match(page, /isMixedRoom/);
+    assert.match(page, /Học sinh tham gia CLB/);
     assert.match(page, /tabs\.hidden=exam/);
     assert.match(page, /s\.original_class/);
     assert.match(page, /s\.student_code/);
@@ -73,4 +75,6 @@ test("exam teacher view has no floating resource widget and retains student mess
     assert.equal(nodes.get("teacherApp").style.display, "block");
     assert.equal(nodes.get("shareTeacher").style.display, "none");
     assert.equal(nodes.get("endClass").textContent, "🚪 Rời phòng thi");
+    onTeacherReady({ class: { class_code: "CLB" }, teacher: { full_name: "Test teacher" } });
+    assert.equal(nodes.get("shareTeacher").style.display, "");
 });
