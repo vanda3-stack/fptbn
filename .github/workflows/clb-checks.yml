@@ -2,7 +2,7 @@ name: CLB checks (no deployment)
 on:
   push:
     branches: [feature/outline-essay-grading]
-    paths: ["server.js", "lib/clb-room.js", "public/clb.html", "public/js/student.js", "public/js/teacher.js", "public/x.html", "test/clb-room.test.js", ".github/workflows/clb-checks.yml"]
+    paths: ["server.js", "lib/clb-room.js", "public/clb.html", "public/js/student.js", "public/js/teacher.js", "public/x.html", "test/clb-room.test.js", "test/exam-room-ui.test.js", ".github/workflows/clb-checks.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,4 +24,5 @@ jobs:
           node --check public/js/student.js
           node --check public/js/teacher.js
           node --check lib/clb-room.js
+          node --test test/clb-room.test.js test/exam-room-ui.test.js
           npm test
