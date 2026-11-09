@@ -8,11 +8,13 @@ function harness(state={}) {
  const db={query:async(sql,args=[])=>{
   if(sql.startsWith('CREATE'))return [[]];
   if(sql.startsWith('SELECT id,class_code'))return [classes.filter(c=>c.class_code===args[0])];
+  if(sql.startsWith('SELECT COALESCE(root_id,pack_id)'))return [[{root_id:pack.id}]];
+  if(sql.startsWith('SELECT l.token FROM ot_report_links'))return [[...links.values()].filter(l=>l.pack_id===args[0]&&l.class_id===args[1]).map(l=>({token:l.token}))];
   if(sql.startsWith('INSERT')){const key=args[0]+args[1];if(!links.has(key))links.set(key,{pack_id:args[0],class_id:args[1],token:args[2]});return [{}]}
   if(sql.startsWith('SELECT token'))return [[links.get(args[0]+args[1])].filter(Boolean)];
   if(sql.startsWith('DELETE')){links.delete(args[0]+args[1]);return [{}]}
-  if(sql.startsWith('SELECT l.pack_id'))return [[...links.values()].filter(l=>l.token===args[0]).map(l=>({...l,class_code:classes.find(c=>c.id===l.class_id).class_code}))];
-  if(sql.startsWith('SELECT * FROM ot_packs'))return [[{...pack,classes_json:JSON.stringify(pack.classes)}]];
+  if(sql.startsWith('SELECT l.pack_id'))return [[...links.values()].filter(l=>l.token===args[0]).map(l=>({...l,root_id:l.pack_id,class_code:classes.find(c=>c.id===l.class_id).class_code}))];
+  if(sql.startsWith('SELECT p.*,m.deleted_at')||sql.startsWith('SELECT * FROM ot_packs'))return [[{...pack,classes_json:JSON.stringify(pack.classes),deleted_at:null,superseded_by:null}]];
   throw Error(sql);
  }};
  const bad=(message,status=400)=>Object.assign(Error(message),{status});
@@ -45,15 +47,15 @@ test('shared report stays in assigned class, reads fresh data after remount, rev
 });
 test('reader filters zero/low activity, polls every minute and clears revoked report',async()=>{
  const vm=require('node:vm'),fs=require('node:fs'),els={};
- const el=id=>els[id]||(els[id]={value:id==='filter'?'needs':id==='threshold'?'3':'',hidden:id==='report',textContent:'',innerHTML:'',disabled:false});
+ const el=id=>els[id]||(els[id]={value:id==='filter'?'needs':id==='threshold'?'3':'',hidden:id==='report',textContent:'',innerHTML:'',disabled:false,closest(){return null;}});
  let count=1,revoked=false,poll,requests=[],copied='',onlyQuiz=false;
- const ctx={navigator:{clipboard:{writeText:async text=>{copied=text}}},location:{hash:'#'+'a'.repeat(64)},document:{getElementById:el,hidden:false,addEventListener(){}},setInterval:(fn,ms)=>{assert.equal(ms,60000);poll=fn},fetch:async(url,options)=>{requests.push({url,options});return {ok:!revoked,status:revoked?404:200,json:async()=>revoked?{success:false,message:'Thu hồi'}:{success:true,title:'Ôn tập',class_code:'7A1',updated_at:new Date().toISOString(),rows:[{student_code:'ZERO',full_name:'An',attempts:40,quiz_attempts:0,cloze_attempts:0,writing_attempts:0,speech_attempts:0,flashcard_attempts:40,recall_questions:[{number:1,attempts:0,passed:0,latest:null}]},{student_code:'LOW',full_name:'Bình',attempts:count*2,quiz_attempts:count,writing_attempts:onlyQuiz?0:count,completed_attempts:count,recall_questions:[{number:1,attempts:count,passed:count,latest:{matched:2,total:2,at:'2026-10-28T01:00:00Z'}}]},{student_code:'HIGH',full_name:'Cường',attempts:16,quiz_attempts:12,cloze_attempts:5,writing_attempts:5,speech_attempts:2,completed_attempts:8,recall_questions:[{number:1,attempts:8,passed:8,latest:{matched:2,total:2,at:'2026-10-28T01:00:00Z'}}]}]}}}};
+ const ctx={navigator:{clipboard:{writeText:async text=>{copied=text}}},location:{hash:'#'+'a'.repeat(64)},document:{getElementById:el,hidden:false,addEventListener(){},createElement(){return {textContent:''}},head:{appendChild(){}}},setInterval:(fn,ms)=>{assert.equal(ms,60000);poll=fn},fetch:async(url,options)=>{requests.push({url,options});return {ok:!revoked,status:revoked?404:200,json:async()=>revoked?{success:false,message:'Thu hồi'}:{success:true,title:'Ôn tập',class_code:'7A1',updated_at:new Date().toISOString(),rows:[{student_code:'ZERO',full_name:'An',attempts:40,quiz_attempts:0,cloze_attempts:0,writing_attempts:0,speech_attempts:0,flashcard_attempts:40,question_scores:[{number:1,attempts:0,score:0}],recall_questions:[{number:1,attempts:0,passed:0,latest:null}]},{student_code:'LOW',full_name:'Bình',attempts:count*2,quiz_attempts:count,writing_attempts:onlyQuiz?0:count,completed_attempts:count,question_scores:[{number:1,attempts:onlyQuiz?0:count,score:5}],recall_questions:[{number:1,attempts:count,passed:count,latest:{matched:2,total:2,at:'2026-10-28T01:00:00Z'}}]},{student_code:'HIGH',full_name:'Cường',attempts:16,quiz_attempts:12,cloze_attempts:5,writing_attempts:5,speech_attempts:2,completed_attempts:8,question_scores:[{number:1,attempts:12,score:8}],recall_questions:[{number:1,attempts:8,passed:8,latest:{matched:2,total:2,at:'2026-10-28T01:00:00Z'}}]}]}}}};
  vm.runInNewContext(fs.readFileSync('public/ot/gvcn-report.js','utf8'),ctx);
  const flush=()=>new Promise(resolve=>setImmediate(resolve));await flush();
  assert.equal(el('report').hidden,false);assert(el('rows').innerHTML.includes('ZERO'));assert(el('rows').innerHTML.includes('HIGH'));assert(!el('rows').innerHTML.includes('rowgroup'));
  await el('copy').onclick();assert(copied.includes('Bình'));assert(!copied.includes('Cường'));assert(copied.includes('TN 1 lượt, TL 1 lượt'));assert(copied.includes('phần 3'));
  count=12;poll();await flush();await el('copy').onclick();assert(!copied.includes('Bình'));assert(el('rows').innerHTML.includes('LOW'));
- onlyQuiz=true;poll();await flush();await el('copy').onclick();assert(copied.includes('Bình'));assert(copied.includes('Chưa ôn TL'));
+ onlyQuiz=true;poll();await flush();await el('copy').onclick();assert(copied.includes('Bình'));assert(copied.includes('Chưa ôn: TL1'));
  assert.equal(requests[0].options.headers.Authorization,'Bearer '+'a'.repeat(64));assert(!requests[0].url.includes('a'.repeat(64)));
  revoked=true;poll();await flush();assert.equal(el('report').hidden,true);assert.equal(el('rows').textContent,'');const before=requests.length;poll();await flush();assert.equal(requests.length,before);
 });

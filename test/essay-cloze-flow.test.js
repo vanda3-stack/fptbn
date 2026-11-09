@@ -8,8 +8,8 @@ const core = require('../public/ot/core');
 const studentSource = fs.readFileSync(path.join(__dirname, '../public/ot/essay-student.js'), 'utf8');
 
 test('Điền từ: gợi ý số từ không phải điều kiện chặn nộp bài', () => {
-  assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').required, 3);
-  assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').entered, 4);
+  assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').required, 4);
+  assert.equal(hints.info('thông tin chính xác', 'thông tin rất chính xác').entered, 5);
   assert.doesNotMatch(studentSource, /OTBlankHints\.mismatch\s*\(/);
   assert.match(studentSource, /Số từ chỉ là gợi ý/);
 });
