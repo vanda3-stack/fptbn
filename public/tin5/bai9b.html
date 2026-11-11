@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11283f">
+<title>Bài 9B · Thực hành tạo đồ dùng gia đình theo video hướng dẫn | Tin học 5</title>
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #f4f8ff;
+  --muted: #c3d6ea;
+  --paper: #11283f;
+  --panel: #18334d;
+  --card: #213f59;
+  --line: #66849e;
+  --gold: #ffda82;
+  --teal: #85e1cc;
+  --teal-ink: #102c32;
+}
+* { box-sizing: border-box }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: radial-gradient(ellipse at top, #254765, var(--paper) 720px);
+  font: 600 1rem/1.6 Nunito, ui-rounded, system-ui, sans-serif;
+}
+h1, h2, h3, p { margin: 0 }
+h1 { font-size: clamp(2.5rem, 7vw, 5rem); letter-spacing: -.055em; line-height: 1.04; color: var(--gold) }
+h2 { font-size: clamp(1.45rem, 3vw, 2.2rem); line-height: 1.2 }
+h3 { font-size: 1.16rem; line-height: 1.4 }
+p { max-width: 67ch }
+button, input { font: inherit }
+button {
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--card);
+  padding: .65rem .95rem;
+}
+button:disabled { cursor: default }
+button:focus-visible, input:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+.primary { color: var(--teal-ink); background: var(--teal); border-color: transparent; font-weight: 800 }
+.primary:hover:not(:disabled) { background: #a7f0de }
+.primary:disabled { opacity: .58 }
+.secondary:hover:not(:disabled), .stage:hover:not(:disabled) { border-color: var(--teal); background: #284c65 }
+[hidden] { display: none !important }
+
+header, main { max-width: 1160px; margin: auto; padding-inline: clamp(14px, 4vw, 40px) }
+header { min-height: 76px; display: flex; justify-content: space-between; align-items: center; gap: 14px }
+.brand, .medalCount { display: flex; align-items: center; gap: .5rem; font-weight: 800 }
+.brandMark { background: var(--card); border-radius: 12px; padding: .3rem .55rem; font-size: 1.4rem }
+.medalCount { background: var(--panel); border: 1px solid var(--line); border-radius: 100px; padding: .35rem .8rem; white-space: nowrap }
+.hero { display: grid; grid-template-columns: 1.45fr 1fr; background: var(--panel); border: 1px solid var(--line); border-radius: 26px; overflow: hidden }
+.heroCopy { padding: clamp(22px, 5vw, 54px); display: grid; justify-items: start; gap: 1rem }
+.heroCopy p { font-size: 1.12rem; color: var(--muted) }
+.eyebrow { font-size: .82rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.art { min-height: 265px; background: #ffdb76; position: relative; overflow: hidden }
+.art img { height: 100%; width: 100%; object-fit: cover; position: absolute; inset: 0 }
+.sectionTitle { margin: 2rem 0 .8rem }
+.stages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px }
+.stage { min-height: 132px; display: grid; align-content: start; gap: .3rem }
+.stage:disabled { background: #1a334a; color: var(--muted); border-color: #536d84 }
+.stage[data-done=true] { background: #22514f; border-color: #79c6b3 }
+.stageIcon { font-size: 1.6rem }
+.stage small { color: var(--muted); font-size: .83rem }
+.homeFoot { margin: 1rem 0 2rem }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; margin: 0 auto 2rem; padding: clamp(16px, 4vw, 36px); max-width: 900px }
+.panelTop, .actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+.panelTop { margin-bottom: 1rem }
+.dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0 0 1rem }
+.dots span { height: 8px; background: #365570; border-radius: 8px }
+.dots .done { background: var(--teal) }
+.dots .current { background: var(--gold) }
+.reading {
+  --arc: 0deg;
+  position: relative;
+  isolation: isolate;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  padding: clamp(16px, 4vw, 25px);
+  display: grid;
+  gap: .65rem;
+}
+.reading.active::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 4px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(#b5efe5 0deg, #43bbad var(--arc), #57738b var(--arc));
+  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0);
+  mask-composite: exclude;
+}
+.reading h3 { color: var(--gold) }
+.readingTitle { display: flex; align-items: center; gap: .55rem }
+.readingStatus, .subtle { font-size: .94rem; color: var(--muted) }
+.examples { display: flex; flex-wrap: wrap; gap: .45rem }
+.example { background: #2c4e69; border-radius: 9px; padding: .2rem .55rem; font-size: .9rem }
+.prompt { margin-top: 1.2rem; display: grid; gap: .55rem }
+.context { margin: 0; padding-left: 1.3rem }
+.options { margin: .75rem 0 1rem; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .65rem }
+.option { display: flex; align-items: flex-start; gap: .65rem; min-height: 58px; overflow-wrap: anywhere }
+.option:hover:not(:disabled), .option[aria-pressed=true] { border-color: var(--teal); background: #285267 }
+.option[data-correct=true] { background: #24574f; border-color: var(--teal) }
+.letter { flex: 0 0 1.65rem; text-align: center; background: #395d76; border-radius: 7px; font-weight: 800 }
+.fillAnswer { color: var(--ink); background: #112b43; width: 100%; min-height: 48px; border: 1px solid var(--line); border-radius: 12px; padding: .6rem .85rem }
+.notice { border-radius: 13px; padding: .8rem 1rem; margin: .65rem 0; background: #4c3e27; color: #ffebc5 }
+.notice.correct { background: #24574f; color: var(--ink) }
+.retryPanel { margin: .75rem 0; border-color: #9d8864 }
+.retryCheck { display: flex; align-items: center; gap: .6rem; margin: .3rem 0 .85rem }
+.retryCheck input { width: 1.25rem; height: 1.25rem; accent-color: var(--teal); flex-shrink: 0 }
+.orderBox { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: 14px; padding: .85rem; background: #142e47 }
+.orderBox ol { margin: .5rem 0; padding-left: 1.6rem }
+.orderBox li + li { margin-top: .3rem }
+.orderTools { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .55rem }
+.orderTools button:disabled, .stepChoice:disabled { opacity: .53 }
+.reviewItem { border: 1px solid var(--line); border-radius: 13px; padding: .75rem; margin: .7rem 0; background: var(--card) }
+.reviewItem summary { cursor: pointer; font-weight: 800 }
+.reviewItem p { margin: .5rem 0 }
+.reviewItem ul { padding-left: 1.3rem }
+.celebration { text-align: center; border-color: #bd9f64; padding-block: clamp(28px, 6vw, 58px) }
+.celebration h2 { color: var(--gold) }
+.celebration p { margin: .75rem auto }
+.celebration .actions { justify-content: center; margin-top: 1.4rem }
+.award { display: grid; place-items: center; margin: 0 auto 1rem; width: 112px; aspect-ratio: 1; border-radius: 50%; background: #f6ce77; border: 3px solid #ffe7a8; font-size: 3.5rem; animation: award-in .35s ease-out }
+@keyframes award-in { from { transform: scale(.8); opacity: .4 } }
+@media (max-width: 850px) { .stages { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)) } }
+@media (max-width: 600px) {
+  .hero, .options { grid-template-columns: 1fr }
+  .art { min-height: 175px }
+  .art img { object-position: center 49% }
+  .stage { min-height: 112px }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading.active::after { background: #74d1c2 }
+  .award { animation: none }
+}
+
+.catalogNav { margin: 0 0 1rem }
+.catalogNav a { color: var(--teal); text-underline-offset: .25em }
+.catalogNav a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px }
+.hero h1 { font-size: clamp(2rem, 5.4vw, 3.9rem); line-height: 1.09; overflow-wrap: anywhere }
+.lessonArt { display: grid; place-items: center; background: radial-gradient(circle at 50% 50%, #ffe9a5, #efb453); }
+.lessonArt span { display: grid; place-items: center; width: clamp(110px, 48%, 190px); aspect-ratio: 1; border-radius: 26%; background: #fff6d1; box-shadow: 0 12px 40px #7a431440; font-size: clamp(3.2rem, 12vw, 6rem); }
+#material, #retryMaterial { white-space: pre-line }
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="brandMark" aria-hidden="true">💻</span> Tin học 5 · Bài 9B</div><div class="medalCount"><span aria-hidden="true">🏅</span> <span id="medals">0/5 huy chương</span></div></header>
+<main>
+<section id="home">
+
+<nav class="catalogNav" aria-label="Điều hướng bài học"><a href="index.html">← Mục lục Tin học 5</a></nav>
+<div class="hero"><div class="heroCopy"><div class="eyebrow">Video hướng dẫn</div>
+<h1>Thực hành tạo đồ dùng gia đình theo video hướng dẫn</h1><p>Video có thể hướng dẫn làm đồ dùng gia đình đơn giản. Trước khi làm, xác định sản phẩm và vật liệu cần có.</p><button id="start" class="primary">Bắt đầu</button>
+</div><div class="art lessonArt" aria-hidden="true"><span>📐</span></div></div>
+<h2 class="sectionTitle">Chọn cấp độ</h2><div id="stages" class="stages"></div>
+<div class="homeFoot"><button id="reset" class="secondary" hidden>Đặt lại tiến độ</button></div>
+</section>
+<section id="game" class="panel" hidden>
+<div class="panelTop"><div><p id="position" class="eyebrow"></p><h2 id="stageTitle" tabindex="-1"></h2></div><button class="secondary" data-home>Về các cấp độ</button></div>
+<div id="dots" class="dots" aria-hidden="true"></div>
+<section id="reading" class="reading">
+<h3 id="readingTitle" class="readingTitle" tabindex="-1"><span aria-hidden="true">📖</span> Nội dung học</h3>
+<p id="objective" class="subtle"></p><p id="material"></p><p id="studyHint"></p><p id="studyRef" class="subtle"></p>
+<p id="status" class="readingStatus" role="status"></p>
+</section>
+<div id="question" class="prompt" hidden><p id="kind" class="eyebrow"></p><h3 id="prompt" tabindex="-1"></h3><ul id="context" class="context"></ul><p id="instruction" class="subtle"></p><div id="options" class="options"></div></div>
+<section id="retryPanel" class="reading retryPanel" hidden>
+<h3 id="retryTitle" tabindex="-1">📖 Đọc lại kiến thức</h3>
+<p>Câu trả lời chưa đúng. Em hãy đọc lại nội dung sau.</p>
+<p id="retryMaterial"></p><p id="retryHint"></p><p id="retryRef" class="subtle"></p>
+<label class="retryCheck"><input id="retryConfirm" type="checkbox"> Em đã đọc lại và sẵn sàng làm lại câu này.</label>
+<button id="retry" class="primary" disabled>Làm lại câu hỏi</button>
+</section>
+<p id="feedback" class="notice" role="status" hidden></p>
+<div class="actions"><button id="reviewCurrent" class="secondary" hidden>Xem câu đã trả lời</button><button id="submit" class="primary" hidden>Kiểm tra</button><button id="next" class="primary" hidden>Câu tiếp theo</button></div>
+</section>
+<section id="celebration" class="panel celebration" hidden>
+<div id="award" class="award" aria-hidden="true"></div>
+<h2 id="celebrationTitle" tabindex="-1"></h2>
+<p id="celebrationMessage"></p>
+<div class="actions"><button id="awardNext" class="primary">Chơi cấp tiếp theo</button><button id="awardReview" class="secondary">Xem lời giải</button><button class="secondary" data-home>Về các cấp độ</button></div>
+</section>
+<section id="review" class="panel" hidden><div class="panelTop"><h2 id="reviewTitle" tabindex="-1"></h2><button class="secondary" data-home>Về các cấp độ</button></div><div id="reviewItems"></div></section>
+</main>
+<script id="lesson-data" type="application/json">[{"name":"Nhận diện","questions":[{"code":"T5-B9B-C01","kind":"Chọn một","prompt":"Mục nào tương ứng với mô tả “Đối chiếu dụng cụ với hướng dẫn trước khi làm”?","context":[],"options":["Chuẩn bị vật liệu","Kiểm tra đồ dùng","Cả ba mục đều có cùng vai trò.","Làm theo từng bước"],"correct":[0],"why":"Chuẩn bị vật liệu: Đối chiếu dụng cụ với hướng dẫn trước khi làm."},{"code":"T5-B9B-C02","kind":"Chọn một","prompt":"Mục nào có đặc điểm “Tạm dừng video để hoàn thành thao tác”?","context":[],"options":["Kiểm tra đồ dùng","Làm theo từng bước","Cả ba mục đều có đặc điểm này.","Chuẩn bị vật liệu"],"correct":[1],"why":"Làm theo từng bước: Tạm dừng video để hoàn thành thao tác."},{"code":"T5-B9B-C03","kind":"Chọn một","prompt":"Chọn mô tả đúng cho “Kiểm tra đồ dùng”.","context":[],"options":["Ba mô tả đều đúng.","Tạm dừng video để hoàn thành thao tác","So sản phẩm với mục đích và mẫu","Đối chiếu dụng cụ với hướng dẫn trước khi làm"],"correct":[2],"why":"Kiểm tra đồ dùng: So sản phẩm với mục đích và mẫu."},{"code":"T5-B9B-C04","kind":"Chọn một","prompt":"Đặc điểm nào giúp nhận ra “Làm theo từng bước”?","context":[],"options":["Đối chiếu dụng cụ với hướng dẫn trước khi làm","So sản phẩm với mục đích và mẫu","Không có đặc điểm nào để phân biệt mục này.","Tạm dừng video để hoàn thành thao tác"],"correct":[3],"why":"Phương án đúng là “Tạm dừng video để hoàn thành thao tác”."},{"code":"T5-B9B-C05","kind":"Chọn một","prompt":"Bạn gán mô tả “Đối chiếu dụng cụ với hướng dẫn trước khi làm” cho “Kiểm tra đồ dùng”. Nhận xét nào đúng?","context":[],"options":["Mô tả đúng cho cả ba mục.","Gán nhầm. Mô tả này thuộc “Làm theo từng bước”.","Gán đúng cho “Kiểm tra đồ dùng”.","Gán nhầm. Mô tả này thuộc “Chuẩn bị vật liệu”."],"correct":[3],"why":"Mô tả thuộc mục “Chuẩn bị vật liệu”."}]},{"name":"Phân biệt","questions":[{"code":"T5-B9B-C06","kind":"Ghép cặp · Chọn tổ hợp","prompt":"Chọn cách ghép đúng.","context":["1. Chuẩn bị vật liệu","2. Làm theo từng bước","3. Kiểm tra đồ dùng","A. Tạm dừng video để hoàn thành thao tác","B. So sản phẩm với mục đích và mẫu","C. Đối chiếu dụng cụ với hướng dẫn trước khi làm"],"options":["1–C, 2–A, 3–B","1–B, 2–C, 3–A","1–C, 2–B, 3–A","1–B, 2–A, 3–C"],"correct":[0],"why":"Chuẩn bị vật liệu → Đối chiếu dụng cụ với hướng dẫn trước khi làm · Làm theo từng bước → Tạm dừng video để hoàn thành thao tác · Kiểm tra đồ dùng → So sản phẩm với mục đích và mẫu"},{"code":"T5-B9B-C07","kind":"Chọn một","prompt":"Nhãn “Làm theo từng bước” đang được dùng cho mô tả “So sản phẩm với mục đích và mẫu”. Nên sửa nhãn thành gì?","context":[],"options":["Cả ba mục đều có cùng vai trò.","Kiểm tra đồ dùng","Làm theo từng bước","Chuẩn bị vật liệu"],"correct":[1],"why":"So sản phẩm với mục đích và mẫu là đặc điểm của Kiểm tra đồ dùng."},{"code":"T5-B9B-C08","kind":"Chọn nhiều","prompt":"Chọn hai thẻ có phần tên và mô tả khớp nhau.","context":[],"options":["Chuẩn bị vật liệu — Đối chiếu dụng cụ với hướng dẫn trước khi làm","Làm theo từng bước — So sản phẩm với mục đích và mẫu","Kiểm tra đồ dùng — So sản phẩm với mục đích và mẫu","Kiểm tra đồ dùng — Tạm dừng video để hoàn thành thao tác"],"correct":[0,2],"why":"B phải ghép với “Tạm dừng video để hoàn thành thao tác”, còn D dùng mô tả của “Làm theo từng bước”."},{"code":"T5-B9B-C09","kind":"Chọn một","prompt":"Hai mô tả lần lượt là “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “Tạm dừng video để hoàn thành thao tác”. Nhận định nào đúng?","context":[],"options":["Chúng đều mô tả “Kiểm tra đồ dùng”.","Chúng mô tả lần lượt “Chuẩn bị vật liệu” và “Làm theo từng bước”.","Hai mô tả có cùng ý nghĩa.","Chúng mô tả lần lượt “Làm theo từng bước” và “Chuẩn bị vật liệu”."],"correct":[1],"why":"Chúng mô tả lần lượt “Chuẩn bị vật liệu” và “Làm theo từng bước”."},{"code":"T5-B9B-C10","kind":"Chọn một","prompt":"Chọn lời giải thích phân biệt “Chuẩn bị vật liệu” với “Kiểm tra đồ dùng”.","context":[],"options":["Chuẩn bị vật liệu — So sản phẩm với mục đích và mẫu. Kiểm tra đồ dùng — Đối chiếu dụng cụ với hướng dẫn trước khi làm.","Chuẩn bị vật liệu — Đối chiếu dụng cụ với hướng dẫn trước khi làm. Kiểm tra đồ dùng — So sản phẩm với mục đích và mẫu.","Chuẩn bị vật liệu — Tạm dừng video để hoàn thành thao tác. Kiểm tra đồ dùng — So sản phẩm với mục đích và mẫu.","Chuẩn bị vật liệu — Đối chiếu dụng cụ với hướng dẫn trước khi làm. Kiểm tra đồ dùng — Tạm dừng video để hoàn thành thao tác."],"correct":[1],"why":"Chuẩn bị vật liệu — Đối chiếu dụng cụ với hướng dẫn trước khi làm. Kiểm tra đồ dùng — So sản phẩm với mục đích và mẫu."}]},{"name":"Thực hành","questions":[{"code":"T5-B9B-C11","kind":"Sắp xếp · Chọn thứ tự","prompt":"Chọn thứ tự đúng cho các bước chọn và kiểm tra một ví dụ minh họa.","context":[],"why":"Xác định dấu hiệu trước khi chọn. Kiểm tra lại sau khi đã có ví dụ.","steps":["Đối chiếu ví dụ với mô tả đã học","Chỉ ra dấu hiệu chính trong yêu cầu","Chọn mục có dấu hiệu tương ứng rồi nêu ví dụ"],"order":[1,2,0]},{"code":"T5-B9B-C12","kind":"Chọn một","prompt":"Khi chuẩn bị ví dụ minh họa “Chuẩn bị vật liệu”, em cần thể hiện dấu hiệu nào?","context":[],"options":["So sản phẩm với mục đích và mẫu","Đối chiếu dụng cụ với hướng dẫn trước khi làm","Chỉ cần ghi tên bài.","Tạm dừng video để hoàn thành thao tác"],"correct":[1],"why":"Đối chiếu dụng cụ với hướng dẫn trước khi làm"},{"code":"T5-B9B-C13","kind":"Chọn một","prompt":"Nhóm em phải minh họa “Làm theo từng bước” bằng một sản phẩm hoặc tình huống. Tiêu chí nào kiểm tra trực tiếp mục tiêu?","context":[],"options":["Minh họa có tiêu đề dù thiếu dấu hiệu cần quan sát.","Minh họa chỉ cho thấy: Đối chiếu dụng cụ với hướng dẫn trước khi làm.","Minh họa chỉ cho thấy: So sản phẩm với mục đích và mẫu.","Minh họa cho thấy: Tạm dừng video để hoàn thành thao tác."],"correct":[3],"why":"Minh họa cho thấy: Tạm dừng video để hoàn thành thao tác."},{"code":"T5-B9B-C14","kind":"Chọn một","prompt":"Phiếu thực hành ghi yêu cầu “So sản phẩm với mục đích và mẫu”. Phần nào trong bài giúp em thực hiện hoặc giải thích yêu cầu đó?","context":[],"options":["Làm theo từng bước","Chuẩn bị vật liệu","Cả ba mục đều có cùng vai trò.","Kiểm tra đồ dùng"],"correct":[3],"why":"Yêu cầu trùng với vai trò của Kiểm tra đồ dùng."},{"code":"T5-B9B-C15","kind":"Chọn một","prompt":"Em chuẩn bị một thẻ đố để người chơi nhận ra “Kiểm tra đồ dùng”. Thẻ nào có gợi ý phù hợp?","context":[],"options":["Gợi ý gồm tên của cả “Chuẩn bị vật liệu”, “Làm theo từng bước” và “Kiểm tra đồ dùng” nhưng thiếu đặc điểm.","Đối chiếu dụng cụ với hướng dẫn trước khi làm","So sản phẩm với mục đích và mẫu","Tạm dừng video để hoàn thành thao tác"],"correct":[2],"why":"So sản phẩm với mục đích và mẫu"}]},{"name":"Chẩn đoán","questions":[{"code":"T5-B9B-C16","kind":"Phân loại · Chọn tổ hợp","prompt":"Chọn cách phân loại đúng.","context":["1. Chuẩn bị vật liệu — Đối chiếu dụng cụ với hướng dẫn trước khi làm","2. Kiểm tra đồ dùng — Tạm dừng video để hoàn thành thao tác","3. Làm theo từng bước — Tạm dừng video để hoàn thành thao tác","4. Chuẩn bị vật liệu — So sản phẩm với mục đích và mẫu"],"options":["Khớp: 3, 4. Cần sửa: 1, 2.","Khớp: 2, 4. Cần sửa: 1, 3.","Khớp: 1, 2. Cần sửa: 3, 4.","Khớp: 1, 3. Cần sửa: 2, 4."],"correct":[3],"why":"Ghi chú 2 dùng mô tả của Làm theo từng bước; ghi chú 4 dùng mô tả của Kiểm tra đồ dùng."},{"code":"T5-B9B-C17","kind":"Chọn một","prompt":"Bạn ghi “Chuẩn bị vật liệu” bên cạnh mô tả “Tạm dừng video để hoàn thành thao tác”. Em sửa tên nhãn như thế nào?","context":[],"options":["Gộp cả ba nhãn mà bỏ phần mô tả.","Đổi thành “Làm theo từng bước” và giữ mô tả.","Đổi thành “Kiểm tra đồ dùng” và giữ mô tả.","Giữ “Chuẩn bị vật liệu” và khẳng định mô tả đã đúng."],"correct":[1],"why":"Đổi thành “Làm theo từng bước” và giữ mô tả."},{"code":"T5-B9B-C18","kind":"Chọn một","prompt":"Nhóm đã chốt tên mục “Làm theo từng bước” nhưng ghi mô tả “Đối chiếu dụng cụ với hướng dẫn trước khi làm”. Chọn phần mô tả thay thế.","context":[],"options":["Một mục có trong bài học.","Đối chiếu dụng cụ với hướng dẫn trước khi làm","Tạm dừng video để hoàn thành thao tác","So sản phẩm với mục đích và mẫu"],"correct":[2],"why":"Tạm dừng video để hoàn thành thao tác"},{"code":"T5-B9B-C19","kind":"Chọn nhiều","prompt":"Chọn các cách kiểm tra khi một ví dụ có thể bị gắn nhầm tên.","context":[],"options":["So dấu hiệu trong ví dụ với mô tả của mục","Kiểm tra xem ví dụ có phù hợp hơn với mục khác","Giữ tên chỉ vì nó đứng đầu danh sách","Nêu dấu hiệu cụ thể làm căn cứ"],"correct":[0,1,3],"why":"Căn cứ vào nội dung và dấu hiệu, thay vì vị trí trong danh sách."},{"code":"T5-B9B-C20","kind":"Chọn một","prompt":"Ví dụ của bạn thể hiện “So sản phẩm với mục đích và mẫu”. Bạn muốn dùng cùng ví dụ để minh họa “Chuẩn bị vật liệu”. Em cần kiểm tra gì?","context":[],"options":["Ví dụ có thêm dấu hiệu “Tạm dừng video để hoàn thành thao tác” hay không.","Tên ví dụ có đủ dài hay không.","Ví dụ có thêm dấu hiệu “Đối chiếu dụng cụ với hướng dẫn trước khi làm” hay không.","Ví dụ có được ghi trước các ví dụ khác hay không."],"correct":[2],"why":"Ví dụ có thêm dấu hiệu “Đối chiếu dụng cụ với hướng dẫn trước khi làm” hay không."}]},{"name":"Vận dụng","questions":[{"code":"T5-B9B-C21","kind":"Chọn một","prompt":"Nhóm muốn dùng một tình huống để minh họa cả “Chuẩn bị vật liệu” và “Làm theo từng bước”. Phương án nào đủ hai dấu hiệu?","context":[],"options":["Có “Tạm dừng video để hoàn thành thao tác” và “So sản phẩm với mục đích và mẫu”.","Chỉ có “So sản phẩm với mục đích và mẫu”.","Có cả “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “Tạm dừng video để hoàn thành thao tác”.","Có “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “So sản phẩm với mục đích và mẫu”."],"correct":[2],"why":"Có cả “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “Tạm dừng video để hoàn thành thao tác”."},{"code":"T5-B9B-C22","kind":"Chọn một","prompt":"Bạn đưa ví dụ về “Kiểm tra đồ dùng” nhưng chưa giải thích. Chi tiết nào cần được chỉ ra để làm căn cứ?","context":[],"options":["Thứ tự trình bày ví dụ.","So sản phẩm với mục đích và mẫu","Đối chiếu dụng cụ với hướng dẫn trước khi làm","Tạm dừng video để hoàn thành thao tác"],"correct":[1],"why":"So sản phẩm với mục đích và mẫu"},{"code":"T5-B9B-C23","kind":"Chọn một","prompt":"Hai tình huống lần lượt có dấu hiệu “So sản phẩm với mục đích và mẫu” và “Tạm dừng video để hoàn thành thao tác”. Cách gắn nhãn nào giúp phân biệt đúng?","context":[],"options":["Tình huống 1 là “Kiểm tra đồ dùng”, tình huống 2 là “Làm theo từng bước”.","Cả hai tình huống là “Chuẩn bị vật liệu”.","Tình huống 1 là “Làm theo từng bước”, tình huống 2 là “Kiểm tra đồ dùng”.","Tình huống 1 là “Chuẩn bị vật liệu”, tình huống 2 là “Kiểm tra đồ dùng”."],"correct":[0],"why":"Tình huống 1 là “Kiểm tra đồ dùng”, tình huống 2 là “Làm theo từng bước”."},{"code":"T5-B9B-C24","kind":"Sắp xếp · Chọn thứ tự","prompt":"Nhóm em phải giải thích một lựa chọn bằng căn cứ. Chọn thứ tự đúng cho quy trình kiểm tra trước khi nộp.","context":[],"why":"Nêu yêu cầu trước, thu thập dấu hiệu, kết luận có căn cứ rồi chỉnh nếu cần.","steps":["Sửa kết luận nếu bằng chứng không khớp","Ghi chi tiết quan sát được","Xác định yêu cầu của tình huống","Đối chiếu chi tiết với kiến thức và nêu lựa chọn"],"order":[2,1,3,0]},{"code":"T5-B9B-C25","kind":"Chọn một","prompt":"Phiếu kiểm tra yêu cầu một thử thách về “Thực hành tạo đồ dùng gia đình theo video hướng dẫn” có ít nhất hai mục và cách kiểm tra kết quả. Bản nháp nào đạt yêu cầu?","context":[],"options":["Yêu cầu nêu “Chuẩn bị vật liệu” và “Làm theo từng bước” nhưng chấm theo số chữ của câu trả lời.","Chỉ hỏi tên “Chuẩn bị vật liệu” rồi kết thúc.","Đưa dấu hiệu “Tạm dừng video để hoàn thành thao tác” và chấm mọi nhãn đều đúng.","Nêu một tình huống có “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “So sản phẩm với mục đích và mẫu”, yêu cầu gắn nhãn từng dấu hiệu, rồi đối chiếu với “Chuẩn bị vật liệu” và “Kiểm tra đồ dùng”."],"correct":[3],"why":"Nêu một tình huống có “Đối chiếu dụng cụ với hướng dẫn trước khi làm” và “So sản phẩm với mục đích và mẫu”, yêu cầu gắn nhãn từng dấu hiệu, rồi đối chiếu với “Chuẩn bị vật liệu” và “Kiểm tra đồ dùng”."}]}]</script>
+<script>
+const levels=JSON.parse(document.querySelector("#lesson-data").textContent);
+const byId=id=>document.getElementById(id);
+const node=(tag,text,cls)=>{
+  const element=document.createElement(tag);
+  if(text)element.textContent=text;
+  if(cls)element.className=cls;
+  return element;
+};
+const study=[{"objective":"Nhận biết Chuẩn bị vật liệu, Làm theo từng bước và Kiểm tra đồ dùng.","knowledge":"Video có thể hướng dẫn làm đồ dùng gia đình đơn giản. Trước khi làm, xác định sản phẩm và vật liệu cần có.","hint":"Xem phần đầu video để biết cần chuẩn bị những gì.","pages":"49"},{"objective":"Phân biệt các mục qua dấu hiệu và vai trò.","knowledge":"Chọn video phù hợp với vật liệu, dụng cụ và khả năng thực hiện của em.","hint":"Ưu tiên hướng dẫn cho thấy rõ vật liệu và từng bước.","pages":"49–50"},{"objective":"Vận dụng kiến thức để xây dựng ví dụ và kiểm tra lựa chọn.","knowledge":"Xem và thực hiện theo từng bước. Tạm dừng hoặc xem lại khi gặp đoạn khó.","hint":"Nếu có dụng cụ cần thao tác cẩn thận, nhờ người lớn hỗ trợ.","pages":"49–50"},{"objective":"Tìm điểm sai trong cách phân loại hoặc giải thích và đề xuất cách sửa.","knowledge":"Sau mỗi bước, đối chiếu sản phẩm với mẫu để phát hiện chỗ ghép hoặc gấp chưa đúng.","hint":"Sửa ở bước đang làm trước khi tiếp tục.","pages":"50–51"},{"objective":"Giải thích lựa chọn và tự kiểm tra bằng một tình huống mới.","knowledge":"Kiểm tra xem đồ dùng đã làm có sử dụng được đúng mục đích và đủ chắc chắn hay chưa.","hint":"Nhận xét sản phẩm dựa trên công dụng và mức hoàn thiện.","pages":"50–51"}];
+const icons=["🌱","🧩","🛠️","🔎","🚀"];
+const optionIcons={};
+const trophies=["🥉","🥈","🥇","🏅","🏆"];
+const storageKey="tin5-bai9b-progress-v1";
+const blank=()=>({level:0,step:0});
+let progress=blank();
+try{
+  const saved=JSON.parse(localStorage.getItem(storageKey));
+  if(Number.isInteger(saved?.level)&&saved.level>=0&&saved.level<=levels.length&&Number.isInteger(saved.step)&&saved.step>=0&&saved.step<5)progress=saved;
+}catch{}
+const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify(progress))}catch{}};
+const normalizeText=text=>text.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().replaceAll("đ","d").trim().replace(/\s+/g," ");
+let activeLevel=0,activeStep=0,frame=0,phase="home",picked=new Set(),ordered=[];
+const show=(screen)=>{
+  cancelAnimationFrame(frame);
+  phase=screen;
+  for(const name of ["home","game","review","celebration"])byId(name).hidden=name!==screen;
+};
+function home(){
+  show("home");
+  byId("medals").textContent=progress.level+"/5 huy chương";
+  byId("reset").hidden=!(progress.level||progress.step);
+  byId("start").textContent=progress.level===5?"Xem lại cấp cuối":progress.level||progress.step?"Tiếp tục":"Bắt đầu";
+  const list=byId("stages");
+  list.replaceChildren();
+  levels.forEach((level,i)=>{
+    const done=i<progress.level;
+    const card=node("button","","stage");
+    card.dataset.done=done;
+    card.disabled=i>progress.level;
+    const icon=node("span",done?trophies[i]:icons[i],"stageIcon");
+    icon.setAttribute("aria-hidden","true");
+    card.append(icon,node("strong",level.name),node("small",done?"Xem lời giải":card.disabled?"🔒 Chưa mở":progress.step?progress.step+"/5 câu đã xong":"Sẵn sàng"));
+    card.onclick=()=>done?review(i):play(i,progress.step);
+    list.append(card);
+  });
+}
+function play(level,step,retrying=false){
+  show("game");
+  activeLevel=level;activeStep=step;picked=new Set();ordered=[];
+  const item=levels[level].questions[step];
+  byId("position").textContent="Cấp "+(level+1)+" / 5 · Câu "+(step+1)+" / 5";
+  byId("stageTitle").textContent=levels[level].name;
+  byId("stageTitle").focus();
+  const dots=byId("dots");dots.replaceChildren();
+  for(let i=0;i<5;i++)dots.append(node("span","",i<step?"done":i===step?"current":""));
+  const card=byId("reading");
+  const {objective,knowledge,hint,pages}=study[level];
+  byId("objective").textContent="Mục tiêu — "+objective;
+  byId("material").textContent=knowledge;
+  byId("studyHint").textContent="Gợi ý — "+hint;
+  byId("studyRef").textContent="Tham chiếu — SGK Tin học 5, Bài 9B, trang "+pages+".";
+  byId("readingTitle").textContent="📖 Nội dung học";
+  byId("retryPanel").hidden=true;
+  byId("retryConfirm").checked=false;
+  byId("retry").disabled=true;
+  byId("status").textContent="Câu hỏi sẽ hiện khi viền màu chạy đủ một vòng.";
+  byId("kind").textContent=item.kind;
+  byId("prompt").textContent=item.prompt;
+  byId("context").replaceChildren(...item.context.map(line=>node("li",line)));
+  byId("context").hidden=!item.context.length;
+  byId("instruction").textContent=item.steps?"Bấm lần lượt từng bước theo thứ tự em chọn.":item.wordCount?"Điền "+item.wordCount+" từ vào chỗ trống.":item.correct.length>1?"Chọn tất cả phương án phù hợp.":"Chọn một phương án.";
+  const list=byId("options");list.replaceChildren();list.inert=false;
+  if(item.steps){
+    const box=node("div","","orderBox");
+    const sequence=node("ol");
+    sequence.setAttribute("aria-live","polite");
+    const empty=node("p","Các bước em chọn sẽ hiện ở đây.","subtle");
+    const tools=node("div","","orderTools");
+    const undo=node("button","Bỏ bước cuối","secondary");
+    const clear=node("button","Xếp lại từ đầu","secondary");
+    tools.append(undo,clear);
+    box.append(node("strong","Thứ tự của em"),empty,sequence,tools);
+    const buttons=item.steps.map((step,i)=>{
+      const button=node("button",step,"option stepChoice");
+      button.onclick=()=>{
+        if(phase!=="answer"||ordered.includes(i))return;
+        ordered.push(i);updateOrder();
+      };
+      return button;
+    });
+    function updateOrder(){
+      sequence.replaceChildren(...ordered.map(i=>node("li",item.steps[i])));
+      empty.hidden=ordered.length>0;
+      buttons.forEach((button,i)=>button.disabled=ordered.includes(i));
+      undo.disabled=clear.disabled=!ordered.length;
+      byId("submit").disabled=ordered.length!==item.steps.length;
+    }
+    undo.onclick=()=>{if(phase==="answer"){ordered.pop();updateOrder()}};
+    clear.onclick=()=>{if(phase==="answer"){ordered=[];updateOrder()}};
+    list.append(box,...buttons);
+    updateOrder();
+  }else if(item.acceptedText){
+    const input=node("input","","fillAnswer");
+    input.id="fillAnswer";
+    input.type="text";
+    input.placeholder="Nhập cụm từ";
+    input.autocomplete="off";
+    input.spellcheck=false;
+    input.setAttribute("aria-label","Nhập đáp án");
+    input.setAttribute("aria-describedby","instruction");
+    input.oninput=()=>{byId("submit").disabled=!input.value.trim()};
+    input.onkeydown=event=>{
+      if(event.key==="Enter"&&!event.isComposing)byId("submit").click();
+    };
+    list.append(input);
+  }else item.options.forEach((text,i)=>{
+    const button=node("button","","option");
+    button.append(node("span","ABCD"[i],"letter"),node("span",text));
+    if(optionIcons[text]){
+      const visual=node("span",optionIcons[text]);
+      visual.setAttribute("aria-hidden","true");
+      button.append(visual);
+    }
+    button.setAttribute("aria-pressed","false");
+    button.onclick=()=>{
+      if(phase!=="answer")return;
+      if(item.correct.length===1)picked=new Set([i]);
+      else if(picked.has(i))picked.delete(i);
+      else picked.add(i);
+      for(const [index,option] of [...list.children].entries())option.setAttribute("aria-pressed",picked.has(index));
+      byId("submit").disabled=!picked.size;
+    };
+    list.append(button);
+  });
+  for(const id of ["question","feedback","submit","next","reviewCurrent"])byId(id).hidden=true;
+  byId("submit").disabled=true;
+  function unlock(){
+    card.classList.remove("active");
+    byId("status").textContent="Câu hỏi đã mở. Em có thể xem lại nội dung khi trả lời.";
+    byId("question").hidden=false;
+    byId("submit").hidden=false;
+    byId("reviewCurrent").hidden=step===0;
+    phase="answer";
+    if(retrying)byId("prompt").focus();
+  }
+  if(retrying){unlock();return}
+  phase="reading";
+  card.style.setProperty("--arc","0deg");card.classList.add("active");
+  const deadline=performance.now()+15000;
+  function tick(now){
+    if(phase!=="reading")return;
+    const ratio=Math.max(0,Math.min(1,1-(deadline-now)/15000));
+    card.style.setProperty("--arc",ratio*360+"deg");
+    if(ratio<1){frame=requestAnimationFrame(tick);return}
+    unlock();
+  }
+  frame=requestAnimationFrame(tick);
+}
+function review(level){
+  show("review");
+  byId("reviewTitle").textContent=(level<progress.level?trophies[level]+" ":"")+"Xem lại · "+levels[level].name;
+  byId("reviewTitle").focus();
+  const limit=level<progress.level?5:progress.step;
+  const list=byId("reviewItems");
+  list.replaceChildren();
+  levels[level].questions.slice(0,limit).forEach((item,i)=>{
+    const detail=node("details","","reviewItem");
+    detail.append(node("summary","Câu "+(i+1)+" · "+item.kind),node("p",item.prompt+(item.wordCount?" (Điền "+item.wordCount+" từ.)":"")));
+    if(item.context.length){
+      const context=node("ul");
+      context.append(...item.context.map(line=>node("li",line)));
+      detail.append(context);
+    }
+    const answers=node("ul");
+    if(item.steps)item.order.forEach((index,j)=>answers.append(node("li",(j+1)+". "+item.steps[index])));
+    else if(item.acceptedText)answers.append(node("li","Đáp án: "+item.acceptedText[0]));
+    else item.options.forEach((text,i)=>answers.append(node("li","ABCD"[i]+". "+text+(item.correct.includes(i)?" ✓":""))));
+    detail.append(answers,node("p",item.why));
+    list.append(detail);
+  });
+}
+byId("submit").onclick=()=>{
+  if(phase!=="answer")return;
+  const item=levels[activeLevel].questions[activeStep];
+  const input=byId("fillAnswer");
+  if(item.steps?ordered.length!==item.steps.length:item.acceptedText?!input.value.trim():!picked.size)return;
+  const correct=item.steps?item.order.every((index,j)=>ordered[j]===index):item.acceptedText
+    ?item.acceptedText.some(answer=>normalizeText(answer)===normalizeText(input.value))
+    :picked.size===item.correct.length&&item.correct.every(i=>picked.has(i));
+  const feedback=byId("feedback");
+  feedback.hidden=false;
+  feedback.classList.toggle("correct",correct);
+  if(!correct){
+    phase="retry";
+    const {knowledge,hint,pages}=study[activeLevel];
+    byId("retryMaterial").textContent=knowledge;
+    byId("retryHint").textContent="Gợi ý — "+hint;
+    byId("retryRef").textContent="Tham chiếu — SGK Tin học 5, Bài 9B, trang "+pages+".";
+    for(const id of ["submit","feedback","reviewCurrent"])byId(id).hidden=true;
+    byId("options").inert=true;
+    byId("retryPanel").hidden=false;
+    byId("retryTitle").focus();
+    return;
+  }
+  phase="correct";
+  feedback.textContent="Chính xác! "+item.why;
+  byId("options").inert=true;
+  if(!item.steps)[...byId("options").children].forEach((control,i)=>{control.dataset.correct=Boolean(item.acceptedText||item.correct.includes(i))});
+  progress=activeStep===4?{level:activeLevel+1,step:0}:{level:activeLevel,step:activeStep+1};
+  save();
+  byId("medals").textContent=progress.level+"/5 huy chương";
+  byId("submit").hidden=true;
+  byId("reviewCurrent").hidden=true;
+  if(activeStep===4){celebrate(activeLevel);return}
+  byId("next").hidden=false;
+  byId("next").focus();
+};
+function celebrate(level){
+  show("celebration");
+  byId("award").textContent=trophies[level];
+  byId("celebrationTitle").textContent="Em đã vượt qua cấp "+(level+1)+"!";
+  byId("celebrationMessage").textContent="Em nhận được huy chương “"+levels[level].name+"” sau khi trả lời đúng cả 5 câu."+(level===levels.length-1?" Em đã hoàn thành tất cả các cấp!":"");
+  byId("awardNext").hidden=level===levels.length-1;
+  byId("awardNext").onclick=()=>play(progress.level,progress.step);
+  byId("awardReview").onclick=()=>review(level);
+  byId("celebrationTitle").focus();
+}
+byId("retryConfirm").onchange=()=>{byId("retry").disabled=!byId("retryConfirm").checked};
+byId("retry").onclick=()=>{
+  if(phase==="retry"&&byId("retryConfirm").checked)play(activeLevel,activeStep,true);
+};
+byId("next").onclick=()=>play(activeLevel,activeStep+1);
+byId("reviewCurrent").onclick=()=>review(activeLevel);
+byId("start").onclick=()=>progress.level===5?review(4):play(progress.level,progress.step);
+byId("reset").onclick=()=>{if(confirm("Đặt lại toàn bộ tiến độ của Bài 9B?")){progress=blank();save();home()}};
+document.querySelectorAll("[data-home]").forEach(button=>button.onclick=home);
+home();
+</script>
+</body>
+</html>
