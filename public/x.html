@@ -510,21 +510,26 @@
 
 
         .student-title > span:first-child {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 4px;
+            min-width: 0;
+        }
 
-            flex:
-                1;
+        .student-name-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-            min-width:
-                0;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
-
-            white-space:
-                nowrap;
+        .student-device-label {
+            flex: 0 0 auto;
+            padding: 0 4px;
+            border-radius: 4px;
+            background: #1e3a5f;
+            color: #dbeafe;
+            white-space: nowrap;
         }
 
 
@@ -1269,7 +1274,7 @@
     =========================================== -->
 
     <script
-        src="/js/teacher.js?v=presence1"
+        src="/js/teacher.js?v=mobile-device1"
     ></script>
 
     <script
@@ -1316,9 +1321,16 @@ function render(){
     for(const s of visible){
         const item=document.createElement("div");item.className="rosterItem";
         const name=document.createElement("span");name.className="rosterPerson";
-        const fullName=document.createElement("span");fullName.textContent=s.full_name||s.student_code||"Học sinh";name.append(fullName);
+        const fullName=document.createElement("span");
+        const device=s.online?studentDeviceLabel(s.device,s.screenReady):"";
+        fullName.textContent=s.full_name||s.student_code||"Học sinh";
+        if(device){
+            const badge=document.createElement("span");badge.className="student-device-label";badge.textContent=device;
+            fullName.append(" ",badge);
+        }
+        name.append(fullName);
         const details=document.createElement("small");details.className="rosterDevice";
-        details.textContent=[s.student_code||"",exam&&s.original_class?"Lớp "+s.original_class:"",s.online&&s.device?s.device:""].filter(Boolean).join(" · ");
+        details.textContent=[s.student_code||"",exam&&s.original_class?"Lớp "+s.original_class:""].filter(Boolean).join(" · ");
         if(details.textContent)name.append(details);
         const state=document.createElement("small");state.className=s.online?"online":"missing";
         state.textContent=s.connectionPaused?"● Tạm mất kết nối":s.online?(exam?"● Đang tham gia":"● Đã vào"):"○ Chưa vào";
@@ -1360,6 +1372,8 @@ if(typeof socket!=="undefined"){
     socket.on("student-removed",refresh);
     socket.on("student-connection-paused",refresh);
     socket.on("student-list",refresh);
+    socket.on("student-screen-ready",refresh);
+    socket.on("student-screen-stopped",refresh);
 }
 })();
 </script><script src="/js/class-resources.js"></script>

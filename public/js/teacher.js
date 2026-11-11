@@ -202,11 +202,37 @@ function examStudentLabel(student) {
     return isMixedRoom && originalClass ? student.name + " · " + originalClass : student.name;
 }
 
+function studentDeviceLabel(device, screenReady) {
+    if (screenReady) return "";
+    if (device === "iPad" || device === "iPhone") return device;
+    if (device === "Máy tính bảng" || device === "Máy tính bảng Android") return "Tablet";
+    return "";
+}
+
+function setStudentDeviceBadge(id, device, screenReady) {
+    const badge = document.getElementById("student-device-" + id);
+    if (!badge) return;
+    const label = studentDeviceLabel(device, screenReady);
+    badge.textContent = label;
+    badge.hidden = !label;
+}
+
+function updateStudentCard(student, screenReady = student.screenReady) {
+    const name = examStudentLabel(student);
+    studentNames.set(student.id, name);
+    createStudentBox(student.id, name);
+    setStudentDeviceBadge(student.id, student.device, screenReady);
+    if (studentDeviceLabel(student.device, screenReady)) {
+        setStudentStatus(student.id, "⚪ Chưa chia sẻ", false);
+    }
+}
+
 // =====================================================
 // DANH SÁCH HS HIỆN TẠI
 // =====================================================
 
-function markStudentConnectionPaused(id) {
+function markStudentConnectionPaused({id, device}) {
+    setStudentDeviceBadge(id, device, false);
     clearStudentRetry(id);
     clearConnectTimeout(id);
     closeStudentPeer(id);
@@ -214,7 +240,7 @@ function markStudentConnectionPaused(id) {
     setStudentStatus(id, "🟡 Tạm mất kết nối · vẫn giữ phiên học", false);
 }
 
-socket.on("student-connection-paused", ({id}) => markStudentConnectionPaused(id));
+socket.on("student-connection-paused", markStudentConnectionPaused);
 socket.on("student-removed", ({id}) => removeStudent(id));
 
 socket.on(
@@ -235,20 +261,10 @@ socket.on(
         list.forEach(
             student => {
 
-                studentNames.set(
-                    student.id,
-                    examStudentLabel(student)
-                );
-
-
-                createStudentBox(
-                    student.id,
-                    examStudentLabel(student)
-                );
-
+                updateStudentCard(student);
 
                 if (student.connectionPaused) {
-                    markStudentConnectionPaused(student.id);
+                    markStudentConnectionPaused(student);
                     return;
                 }
 
@@ -308,17 +324,7 @@ socket.on(
 
         if (data.replacesId) removeStudent(data.replacesId);
 
-        studentNames.set(
-            data.id,
-            examStudentLabel(data)
-        );
-
-
-        createStudentBox(
-            data.id,
-            examStudentLabel(data)
-        );
-
+        updateStudentCard(data, false);
 
         updateCount();
 
@@ -355,17 +361,7 @@ socket.on(
         );
 
 
-        studentNames.set(
-            data.id,
-            examStudentLabel(data)
-        );
-
-
-        createStudentBox(
-            data.id,
-            examStudentLabel(data)
-        );
-
+        updateStudentCard(data, true);
 
         updateCount();
 
@@ -2092,6 +2088,7 @@ socket.on(
     "student-screen-stopped",
     data => {
 
+        setStudentDeviceBadge(data.id, data.device, false);
         closeStudentPeer(
             data.id
         );
@@ -2185,8 +2182,14 @@ function createStudentBox(
         );
 
 
-    nameBox.textContent =
-        "👤 " + name;
+    const nameText = document.createElement("span");
+    nameText.className = "student-name-text";
+    nameText.textContent = "👤 " + name;
+    const deviceBadge = document.createElement("span");
+    deviceBadge.className = "student-device-label";
+    deviceBadge.id = "student-device-" + id;
+    deviceBadge.hidden = true;
+    nameBox.append(nameText, deviceBadge);
 
 
     const status =

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 
-function setup({capture = 'unsupported', duplicate = false} = {}) {
+function setup({capture = 'unsupported', duplicate = false, userAgent = ''} = {}) {
     const elements = {}, handlers = {}, sent = [], events = [], alerts = [], lifecycle = {};
     const element = id => elements[id] ||= {value: '', textContent: '', disabled: false, style: {},
         addEventListener(type, fn) {this[type] = fn;}, focus() {}};
@@ -11,7 +11,7 @@ function setup({capture = 'unsupported', duplicate = false} = {}) {
     const track = {getSettings: () => ({displaySurface: 'monitor'}), addEventListener() {}};
     const stream = {active: true, getVideoTracks: () => [track], getTracks: () => [track]};
     const socket = {connected: true, on(name, fn) {handlers[name] = fn;}, emit(name, data) {sent.push({name, data});}};
-    const context = {io: () => socket, navigator: capture === 'unsupported' ? {maxTouchPoints: 5} : {mediaDevices: {getDisplayMedia() {}}},
+    const context = {io: () => socket, navigator: capture === 'unsupported' ? {maxTouchPoints: 5} : {userAgent, maxTouchPoints: 5, mediaDevices: {getDisplayMedia() {}}},
         FPTBNScreenCapture: {async capture() {captures++; if (capture === 'not-supported') throw Object.assign(new Error('Unsupported'), {name: 'NotSupportedError'}); if (capture === 'denied') throw Object.assign(new Error('Permission denied'), {name: 'NotAllowedError'}); return stream;}},
         document: {getElementById: element, addEventListener(name, fn) {lifecycle[name] = fn;}},
         window: {addEventListener(name, fn) {lifecycle[name] = fn;}, dispatchEvent(event) {events.push(event);}},
@@ -35,7 +35,7 @@ test('unsupported mobile browser enters class and gets tabs without advertising 
     h.handlers['class-info']({classCode: '9A3', teacherOnline: true});
     assert(h.events.some(event => event.type === 'student-portal-access' && event.detail === true));
     assert(!h.sent.some(event => event.name === 'screen-ready'));
-    assert.match(h.element('studentStatus').textContent, /không hỗ trợ chia sẻ/);
+    assert.match(h.element('studentStatus').textContent, /Chưa chia sẻ màn hình/);
 });
 
 test('desktop still captures a full screen and registers it as ready after room confirmation', async () => {
@@ -118,4 +118,17 @@ test('iPad returns to the existing classroom and reconnects on visibility restor
     assert.equal(h.sent.filter(event => event.name === 'student-join').length, 2);
     assert.equal(h.element('classroom').style.display, 'block');
     assert.equal(h.alerts.length, 0);
+});
+
+test('an iPad, iPhone or Android tablet that declines capture can still enter class without a live screen', async () => {
+    for (const userAgent of ['Mozilla/5.0 (Macintosh) Safari', 'Mozilla/5.0 (iPhone) Safari', 'Mozilla/5.0 (Linux; Android 15) Chrome']) {
+        const h = setup({capture: 'denied', userAgent});
+        await h.element('shareButton').click();
+        assert.equal(h.captures, 1);
+        assert(h.sent.some(event => event.name === 'student-join'));
+        h.handlers['class-info']({classCode: '9A3'});
+        assert(!h.sent.some(event => event.name === 'screen-ready'));
+        assert.match(h.element('studentStatus').textContent, /Chưa chia sẻ màn hình/);
+        assert.equal(h.alerts.length, 0);
+    }
 });

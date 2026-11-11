@@ -80,6 +80,13 @@ let studentSchoolYear = "";
 let joinedClass = false;
 let classroomViewOnly = false;
 
+function canJoinWithoutScreenSharing() {
+    const ua = navigator.userAgent || "";
+    return /iPad|iPhone|iPod|Tablet|Kindle|Silk\//i.test(ua)
+        || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)
+        || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+}
+
 if (typeof navigator.mediaDevices?.getDisplayMedia !== "function") {
     button.textContent = "Vào lớp học →";
 }
@@ -529,7 +536,8 @@ button.addEventListener(
                 screenStream = await FPTBNScreenCapture.capture('initial');
             }
         } catch (error) {
-            if (error.name !== "NotSupportedError") throw error;
+            const declinedOnMobile = error.name === "NotAllowedError" && canJoinWithoutScreenSharing();
+            if (error.name !== "NotSupportedError" && !declinedOnMobile) throw error;
             classroomViewOnly = true;
         }
     }
@@ -659,7 +667,7 @@ button.addEventListener(
 
 
             studentStatus.textContent =
-                classroomViewOnly ? "🟢 Đã vào lớp · Thiết bị không hỗ trợ chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
+                classroomViewOnly ? "🟢 Đã vào lớp · Chưa chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
 
 
             if (studentBadge) {
@@ -1323,7 +1331,7 @@ async function answerStudentScreen(
             ) {
 
                 studentStatus.textContent =
-                    classroomViewOnly ? "🟢 Đã vào lớp · Thiết bị không hỗ trợ chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
+                    classroomViewOnly ? "🟢 Đã vào lớp · Chưa chia sẻ màn hình" : "🟢 GV đang nhận màn hình";
 
             }
 
@@ -2110,7 +2118,7 @@ socket.on(
 
 
         if (classroomViewOnly) {
-            studentStatus.textContent += " • Thiết bị không hỗ trợ chia sẻ màn hình";
+            studentStatus.textContent += " • Chưa chia sẻ màn hình";
         }
 
         console.log(

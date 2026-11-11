@@ -78,3 +78,22 @@ test("exam teacher view has no floating resource widget and retains student mess
     onTeacherReady({ class: { class_code: "CLB" }, teacher: { full_name: "Test teacher" } });
     assert.equal(nodes.get("shareTeacher").style.display, "");
 });
+
+
+test("teacher device badge identifies an unshared iPad, iPhone or tablet and hides when sharing starts", () => {
+    const source = fs.readFileSync(path.join(__dirname, "..", "public", "js", "teacher.js"), "utf8");
+    const badge = {hidden: true};
+    const context = {document: {getElementById: id => id === "student-device-1" ? badge : null}};
+    const start = source.indexOf("function studentDeviceLabel(");
+    const end = source.indexOf("function updateStudentCard(", start);
+    vm.runInNewContext(source.slice(start, end), context);
+    for (const [device, label] of [["iPad", "iPad"], ["iPhone", "iPhone"], ["Máy tính bảng Android", "Tablet"], ["Máy tính bảng", "Tablet"]]) {
+        context.setStudentDeviceBadge("1", device, false);
+        assert.equal(badge.hidden, false);
+        assert.equal(badge.textContent, label);
+        context.setStudentDeviceBadge("1", device, true);
+        assert.equal(badge.hidden, true);
+    }
+    context.setStudentDeviceBadge("1", "", false);
+    assert.equal(badge.hidden, true);
+});
