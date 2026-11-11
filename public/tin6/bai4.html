@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="17 trò chơi và 34 nhiệm vụ mô phỏng Tin học 6. Luyện theo từng chặng và xem lại tiến độ.">
+<title>Bài 4 · Mạng máy tính | Tin học 6</title>
+<style>:root{color-scheme:light;--bg:#f4f5ef;--paper:#fff;--ink:#17241f;--muted:#52615b;--line:#dce3d9;--dark:#10231f;--accent:#1e594c;--tint:#b3f2c4;--shadow:0 14px 36px #142c2010;--read:0deg;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*,*::before,*::after{box-sizing:border-box}html{scroll-padding-top:1rem}body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55}h1,h2,h3,h4,p{margin:0}a{color:inherit}button,input,textarea,select{font:inherit;color:inherit}button,a,input,textarea,select,summary{-webkit-tap-highlight-color:transparent}button:disabled{cursor:not-allowed;opacity:.48}button:not(:disabled){cursor:pointer}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d57220;outline-offset:3px}[tabindex="-1"]:focus{outline:none}[hidden]{display:none!important}::selection{background:#b1f0cb;color:#14231c}.muted,.tiny{color:var(--muted)}.tiny{font-size:.81rem}.eyebrow{font-size:.72rem;letter-spacing:.16em;font-weight:850;color:var(--accent);line-height:1.5}.sr-only,.skip:not(:focus){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.skip:focus{position:fixed;top:8px;left:8px;padding:10px 14px;z-index:10;background:white;border-radius:8px}
+.site-header{background:#f9faf6;border-bottom:1px solid var(--line)}.header-inner,.site-footer>div,main{max-width:1220px;margin-inline:auto;padding-inline:clamp(16px,4vw,42px)}.header-inner{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{text-decoration:none;display:inline-flex;align-items:center;gap:10px;font-size:.79rem;font-weight:900;letter-spacing:.075em;white-space:nowrap}.brand-mark{display:grid;place-items:center;background:var(--dark);color:#b7f5c6;border-radius:9px;width:36px;height:36px;font-size:1.23rem;letter-spacing:0}.brand-small{font-weight:650;color:var(--muted);margin-left:6px}.brand-grade{border-radius:6px;background:#d9f0dc;padding:0 7px;color:#154839;font-size:.86rem}.header-inner nav{display:flex;align-items:center;gap:20px}.nav-link{font-size:.86rem;font-weight:730;text-underline-offset:3px}.nav-tag{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:6px 11px;font-size:.75rem;font-weight:720;color:var(--muted);white-space:nowrap}.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+main{min-height:70vh;padding-block:28px 58px}.site-footer{border-top:1px solid var(--line)}.site-footer>div{display:flex;justify-content:space-between;gap:16px;padding-block:22px;color:var(--muted);font-size:.78rem}.site-footer span:first-child{font-weight:800;letter-spacing:.1em}
+.hero{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(250px,.78fr);align-items:stretch;background:var(--dark);color:#fbfff8;border-radius:26px;overflow:hidden;position:relative;box-shadow:var(--shadow)}.hero-copy{padding:clamp(26px,5.4vw,70px) 0 clamp(30px,5.5vw,68px) clamp(24px,5.1vw,68px);position:relative;z-index:1}.hero-copy .eyebrow{color:var(--tint);margin-bottom:12px}.hero h1{font-size:clamp(2.65rem,6.4vw,5.55rem);font-weight:850;letter-spacing:-.068em;line-height:1.02;text-wrap:balance}.mission-hero h1{font-size:clamp(2.45rem,5.8vw,4.8rem)}.hero-desc{max-width:54ch;color:#d4e3d9;font-size:clamp(.99rem,1.7vw,1.15rem);margin-top:16px}.hero-actions,.tool-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.hero-actions{margin-top:25px}.btn,.chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:40px;border-radius:9px;border:1px solid transparent;padding:9px 13px;font-weight:730;font-size:.88rem;text-decoration:none;line-height:1.28;text-align:center;overflow-wrap:anywhere;background:var(--paper)}.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.primary:not(:disabled):hover{filter:brightness(.91)}.hero .primary{background:var(--tint);color:#112620;border-color:var(--tint)}.btn.outline{color:#f4fbf5;border-color:#75948a;background:#203c34}.btn.outline:hover{background:#305148}.btn.subtle,.chip{background:#fff;border-color:var(--line);color:var(--ink)}.btn.subtle:not(:disabled):hover,.chip:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}.btn.text-btn{background:transparent;color:var(--accent);padding-inline:0;min-height:36px;border:0;text-decoration:underline;text-underline-offset:3px}.text-link{font-size:.9rem;color:var(--accent);font-weight:750;text-underline-offset:3px}.chip.selected,.selected:not(.pixel-cell):not(.art-node){background:var(--tint);border-color:var(--accent);color:#142921}.badge{display:inline-flex;background:#eaf0e9;border-radius:99px;padding:4px 9px;font-size:.71rem;font-weight:800;letter-spacing:.04em;color:#334d43}
+.hero-art{position:relative;min-height:250px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(90deg,var(--dark),transparent 22%),linear-gradient(#b0dbb518 1px,transparent 1px),linear-gradient(90deg,#b0dbb518 1px,transparent 1px),radial-gradient(ellipse at 65% 48%,#2a4d3d,#122620 68%);background-size:auto,27px 27px,27px 27px,auto}.art-track{width:75%;height:70%;max-width:420px;position:relative;display:grid;place-items:center}.art-track::before,.art-track::after{content:"";position:absolute;inset:20% 8%;border:1px solid #94d8ad81;border-radius:28px;transform:rotate(-19deg)}.art-track::after{inset:10% 19%;transform:rotate(26deg);border-style:dashed}.art-node{position:absolute;display:grid;place-items:center;width:clamp(36px,5vw,65px);aspect-ratio:1;border:1px solid #9cd6b1;border-radius:15px;background:#1c382f;color:var(--tint);font-size:clamp(1.05rem,2.1vw,1.8rem);font-weight:800;box-shadow:0 10px 20px #0616117a}.art-node.node0{left:12%;top:26%;transform:rotate(-12deg)}.art-node.node1{right:12%;top:16%;transform:rotate(10deg)}.art-node.node2{z-index:1;width:clamp(82px,11vw,148px);font-size:clamp(2.8rem,7.5vw,6rem);border-radius:25px;background:var(--tint);color:#113b2d;transform:rotate(-8deg);border:0}.art-node.node3{right:4%;bottom:13%;transform:rotate(-8deg)}.art-node.node4{left:18%;bottom:5%;transform:rotate(9deg)}.art-label,.art-index{position:absolute;font:.71rem ui-monospace,monospace;color:#b6d8c3;letter-spacing:.13em}.art-label{right:23px;top:19px}.art-index{bottom:19px;right:23px}
+.signal-band{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:#fff;border-radius:15px;margin:16px 0 41px;overflow:hidden}.signal-stat{padding:13px clamp(12px,2.5vw,25px);display:flex;align-items:baseline;gap:9px;border-right:1px solid var(--line)}.signal-stat:last-child{border:0}.signal-stat strong{font-size:1.25rem;color:var(--accent);letter-spacing:-.04em}.signal-stat span{font-size:.83rem;color:var(--muted);font-weight:660}.section-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin-bottom:15px}.section-head h2,.view-heading h1{line-height:1.12;letter-spacing:-.04em}.section-head h2{font-size:clamp(1.65rem,3.1vw,2.45rem);margin-top:3px}.section-head .muted{font-size:.9rem;max-width:34ch}.filter-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}.filter-row .chip{border-radius:99px;font-size:.8rem}.course-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.course-card{min-width:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;text-decoration:none;box-shadow:0 4px 18px #10231f06;transition:transform .16s ease,box-shadow .16s ease}.course-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--card-accent)}.card-visual{position:relative;display:flex;justify-content:space-between;align-items:start;min-height:104px;padding:14px 15px;background:radial-gradient(circle at 70% 50%,#ffffffa3,transparent 70%),repeating-linear-gradient(135deg,transparent 0 19px,#ffffff34 20px 21px),var(--card-tint);color:#1b332c}.card-no{font-size:.71rem;letter-spacing:.1em;font-weight:850;border-radius:6px;padding:5px 8px;background:#ffffffbd}.card-icon{font-size:2.8rem;margin-top:2px;margin-right:auto;margin-left:auto;filter:drop-shadow(3px 6px 0 #fff6)}.card-arrow{font-size:1.2rem}.card-copy{padding:14px 16px 11px;flex:1}.card-group{font-size:.69rem;letter-spacing:.075em;text-transform:uppercase;color:var(--card-accent);font-weight:800}.card-copy h3{font-size:1.3rem;line-height:1.2;margin:4px 0}.card-copy p{font-size:.89rem;color:var(--muted)}.mechanic{display:inline-block;font-size:.76rem;font-weight:700;border-radius:5px;background:#eef3ec;padding:4px 7px;margin-top:9px}.card-track{padding:0 16px 13px}.card-progress{display:flex;justify-content:space-between;gap:4px;color:var(--muted);font-size:.74rem;margin-top:6px}.meter{height:7px;background:#e5ece4;border-radius:99px;overflow:hidden}.meter>span{display:block;height:100%;background:var(--accent);border-radius:99px}.course-card .meter>span{background:var(--card-accent)}
+.crumb{display:flex;gap:9px;align-items:center;margin-bottom:11px;color:var(--muted);font-size:.85rem;flex-wrap:wrap}.crumb-divider{color:#6a7d71}.lesson-summary{margin:15px 0 27px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);gap:13px}.lesson-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat-tile,.source-note{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px}.stat-tile{display:grid;grid-template-columns:auto 1fr;column-gap:7px;align-items:baseline}.stat-tile span{color:var(--accent);font-weight:900}.stat-tile strong{font-size:1.17rem}.stat-tile small{grid-column:2;color:var(--muted);font-size:.75rem}.source-note{display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:.86rem}.source-note small{color:var(--muted);font-size:.78rem}.lesson-body,.play-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(230px,1fr);gap:15px;align-items:start}.stage-list{list-style:none;padding:0;margin:0;display:grid;gap:9px;grid-column:1;grid-row:2}.lesson-body>.section-head{grid-column:1;margin:0}.lesson-aside{grid-column:2;grid-row:1 / span 2;display:grid;gap:10px}.stage-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px}.stage-row.locked{background:#f6f8f4;border-style:dashed}.stage-number{display:grid;place-items:center;width:42px;height:42px;border-radius:9px;background:var(--tint);color:#20332b;font-weight:850;font-variant-numeric:tabular-nums}.locked .stage-number{background:#e8eee6;color:#4b5b53}.stage-info h3{font-size:1.08rem;line-height:1.25;margin:2px 0}.stage-info p{font-size:.84rem}.stage-info .tiny{letter-spacing:.08em;font-weight:760;font-size:.7rem}.stage-controls{display:flex;flex-direction:column;gap:3px;align-items:flex-end}.stage-controls .tiny{white-space:nowrap}.side-card{border:1px solid var(--line);background:#fff;border-radius:15px;padding:17px;display:grid;gap:8px;box-shadow:0 4px 18px #10231f06}.side-card h2,.side-card h3{line-height:1.15}.side-card h2{font-size:1.35rem}.side-card p{font-size:.9rem}.side-card .btn{justify-self:start}.side-card .eyebrow{font-size:.68rem}.lab-card{border-top:5px solid var(--accent);background:linear-gradient(155deg,var(--tint),white 47%)}.lab-icon{display:grid;place-items:center;background:var(--accent);color:#fff;font-size:1.45rem;border-radius:9px;width:37px;height:37px}.reset{justify-self:start}.legacy{margin-top:18px}.notice{background:#fff0ce;padding:10px 14px;border-radius:10px;margin-top:13px}
+.view-heading{margin-bottom:18px;display:grid;gap:6px}.view-heading>.btn{justify-self:start}.view-heading h1{font-size:clamp(1.85rem,5vw,3.65rem);max-width:24ch}.view-heading>.muted{max-width:65ch}.play-left{display:grid;gap:11px}.study,.question-card,.lab-stage,.review-item{border:1px solid var(--line);background:#fff;border-radius:16px;padding:clamp(14px,3vw,24px);box-shadow:0 4px 18px #10231f06;min-width:0}.study{background:#f2f8f1;position:relative;isolation:isolate}.study.reading::after{position:absolute;content:'';inset:-1px;border-radius:inherit;padding:3px;pointer-events:none;background:conic-gradient(var(--accent) var(--read),#dce7df var(--read));mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}.study h2{margin:3px 0 6px;font-size:1.26rem}.study-objective{font-weight:760}.study-body{margin-top:5px;color:#374941}.read-gate{background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:11px;padding:12px}.read-gate p{font-size:.84rem}.gate-icon{font-size:1.5rem;color:var(--accent)}.gate-time{margin-left:auto;font:800 1.12rem ui-monospace,monospace;color:var(--accent)}.question-card{display:grid;gap:13px}.question-meta{display:flex;align-items:center;gap:9px}.question-prompt,.question-card h2{font-size:clamp(1.12rem,2.8vw,1.45rem);line-height:1.35}.answer-area{display:grid;gap:9px}.answer-options{padding:0;border:0;margin:0;min-width:0;display:grid;gap:7px}.answer-choice{cursor:pointer;min-height:49px;display:flex;align-items:center;gap:9px;padding:8px 10px;background:#fbfcfa;border:1px solid var(--line);border-radius:9px;overflow-wrap:anywhere}.answer-choice:has(:checked){border-color:var(--accent);background:var(--tint)}.answer-choice input,.rubric-item input{flex:none;accent-color:var(--accent);width:17px;height:17px}.letter{flex:none;min-width:26px;text-align:center;padding:2px 3px;border-radius:5px;background:#e9eee7;font-size:.81rem;font-weight:800}.result-card,.lab-feedback{border:1px solid #d5e3d8;background:#eef4ed;padding:12px;border-radius:11px;overflow-wrap:anywhere}.result-card p{margin-top:4px}.success{border-color:#98c8ad;background:#e8f7ea;color:#134a35}.warning{border-color:#e1c67b;background:#fff3d4;color:#503505}.neutral{border-color:#bacdc2;background:#ecf5f0}.medal{font-weight:800}.rubric-item{display:flex;align-items:flex-start;gap:9px;margin:6px 0;line-height:1.4}.practice-rubric{padding:11px;border-radius:10px;background:#f2f5ef}.practice-rubric .btn,.result-card .btn{margin-top:8px}.review-stack{display:grid;gap:10px}.review-item summary{cursor:pointer;font-weight:760}.review-item p,.review-item .table-wrap{margin-top:10px}.summary-box .lesson-stats{max-width:580px}
+.field{display:grid;gap:5px;min-width:0}.field-label{font-size:.82rem;font-weight:770;color:#3e5048}.field input,.field textarea,.field select,.edit-table input{width:100%;border:1px solid #a9b9ae;border-radius:7px;background:#fff;padding:8px 10px;min-height:39px;max-width:100%}.field textarea{resize:vertical}.field select{padding-right:23px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:9px;max-width:100%}.data-table{border-collapse:collapse;width:100%;font-size:.86rem}.data-table th,.data-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.data-table th{background:#eaf2eb}.data-table tr:last-child td{border-bottom:none}
+.lab-shell{display:grid;gap:12px}.lab-tabs{display:flex;flex-wrap:wrap;gap:8px}.lab-tabs .chip{padding:8px 13px}.lab-stage{border-top:5px solid var(--accent);max-width:900px}.lab-stage h3{font-size:clamp(1.25rem,3vw,1.75rem);line-height:1.15}.lab-instruction{color:var(--muted);margin:7px 0 14px;max-width:66ch}.lab-play{display:grid;gap:12px}.lab-play>.btn{justify-self:start}.lab-feedback{margin-top:13px}.readout{padding:8px 11px;background:#edf2ed;border-radius:7px;font:.83rem ui-monospace,monospace;color:#30473c;overflow-wrap:anywhere}.sort-board,.network-board,.mind-branches,.safety-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr));gap:8px}.sort-bin{display:grid;gap:5px;border:1px dashed #819e92;border-top:4px solid var(--accent);border-radius:9px;background:#eef8f2;padding:10px}.sort-bin ul{margin:0;padding-left:16px;font-size:.8rem}.flow-track{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.flow-track span{display:grid;place-items:center;text-align:center;min-height:45px;border:1px dashed #8f9eac;background:#eef1f4;border-radius:7px;font-size:.76rem;font-weight:790}.flow-track .filled{background:var(--tint);border-style:solid;border-color:var(--accent)}.ordered-tray{min-height:38px;display:grid;gap:5px;margin:0;padding-left:26px}.ordered-tray li{padding:6px 8px;background:#edf2ed;border:1px solid var(--line);border-radius:6px}.ordered-tray li::marker{font-weight:850;color:var(--accent)}.ordered-tray .empty-slot{border-style:dashed;color:var(--muted)}
+.pixel-pair{display:flex;gap:18px;flex-wrap:wrap}.pixel-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(36px,48px));gap:4px;margin-top:5px}.pixel-cell{height:40px;display:grid;place-items:center;border:1px solid #b7c5ba;border-radius:5px;background:#f5f5f2;font:700 1rem ui-monospace,monospace;color:#43504a}.pixel-cell.selected{background:#272247;color:#fff;border-color:#272247}.device,.safety-action,.result-title{border:1px solid var(--line);border-radius:9px;background:#f9fbf8;padding:9px;min-height:47px;font-size:.86rem;font-weight:750;overflow-wrap:anywhere}.device{min-height:66px;background:#edf6fb}.wire-list{margin:0;padding:9px 12px 9px 28px;border-radius:8px;border:1px solid var(--line);background:#f0f6fc}.dispatch,.search-results,.binder-stack{display:grid;gap:8px}.dispatch-row{display:grid;grid-template-columns:88px 1fr;gap:9px;align-items:center;background:#f1f7f5;border-radius:8px;border:1px solid var(--line);padding:8px}.signal{font:800 .69rem ui-monospace,monospace;color:var(--accent);overflow-wrap:anywhere}.mock-browser,.mock-mail{overflow:hidden;border:1px solid #aebdba;border-radius:13px;background:#fff}.browser-bar,.search-bar{display:flex;align-items:end;flex-wrap:wrap;gap:7px;padding:8px;background:#edf3f4}.browser-bar .field,.search-bar .field{flex:1;min-width:min(145px,100%)}.mock-page,.composer{padding:12px;display:grid;gap:8px}.mock-page h4{font-size:1.22rem}.mock-page .btn{justify-self:start}.mock-link{color:var(--accent);text-decoration:underline;border-color:var(--line)}.search-bar{border-radius:9px}.search-result{display:grid;gap:4px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fafcf9}.search-result button{text-align:left}.search-result small{padding-left:5px}.window-bar{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px;background:var(--tint);color:#422635}.incident{display:grid;gap:5px;padding:11px;border-radius:9px;background:#fff3df;border:1px solid #ddc092}.incident .badge{justify-self:start}.safety-actions{grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr))}.mind-tree{background:#f2f9ef;border:1px solid #c2d9c0;border-radius:9px;padding:10px}.mind-root{background:var(--accent);color:white;padding:7px 13px;border-radius:8px;text-align:center;font-weight:820;max-width:330px;margin:0 auto 12px}.mind-branch{border-top:3px solid #59985c;background:#fff;border-radius:6px;padding:7px}.mind-branch ul{padding-left:15px;margin:4px 0;font-size:.8rem}.paper{max-width:410px;min-height:174px;margin-inline:auto;background:white;box-shadow:0 7px 24px #1e292821;border:1px solid var(--line);padding:9px var(--paper-margin,10%) 14px;width:100%}.paper.landscape{max-width:630px;min-height:123px}.paper.preview{outline:2px solid var(--accent);outline-offset:3px}.paper h4{font-size:1.18rem;margin-bottom:7px}.paper-watermark{font-size:.64rem;letter-spacing:.13em;color:var(--muted);margin-bottom:9px}.edit-table input{min-width:58px;min-height:35px;padding:4px}.edit-table th,.edit-table td{padding:5px}.draft-text{padding:13px;border:1px solid var(--line);border-radius:8px;background:#fbf6e9;min-height:62px;font-family:Georgia,serif;font-size:1.08rem}.draft-text mark{background:#ffce63;padding:2px}.binder-shelf{display:flex;gap:6px;flex-wrap:wrap}.binder-page{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:7px;padding:8px;background:#fffcf2}.page-number{display:grid;place-items:center;width:24px;height:26px;background:var(--tint);font-size:.78rem;font-weight:850;border-radius:4px}.robot-map{display:grid;gap:7px}.robot-track{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.track-cell{display:grid;place-items:center;min-height:43px;border:1px solid #b1c7b7;border-radius:6px;background:#f0f7f2;font-size:1.03rem}.track-cell.target{border-color:var(--accent);background:var(--tint)}.scratch-stage{display:flex;gap:13px;align-items:center;min-height:91px;border-radius:10px;border:1px solid #d1c1dd;background:repeating-linear-gradient(0deg,#f9f4ff 0 17px,#ece0fc 18px 19px);padding:8px}.scratch-cat{font-size:2.55rem}.speech{padding:8px;background:#fff;border:1px solid #c8b7d2;border-radius:12px;font-weight:700;font-size:.9rem}.scratch-script{display:grid;gap:4px;max-width:640px}.scratch-hat,.scratch-block{border-radius:9px;padding:6px 9px}.scratch-hat{background:#f2c65a;color:#402d0c;font-weight:820}.scratch-block .field-label{color:#17241f}.scratch-block.sb0{background:#9ed5f1}.scratch-block.sb1{background:#ffc895}.scratch-block.sb2{background:#e1c4ff}
+@media(max-width:860px){.course-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{letter-spacing:-.052em}.signal-stat{display:grid;gap:1px}}
+@media(max-width:640px){.brand-small,.nav-tag{display:none}.header-inner{min-height:55px}.header-inner nav{gap:7px}main{padding-block:15px 32px}.hero{grid-template-columns:1fr;border-radius:17px}.hero-copy{padding:22px 19px 16px}.hero-art{min-height:124px;max-height:152px;background-size:auto,21px 21px,21px 21px,auto}.art-track{max-width:270px;height:95%;width:80%}.art-track::before,.art-track::after{inset:24% 10%}.art-node.node2{width:70px;font-size:2.75rem;border-radius:15px}.art-label,.art-index{right:10px;font-size:.59rem}.art-label{top:8px}.art-index{bottom:8px}.hero h1{font-size:clamp(2.3rem,9.2vw,3.6rem)}.hero-desc{margin-top:9px}.hero-actions{margin-top:13px}.signal-band{grid-template-columns:repeat(2,1fr);margin-bottom:25px}.signal-stat{padding:8px 10px;border-bottom:1px solid var(--line)}.signal-stat:nth-child(2){border-right:0}.signal-stat:nth-child(3){border-bottom:0}.section-head{display:grid}.course-grid{gap:9px}.card-copy{padding:9px}.card-copy h3{font-size:1.06rem}.card-visual{min-height:78px;padding:9px}.card-icon{font-size:1.85rem}.card-no{font-size:.63rem;padding:3px 5px}.card-arrow{font-size:.95rem}.card-track{padding:0 9px 9px}.card-group{font-size:.62rem}.mechanic{font-size:.69rem}.lesson-summary,.lesson-body,.play-grid{grid-template-columns:1fr}.lesson-aside{grid-column:1;grid-row:3}.lesson-summary{gap:8px;margin:9px 0 18px}.stage-row{gap:8px;padding:8px}.stage-controls .btn{font-size:.77rem;padding:6px 8px;min-height:34px}.stage-controls .btn.text-btn{padding:2px}.stage-number{width:30px;height:34px;font-size:.82rem}.stage-info h3{font-size:.96rem}.stage-info p{font-size:.77rem}.play-sidebar{display:none}.site-footer>div{display:grid;gap:3px}.form-grid{grid-template-columns:1fr}.binder-page{grid-template-columns:auto 1fr}.binder-page .tool-row{grid-column:2}.field input,.field textarea,.field select,.edit-table input{font-size:16px}}
+@media(max-width:355px){.course-grid{grid-template-columns:1fr}.brand{gap:5px}.stage-row{grid-template-columns:auto 1fr}.stage-controls{grid-column:2;align-items:flex-start}.dispatch-row{grid-template-columns:1fr}.flow-track{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung chính</a>
+<header id="site-header" class="site-header">
+ <div class="header-inner">
+  <a id="brand" class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">⌘</span><span>TIN HỌC<span class="brand-small"> PHÒNG NHIỆM VỤ</span></span><span class="brand-grade">6</span></a>
+  <nav id="header-links" aria-label="Điều hướng chính"></nav>
+ </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<footer class="site-footer"><div><span>FPTBN · TIN HỌC 6</span><span>Bản chơi thử dành cho giáo viên đối soát · Kết nối tri thức với cuộc sống</span></div></footer>
+<noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
+<script>
+'use strict';
+const BANK={"4":{"n":4,"title":"Mạng máy tính","pages":"16–19","stages":[{"goal":"Nhận ra mạng và các thành phần.","text":"Thiết bị đầu cuối trao đổi dữ liệu qua phương tiện, thiết bị kết nối và phần mềm mạng.","tasks":[{"id":"T6-B04-C01","prompt":"Mạng máy tính cần có đặc điểm nào?","type":"choice","choices":["Mọi máy phải có máy in riêng","Các thiết bị được kết nối để trao đổi dữ liệu","Mọi máy phải ở cùng một bàn","Mọi máy phải cùng hãng"],"correct":[1],"why":"Khả năng kết nối và trao đổi là dấu hiệu chính."},{"id":"T6-B04-C02","prompt":"Thiết bị nào là đầu cuối khi học sinh gửi bài?","type":"choice","choices":["Dây mạng","Điểm truy cập không dây","Bộ chuyển mạch","Máy tính của học sinh"],"correct":[3],"why":"Máy học sinh là nơi người dùng gửi dữ liệu."},{"id":"T6-B04-C03","prompt":"Ví dụ nào dùng đường truyền có dây?","type":"choice","choices":["Máy tính dùng điểm phát không dây","Máy bảng dùng Wi-Fi","Máy nối bộ chuyển mạch bằng cáp mạng","Điện thoại nối Wi-Fi"],"correct":[2],"why":"Cáp là phương tiện truyền có dây."},{"id":"T6-B04-C04","prompt":"Việc nào minh họa chia sẻ thiết bị qua mạng?","type":"choice","choices":["Nhiều máy gửi lệnh đến cùng một máy in mạng","Cùng đọc một cuốn sách giấy","Mỗi bạn in trên một máy riêng","Sao tệp bằng USB giữa hai máy không nối mạng"],"correct":[0],"why":"Máy in mạng là tài nguyên dùng chung."},{"id":"T6-B04-C05","prompt":"Thành phần nào điều khiển việc truyền thông tin theo quy tắc của mạng?","type":"choice","choices":["Tờ giấy hướng dẫn","Phần mềm mạng","Bàn phím","Vỏ máy tính"],"correct":[1],"why":"Phần mềm mạng hỗ trợ việc trao đổi dữ liệu."}]},{"goal":"Phân biệt vai trò qua sơ đồ và ví dụ.","text":"Xác định nơi sử dụng, thiết bị chuyển tiếp và cách kết nối.","tasks":[{"id":"T6-B04-C06","prompt":"Trong sơ đồ máy A — bộ chuyển mạch — máy B, thiết bị nào kết nối hai máy?","type":"choice","choices":["Máy A","Bộ chuyển mạch","Máy B","Màn hình của A"],"correct":[1],"why":"Bộ chuyển mạch liên kết các đầu cuối."},{"id":"T6-B04-C07","prompt":"Máy tính bảng đi quanh lớp và vẫn kết nối. Phương án nào phù hợp?","type":"choice","choices":["USB lưu tệp","Wi-Fi","Cáp máy chiếu","Cáp cố định đến một bàn"],"correct":[1],"why":"Wi-Fi không buộc thiết bị cắm cáp mạng."},{"id":"T6-B04-C08","prompt":"Hai máy nằm cạnh nhau nhưng không kết nối hoặc trao đổi dữ liệu. Có đủ căn cứ gọi là mạng không?","type":"choice","choices":["Có, nếu dùng cùng màu vỏ","Có, nếu cùng hãng","Không, ở gần chưa chứng minh kết nối","Có, vì có hai máy"],"correct":[2],"why":"Mạng đòi hỏi kết nối chứ không phải khoảng cách gần."},{"id":"T6-B04-C09","prompt":"Một bạn đọc tệp dùng chung; bạn khác in từ máy in mạng. Hai việc chia sẻ gì?","type":"choice","choices":["Tệp và thiết bị","Hai tệp","Hai thiết bị","Hai đường truyền"],"correct":[0],"why":"Tệp là dữ liệu; máy in là thiết bị."},{"id":"T6-B04-C10","prompt":"Máy in có kết nối mạng trong sơ đồ thuộc nhóm nào?","type":"choice","choices":["Phần mềm mạng","Bộ chuyển mạch","Dây dẫn","Thiết bị đầu cuối"],"correct":[3],"why":"Máy in nhận yêu cầu in như một đầu cuối."}]},{"goal":"Áp dụng để kết nối và chia sẻ.","text":"Chọn phương án phù hợp với thiết bị và nhiệm vụ.","tasks":[{"id":"T6-B04-C11","prompt":"Hai máy đã kết nối mạng; cả lớp cần đọc tài liệu từ một bản cập nhật. Cách nào phù hợp?","type":"choice","choices":["Chia sẻ một tệp với quyền đọc cho lớp","Đổi tên mạng theo tên tệp","Phát từng bản cũ rời nhau","Cắm USB chuyển lần lượt mà không giữ bản chính"],"correct":[0],"why":"Một bản dùng chung giúp mở cùng nội dung."},{"id":"T6-B04-C12","prompt":"Phòng có bốn máy bàn và một bộ chuyển mạch đủ cổng. Cần thêm gì để nối các máy bằng dây?","type":"choice","choices":["Một máy in cho từng máy","Bốn ổ USB","Bốn màn hình phụ","Cáp mạng cho từng máy"],"correct":[3],"why":"Mỗi máy cần đường cáp đến bộ chuyển mạch."},{"id":"T6-B04-C13","prompt":"Máy bảng có Wi-Fi, không có cổng cáp mạng. Thêm gì để máy kết nối không dây với mạng lớp?","type":"choice","choices":["Điểm truy cập Wi-Fi kết nối vào mạng lớp","Màn hình ngoài","Bộ chuyển mạch không có Wi-Fi, dùng một mình","Ổ lưu trữ USB"],"correct":[0],"why":"Điểm truy cập cung cấp kết nối không dây."},{"id":"T6-B04-C14","prompt":"Vẽ sơ đồ hai máy bàn nối bằng cáp qua một bộ chuyển mạch. Ghi nhãn thiết bị đầu cuối và thiết bị kết nối.","type":"practice","rubric":["1 điểm: hai đầu cuối đúng.","1 điểm: bộ chuyển mạch và hai dây đúng."]},{"id":"T6-B04-C15","prompt":"Hai máy trong lớp đã nối mạng. Nêu cách để thử rằng cả hai cùng đọc được một tệp của nhóm.","type":"practice","rubric":["1 điểm: chia sẻ tệp với quyền đọc phù hợp.","1 điểm: mở đúng tệp từ hai máy và kiểm tra nội dung."]}]},{"goal":"Khoanh vùng lỗi từ dấu hiệu.","text":"So thiết bị hoạt động với thiết bị lỗi trước khi kiểm tra chung.","tasks":[{"id":"T6-B04-C16","prompt":"Ba máy in được; riêng máy A báo dây mạng bị ngắt. Nên kiểm tra gì trước?","type":"choice","choices":["Dây và cổng kết nối của máy A","Mực của máy in","Dây màn hình của mọi máy","Tắt toàn bộ mạng ngay"],"correct":[0],"why":"Các máy khác in được; A có dấu hiệu lỗi riêng."},{"id":"T6-B04-C17","prompt":"Máy A mở được tệp X của nhóm nhưng không mở được tệp Y và báo “không có quyền”. Kiểm tra gì?","type":"choice","choices":["Pin bàn phím","Mực in","Quyền truy cập tệp Y","Đổi tất cả dây mạng"],"correct":[2],"why":"Mạng vẫn hoạt động với tệp X; thông báo chỉ rõ quyền Y."},{"id":"T6-B04-C18","prompt":"Các máy vẫn trao đổi tệp với nhau nhưng tất cả đều không tìm thấy một máy in mạng. Kiểm tra gì trước?","type":"choice","choices":["Đổi màn hình các máy","Nguồn và kết nối mạng của máy in","Rút dây của tất cả máy đang chia sẻ tệp","Gõ lại tên mọi tệp"],"correct":[1],"why":"Dấu hiệu tập trung ở máy in."},{"id":"T6-B04-C19","prompt":"Máy bảng mất kết nối ở cuối hành lang nhưng dùng được cạnh điểm phát. Nêu giả thuyết và phép thử đơn giản.","type":"practice","rubric":["1 điểm: tín hiệu yếu ngoài vùng phủ tốt.","1 điểm: thử lại cùng thiết bị, cùng tác vụ gần điểm phát."]},{"id":"T6-B04-C20","prompt":"Sơ đồ ghi máy B nối bộ chuyển mạch, nhưng dây thật đang cắm sang màn hình qua cổng hình ảnh. Sửa sơ đồ hoặc cách nối để B tham gia mạng có dây.","type":"practice","rubric":["1 điểm: phân biệt cáp hình ảnh và cáp mạng.","1 điểm: nối cổng mạng B tới bộ chuyển mạch bằng cáp mạng."]}]},{"goal":"Chọn và kiểm tra mô hình kết nối.","text":"Đáp ứng đồng thời thiết bị cố định, di động và tài nguyên chung.","tasks":[{"id":"T6-B04-C21","prompt":"Phòng có máy bàn cố định và máy bảng di động, cả hai cần in chung. Chọn mô hình nào?","type":"choice","choices":["Chỉ đặt máy in cạnh máy bảng","Mỗi máy dùng một mạng tách biệt không có đường tới máy in","Máy bàn nối cáp; máy bảng nối Wi-Fi cùng mạng với máy in","Chỉ nối cáp máy bàn; để máy bảng ngoại tuyến"],"correct":[2],"why":"Hai loại kết nối có thể đưa thiết bị vào cùng mạng."},{"id":"T6-B04-C22","prompt":"Muốn xác nhận mọi nhóm có thể đọc mà không sửa tệp mẫu, thử gì?","type":"choice","choices":["Chỉ xem dây đã cắm","Chỉ đổi tên tệp","Chỉ mở bằng tài khoản chủ sở hữu","Dùng tài khoản nhóm, thử mở và thử sửa tệp mẫu"],"correct":[3],"why":"Cần thử cả quyền được cấp và thao tác bị hạn chế."},{"id":"T6-B04-C23","prompt":"Trước khi mua máy in riêng cho mỗi nhóm, cách nào tận dụng mạng sẵn có?","type":"choice","choices":["Tháo các thiết bị kết nối","Kết nối mỗi nhóm với một tệp khác","Thử kết nối và chia sẻ một máy in đủ công suất cho các nhóm","Gửi tệp qua USB rồi xóa tệp gốc"],"correct":[2],"why":"Chia sẻ thiết bị giúp tránh mua trùng nếu đáp ứng nhu cầu."},{"id":"T6-B04-C24","prompt":"Vẽ mạng lớp có hai máy bàn dùng cáp, một máy bảng dùng Wi-Fi và máy in dùng chung. Ghi cách thử in từ máy bảng.","type":"practice","rubric":["1 điểm: hai máy bàn nối đúng.","1 điểm: điểm Wi-Fi và máy in cùng mạng.","1 điểm: gửi trang thử từ máy bảng và kiểm tra bản in."]},{"id":"T6-B04-C25","prompt":"Cả lớp cần xem tệp kế hoạch; chỉ tổ trưởng được sửa. Đề xuất cách chia sẻ và hai phép thử với tài khoản khác nhau.","type":"practice","rubric":["1 điểm: cấp quyền theo vai trò.","1 điểm: người xem mở được nhưng không sửa.","1 điểm: tổ trưởng sửa và lưu được bản thử."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=4;
+const MISSIONS = [
+ ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
+ ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
+ ["Máy tính và cộng đồng","👾","Pixel Lab","Dùng hai trạng thái 0 và 1 để tái tạo hình, rồi kiểm tra dung lượng.","Bảng điểm ảnh","Bật tắt bit","#6746a0","#e1c9ff","pixel",["Bật bit đầu tiên","Đọc mã","Ghép dữ liệu","Dò mã sai","Giải bài toán bộ nhớ"]],
+ ["Mạng máy tính và Internet","🔌","Thợ nối mạng","Kết nối thiết bị trong phòng máy để trao đổi tệp và dùng chung máy in.","Bảng đấu nối","Nối cáp và Wi-Fi","#155aa2","#b9deff","network",["Nhận thiết bị","Đọc sơ đồ","Nối phòng máy","Khoanh vùng sự cố","Thiết kế mạng lớp"]],
+ ["Mạng máy tính và Internet","📡","Trạm liên lạc xa","Giữ liên lạc cho nhóm học tập, kể cả khi kết nối không ổn định.","Bảng điều phối","Chọn kênh và dự phòng","#066f75","#a9edf3","dispatch",["Kết nối toàn cầu","Tách mạng và dịch vụ","Chọn kênh","Dò đường ra","Lập kế hoạch dự phòng"]],
+ ["Tìm kiếm và trao đổi","🌐","Trạm cứu hộ web","Khôi phục đường dẫn đến thông báo mới nhất trên website trường.","Trình duyệt mô phỏng","Điều hướng và lưu dấu","#2447a4","#c5d5ff","web",["Nhận diện WWW","Bản đồ website","Theo liên kết","Sửa đường dẫn","Xác minh thông báo"]],
+ ["Tìm kiếm và trao đổi","🔎","Thám tử từ khóa","Lần theo từ khóa, loại kết quả và dấu vết của nguồn để tìm đúng thông tin.","Máy tìm kiếm mô phỏng","Gõ từ khóa, lọc nguồn","#8c4705","#ffdf9c","search",["Nhận diện công cụ","Chọn từ khóa","Mở kết quả","Sửa truy vấn","Nộp bằng chứng"]],
+ ["Tìm kiếm và trao đổi","✉️","Bưu cục số","Giao đúng thư, đúng người và đúng phiên bản tệp qua hộp thư thực hành.","Bàn soạn thư","Soạn thư và đính kèm","#a0325b","#ffd0df","mail",["Mở hộp thư","Đọc các trường","Soạn và trả lời","Sửa thư lỗi","Gửi có trách nhiệm"]],
+ ["An toàn số","🛡️","Đội lá chắn số","Xử lí các tin nhắn đáng ngờ và giúp bạn bảo vệ thông tin cá nhân.","Bàn trực an toàn","Xác minh, chặn và báo cáo","#925121","#ffdbb7","safety",["Nhận diện nguy cơ","Đọc dấu hiệu","Chọn hành động","Xác minh tình huống","Bảo vệ cả nhóm"]],
+ ["Ứng dụng tin học","🧠","Vườn ý tưởng","Tổ chức các ý rời thành sơ đồ có thể tra cứu và chỉnh sửa.","Sơ đồ sống","Gắn nhánh và lá","#39733a","#d4efae","mindmap",["Nhận ra nhánh","Nhóm ý lớn","Dựng sơ đồ","Sửa nhánh lạc","Thiết kế để tra cứu"]],
+ ["Ứng dụng tin học","🖋️","Xưởng dàn trang","Biến bản tin thô thành trang dễ đọc, sẵn sàng xem trước khi in.","Bàn định dạng","Chỉnh chữ, đoạn và trang","#743b93","#ead1f9","editor",["Mở bộ công cụ","Chọn đúng phạm vi","Định dạng bản tin","Sửa bản in","Bàn giao trang in"]],
+ ["Ứng dụng tin học","🧮","Kiến trúc sư bảng","Dựng bảng có hàng, cột và nhãn rõ để lớp tra dữ liệu nhanh.","Lưới dữ liệu","Chèn hàng cột và nhập ô","#1b659b","#badffc","table",["Nhận hàng và cột","Đọc giao điểm","Tạo bảng","Sửa cấu trúc","Thiết kế để tra cứu"]],
+ ["Ứng dụng tin học","🔁","Ca sửa bản thảo","Sửa đúng những chỗ cần thay mà vẫn giữ nguyên dữ liệu khác.","Bàn tìm và thay thế","Tìm tiếp, thay và hoàn tác","#a54224","#ffd3bf","replace",["Nhận diện công cụ","Chọn phạm vi","Thay có kiểm tra","Cứu phần bị thay nhầm","Rà bản cuối"]],
+ ["Ứng dụng tin học","📒","Xưởng sổ lưu niệm","Gom bài viết, ảnh, bảng và bìa thành cuốn sổ lớp có thể bàn giao.","Bàn ghép trang","Chọn, xếp và xem thử trang","#8b5921","#ffe0ab","binder",["Kiểm kê tư liệu","Chọn dạng trình bày","Ghép bản chung","Rà các trang","Bàn giao cuốn sổ"]],
+ ["Thuật toán và chương trình","🧩","Mê cung thuật toán","Nối đầu vào, phép xử lí và đầu ra để máy tính cho đúng kết quả.","Máy thực thi sơ đồ","Lắp khối và chạy số liệu","#4e46a5","#dbd4ff","algorithm",["Nhận khối","Xác định vào ra","Chạy sơ đồ","Sửa bước lỗi","Thử dữ liệu mới"]],
+ ["Thuật toán và chương trình","🤖","Đường chạy robot","Lập điều kiện và vòng lặp để robot đến trạm mà không chạy quá đích.","Sàn thử robot","Chạy nhánh và vòng lặp","#086b58","#aff0cb","robot",["Nhận cấu trúc","Đọc điều kiện","Lần theo robot","Sửa lỗi dừng","Thử nhiều đường đi"]],
+ ["Thuật toán và chương trình","🐱","Sân khấu khối lệnh","Ghép các khối, chạy thử rồi xem nhân vật trả lời từng bộ dữ liệu.","Sân khấu mô phỏng Scratch","Lắp kịch bản và chạy thử","#9a4c04","#ffe0a7","scratch",["Khởi động sân khấu","Đọc khối lệnh","Chạy kịch bản","Sửa lệnh sai","Thử cả hai nhánh"]]
+].map(([group,icon,title,story,lab,mechanic,color,tint,mode,stages],i)=>({n:i+1,group,icon,title,story,lab,mechanic,color,tint,mode,stages}));
+
+const h=(tag,cls='',text='')=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e};
+function add(parent,...children){parent.append(...children.filter(x=>x!==null&&x!==undefined));return parent}
+function b(text,fn,cls='btn subtle'){const e=h('button',cls,text);e.type='button';e.addEventListener('click',fn);return e}
+function field(label,control){return add(h('label','field'),h('span','field-label',label),control)}
+function select(options,current,onChange){
+  const e=h('select');e.append(new Option('Chọn…',''));
+  options.forEach((x,i)=>e.append(new Option(x,String(i))));
+  e.value=current===null||current===undefined?'':String(current);
+  e.addEventListener('change',()=>onChange(e.value===''?null:Number(e.value)));return e
+}
+function input(value,onInput,opts={}){const e=h('input');Object.assign(e,{value,type:'text',...opts});e.addEventListener('input',()=>onInput(e.value));return e}
+function pressed(label,active,fn,cls='chip'){const e=b(label,fn,cls+(active?' selected':''));e.setAttribute('aria-pressed',String(active));return e}
+const same=(a,b)=>Array.isArray(a)&&a.length===b.length&&a.every((x,i)=>x===b[i]);
+const folded=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').trim();
+function stableOrder(n,key){
+  const arr=Array.from({length:n},(_,i)=>i);
+  let seed=[...key].reduce((a,c)=>Math.imul(a^c.charCodeAt(0),16777619)>>>0,2166136261);
+  for(let i=n-1;i>0;i--){seed=(Math.imul(1664525,seed)+1013904223)>>>0;const j=seed%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr
+}
+function checkTable(rows){
+ const box=h('div','table-wrap'),table=h('table','data-table');
+ rows.forEach((row,i)=>{const tr=h('tr');row.forEach(v=>{const td=h(i?'td':'th','',v);if(!i)td.scope='col';tr.append(td)});table.append(tr)});return add(box,table)
+}
+const LABS={};
+function mountLab(host,mission,initialDone,award){
+  const lab=LABS[mission.mode];let caseNo=initialDone.includes(0)&&!initialDone.includes(1)?1:0;
+  let state={},msg=null,done=[...initialDone];
+  const ui={
+    root:host,
+    nextRender(){render()},
+    verdict(ok,good,retry){msg={ok,text:ok?good:retry};if(ok&&!done.includes(caseNo)){done.push(caseNo);award(caseNo)}render();host.querySelector('.lab-feedback')?.focus()},
+    notify(text){msg={ok:null,text};render();host.querySelector('.lab-feedback')?.focus()},
+    change(fn){return()=>{fn();msg=null;render()}},
+    action(text,fn){return b(text,fn,'btn primary')}
+  };
+  function render(){
+    const current=lab[caseNo];
+    const tabs=h('div','lab-tabs');
+    lab.forEach((x,i)=>tabs.append(pressed((done.includes(i)?'✓ ':'')+(i===0?'01 · Làm quen':'02 · Thử thách'),i===caseNo,()=>{
+      if(caseNo===i)return;caseNo=i;state={};msg=null;render();host.querySelector('.lab-name')?.focus();
+    })));
+    const stage=h('section','lab-stage');
+    const name=h('h3','lab-name',current.title);name.tabIndex=-1;
+    add(stage,name,h('p','lab-instruction',current.prompt));
+    const play=h('div','lab-play');stage.append(play);
+    host.replaceChildren(tabs,stage);
+    const aria=h('div','sr-only');aria.id='lab-current';aria.textContent='Mô phỏng '+mission.lab;stage.prepend(aria);
+    current.draw(play,state,ui);
+    if(msg){const out=h('p','lab-feedback '+(msg.ok===true?'success':msg.ok===false?'warning':'neutral'),msg.text);out.tabIndex=-1;out.setAttribute('role','status');stage.append(out)}
+  }
+  render();
+}
+function sortedLab(title,prompt,groups,items,expect,good,retry,appearance=''){
+ return {title,prompt,draw(box,s,u){
+  s.answers??=Array(items.length).fill(null);
+  const cols=h('div','sort-board '+appearance);
+  groups.forEach((g,i)=>{const bin=h('div','sort-bin'),list=h('ul');items.forEach((t,j)=>{if(s.answers[j]===i)list.append(h('li','',t))});add(bin,h('strong','',g),list.children.length?list:h('span','tiny','Chưa có mục'));cols.append(bin)});
+  const rows=h('div','form-grid');
+  items.forEach((x,i)=>rows.append(field(x,select(groups,s.answers[i],v=>{s.answers[i]=v;u.nextRender();u.root.querySelectorAll('select')[i]?.focus()}))));
+  add(box,cols,rows,u.action('Kiểm tra cách xếp',()=>u.verdict(same(s.answers,expect),good,retry)));
+ }}
+}
+LABS.sort=[
+ sortedLab('Gỡ rối bản tin','Một biển ở cổng giúp lớp biết nơi học. Xếp từng mục theo vai trò.',['Vật mang tin','Dữ liệu','Thông tin'],['Tấm biển ở cổng','Dòng chữ “6B – 203”','Lớp 6B cần đến phòng 203'],[0,1,2],'Đúng: biển mang chữ; lớp hiểu cần tới phòng 203.','Hãy tìm vật chứa, dấu hiệu nhìn thấy và điều người đọc hiểu.','newsroom'),
+ sortedLab('Cùng một tin, khác vật chứa','Hai kênh báo “Tập trung 7 giờ 15”. Xếp các chi tiết để không nhầm nội dung với cách biểu diễn.',['Vật mang tin','Dữ liệu','Thông tin'],['Tờ giấy treo trước lớp','Dòng số 7:15','Tiếng đọc “bảy giờ mười lăm”','Học sinh cần đến lúc 7 giờ 15'],[0,1,1,2],'Chữ và tiếng là hai cách biểu diễn cùng một thông tin.','Một tin có thể được biểu diễn bằng chữ và bằng âm thanh.','newsroom')
+];
+function tray(box,options,picked,onPick,onUndo,onClear,label='Các bước đã lắp'){
+ const src=h('div','tool-row'),out=h('ol','ordered-tray');out.tabIndex=-1;
+ options.forEach((x,i)=>{const e=b(x,()=>onPick(i),'btn chip');e.disabled=picked.includes(i);src.append(e)});
+ if(!picked.length)out.append(h('li','empty-slot','Chưa có bước nào.'));
+ else picked.forEach(i=>{const step=h('li','',options[i]);step.tabIndex=-1;out.append(step)});
+ const tools=h('div','tool-row');const undo=b('Bỏ bước cuối',onUndo),clear=b('Xếp lại',onClear);undo.disabled=clear.disabled=!picked.length;
+ add(box,src,h('p','field-label',label),out,add(tools,undo,clear));
+}
+function flowCase(title,prompt,opts,target,good,reason){
+ return {title,prompt,draw(box,s,u){
+  s.pick??=[];
+  const track=h('div','flow-track');['Thu nhận','Lưu trữ','Xử lí','Truyền'].forEach((x,i)=>track.append(h('span',i<s.pick.length?'filled':'',x)));
+  box.append(track);
+  tray(box,opts,s.pick,i=>{if(s.pick.length<4){s.pick.push(i);u.nextRender();u.root.querySelector('.ordered-tray')?.focus()}},u.change(()=>s.pick.pop()),u.change(()=>s.pick=[]),'Dây chuyền đang lắp');
+  add(box,u.action('Chạy dây chuyền',()=>u.verdict(same(s.pick,target),good,reason)));
+ }}
+}
+LABS.flow=[
+ flowCase('Báo số sách góp','Các tổ báo 8, 7, 9 quyển. Dựng dây chuyền bốn hoạt động để lớp biết tổng và có thể đối chiếu.',['Cộng thành 24','Nghe số từng tổ','Gửi báo cáo cho lớp','Ghi số theo từng tổ'],[1,3,0,2],'Báo cáo có tổng 24 quyển và giữ số gốc để đối chiếu.','Thu nhận số, lưu lại, xử lí, sau đó truyền kết quả.'),
+ flowCase('Cứu bản khảo sát','Dựng quy trình lấy số bạn đi xe đạp. Mỗi tổ gửi một số đã đếm. Chọn 4 bước; có 2 bước không dùng.',['Cộng số từng tổ','Xóa số liệu gốc','Gửi tổng cùng bảng gốc','Nhận số của từng tổ','Lưu mỗi tổ một dòng','Đoán số của tổ chưa báo'],[3,4,0,2],'Cả lớp có kết quả và dữ liệu để kiểm tra.','Giữ đủ số gốc của từng tổ trước khi tính và gửi.')
+];
+function pixelCase(title,prompt,pattern){
+ const w=pattern[0].length,answer=pattern.join('').split('').map(Number);
+ return {title,prompt,draw(box,s,u){
+  s.bits??=answer.map(()=>0);
+  const grids=h('div','pixel-pair');
+  function makeGrid(values,editable){
+   const grid=h('div','pixel-grid');grid.style.setProperty('--cols',w);
+   values.forEach((v,i)=>{
+    const label='Hàng '+(Math.floor(i/w)+1)+', cột '+(i%w+1)+': '+v;
+    const e=editable?pressed(String(v),!!v,()=>{s.bits[i]=1-v;u.nextRender();u.root.querySelectorAll('.pixel-grid button')[i]?.focus()},'pixel-cell'):h('span','pixel-cell '+(v?'selected':''),String(v));
+    e.setAttribute('aria-label',label);grid.append(e);
+   });return grid
+  }
+  add(grids,add(h('div'),h('p','field-label','Ảnh đích · 1 là ô tối'),makeGrid(answer,false)),add(h('div'),h('p','field-label','Bảng em đang mã hóa'),makeGrid(s.bits,true)));
+  add(box,grids,h('p','readout','Mã theo hàng: '+pattern.map((_,r)=>s.bits.slice(r*w,(r+1)*w).join('')).join(' / ')),
+  u.action('So ảnh và dãy bit',()=>u.verdict(same(s.bits,answer),'Khớp! Có '+answer.length+' bit, đọc lần lượt theo từng hàng.','So từng ô với ảnh đích. Chỉ bật 1 tại ô tối, bắt đầu từ hàng đầu.')));
+ }}
+}
+LABS.pixel=[
+ pixelCase('Mã hóa lá cờ','Bấm từng ô để bật 1 hoặc tắt 0. Dựng lại ảnh 3 × 3 bên trái.',['010','111','010']),
+ pixelCase('Bảng điểm ảnh 4 × 4','Dựng hình theo quy ước. Kiểm tra cả vị trí lẫn thứ tự đọc.',['1111','1001','1011','1111'])
+];
+function networkCase(title,prompt,nodes,edges,solution){
+ return {title,prompt,draw(box,s,u){
+  s.wires??=[];s.pick??=null;
+  const board=h('div','network-board');
+  const kinds=['Máy bàn','Bộ chuyển mạch','Máy in','Điểm Wi-Fi','Máy bảng','Màn hình'];
+  const icons=['🖥️','🔀','🖨️','📶','📱','🖼️'];
+  nodes.forEach((t,i)=>{const x=pressed(icons[kinds.indexOf(t)]+' '+t,s.pick===i,()=>{
+   if(s.pick===null)s.pick=i;
+   else if(s.pick===i)s.pick=null;
+   else {
+    const key=[s.pick,i].sort((a,b)=>a-b).join('-');
+    const pos=s.wires.indexOf(key);
+    if(pos<0)s.wires.push(key);else s.wires.splice(pos,1);
+    s.pick=null;
+   }
+   u.nextRender();u.root.querySelectorAll('.network-board button')[i]?.focus();
+  },'device');board.append(x)});
+  const links=h('ul','wire-list');
+  s.wires.forEach(key=>{const [a,b]=key.split('-').map(Number);links.append(h('li','',nodes[a]+' '+(edges[key]==='wifi'?'⋯ Wi-Fi ⋯':'⟷ cáp ⟷')+' '+nodes[b]))});
+  if(!s.wires.length)links.append(h('li','tiny','Chưa có kết nối.'));
+  add(box,board,h('p','field-label','Kết nối hiện có · chọn lại hai thiết bị để gỡ dây'),links,
+   u.action('Thử gửi trang in',()=>u.verdict(same([...s.wires].sort(),[...solution].sort()),'Máy in đã nhận trang thử qua mạng đã thiết kế.','Hãy đưa các thiết bị về cùng mạng qua bộ chuyển mạch; máy bảng cần điểm Wi-Fi. Bỏ các đường không phục vụ yêu cầu.')));
+ }}
+}
+LABS.network=[
+ networkCase('Nối máy bàn với máy in','Bấm hai thiết bị để tạo đường nối. Đưa máy bàn và máy in về cùng bộ chuyển mạch; màn hình không tham gia mạng.',['Máy bàn','Bộ chuyển mạch','Máy in','Màn hình'],{},['0-1','1-2']),
+ networkCase('Thêm một máy bảng','Giữ máy bàn và máy in dùng cáp. Nối thêm điểm Wi-Fi vào bộ chuyển mạch và cho máy bảng truy cập.',['Máy bàn','Bộ chuyển mạch','Máy in','Điểm Wi-Fi','Máy bảng'],{'3-4':'wifi'},['0-1','1-2','1-3','3-4'])
+];
+function dispatchCase(title,prompt,jobs,tools,goal,good,retry){
+ return {title,prompt,draw(box,s,u){
+  s.plan??=Array(jobs.length).fill(null);
+  const dash=h('div','dispatch');jobs.forEach(([when,job],i)=>dash.append(add(h('div','dispatch-row'),h('span','signal',when),field(job,select(tools,s.plan[i],v=>s.plan[i]=v)))));
+  add(box,dash,u.action('Mô phỏng kế hoạch',()=>u.verdict(same(s.plan,goal),good,retry)));
+ }}
+}
+LABS.dispatch=[
+ dispatchCase('Ca học từ xa','Gắn một kênh vào mỗi việc. Đọc yêu cầu về thời gian và dữ liệu.',[['TRỰC TIẾP','Ba nhà cần nghe và nói ngay'],['GỬI SAU','Cô cần nhận một tệp và đọc buổi tối'],['BẢN CHUNG','Nhóm cần cùng chỉnh một bản']],['Gọi trực tuyến','Thư điện tử có tệp','Tài liệu trực tuyến dùng chung'],[0,1,2],'Kế hoạch có kênh riêng cho trao đổi ngay, chuyển tệp và làm chung.','Hãy xét việc cần phản hồi ngay hay cần tệp có thể mở sau.'),
+ dispatchCase('Kết nối chập chờn','Một bạn chỉ vào mạng được trước buổi học và sau buổi học. Xếp phương án vẫn để bạn đọc và góp ý.',[['TRƯỚC','Tranh thủ lúc có kết nối'],['ĐANG NGẮT','Bạn cần đọc hướng dẫn'],['KẾT NỐI LẠI','Bạn cần gửi góp ý']],['Gửi góp ý bằng chữ','Tải trước tệp nhẹ','Đọc tệp đã lưu','Chờ video trực tiếp'],[1,2,0],'Dù mất mạng giữa buổi, bạn vẫn đọc được và gửi góp ý khi có lại kết nối.','Tải trước, đọc ngoại tuyến, rồi gửi khi đường truyền trở lại.')
+];
+const webPages={
+ '/':{name:'Trang chủ',content:'Cổng thông tin của trường.',links:[['Tin tức','/tin-tuc'],['Thư viện','/thu-vien']]},
+ '/tin-tuc':{name:'Tin tức',content:'Bảng tin hoạt động tháng 11.',links:[['Lịch tham quan – cũ','/lich-cu'],['Lịch tham quan – cập nhật','/lich-moi']]},
+ '/thu-vien':{name:'Thư viện',content:'Thư viện mở lúc 8 giờ.',links:[['Sách mới','/sach-moi']]},
+ '/sach-moi':{name:'Sách mới',content:'Tủ sách khoa học: mở giới thiệu để đọc thêm.',links:[]},
+ '/lich-cu':{name:'Lịch cũ · 02/11',content:'Lớp 6A tập trung 7 giờ. Có bản cập nhật trong mục Tin tức.',links:[]},
+ '/lich-moi':{name:'Bản cập nhật · 05/11',content:'Lớp 6A: 7 giờ 30. Lớp 6B: 8 giờ.',links:[]}
+};
+function webCase(title,prompt,route,start){
+ return {title,prompt,draw(box,s,u){
+  s.path??=start;s.history??=[];s.mark??=[];s.hours??=null;s.address??='https://truong.example'+(s.path==='/'?'':s.path);
+  const page=webPages[s.path];
+  function visit(path){s.history.push(s.path);s.path=path;s.address='https://truong.example'+(path==='/'?'':path);u.nextRender();focusPage()}
+  function focusPage(){u.root.querySelector('.mock-page h4')?.focus()}
+  const address=input(s.address,v=>s.address=v,{placeholder:'https://truong.example/…'});
+  const go=()=>{const m=s.address.trim().match(/^https:\/\/truong\.example(\/[^\s]*)?$/);visit(m?m[1]||'/':'/khong-tim-thay')};
+  address.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+  const tools=h('div','browser-bar');
+  const back=b('‹ Quay lại',()=>{s.path=s.history.pop();s.address='https://truong.example'+(s.path==='/'?'':s.path);u.nextRender();focusPage()});back.disabled=!s.history.length;
+  const mark=b(s.mark.includes(s.path)?'★ Đã lưu':'☆ Dấu trang',()=>{if(!s.mark.includes(s.path))s.mark.push(s.path);u.nextRender();focusPage()});mark.disabled=!page;
+  add(tools,back,field('Thanh địa chỉ',address),b('Mở',go),mark);
+  const content=h('article','mock-page'),heading=h('h4','',page?.name||'Không tìm thấy trang');heading.tabIndex=-1;
+  add(content,heading,h('p','',page?.content||'Hãy đối chiếu địa chỉ hoặc quay lại để theo liên kết khác.'));
+  page?.links.forEach(([label,path])=>content.append(b(label,()=>visit(path),'btn mock-link')));
+  const bookmarks=h('div','tool-row');
+  s.mark.forEach(path=>bookmarks.append(b('★ '+webPages[path].name,()=>visit(path),'btn chip')));
+  add(box,add(h('div','mock-browser'),tools,content),bookmarks);
+  if(route==='/lich-moi')box.append(field('Giờ tập trung của 6A',select(['7 giờ','7 giờ 30','8 giờ'],s.hours,v=>s.hours=v)));
+  box.append(u.action('Xác nhận nhiệm vụ',()=>u.verdict(s.path===route&&s.mark.includes(route)&&(route!=='/lich-moi'||s.hours===1),route==='/lich-moi'?'Đã lưu đúng bản ngày 05/11; lớp 6A tập trung 7 giờ 30.':'Đã đến đúng Thư viện và lưu được dấu trang.','Cần mở đúng trang, lưu dấu trang; ở nhiệm vụ lịch, nhớ đọc giờ của đúng lớp.')));
+ }}
+}
+LABS.web=[
+ webCase('Lưu cửa vào thư viện','Từ Trang chủ, theo liên kết Thư viện rồi đánh dấu trang để lần sau mở nhanh.','/thu-vien','/'),
+ webCase('Tìm lịch mới sau đường dẫn hỏng','Địa chỉ em mở đang sai. Phiếu ghi https://truong.example/tin-tuc. Hãy sửa địa chỉ, tìm bản cập nhật, lưu dấu và chọn giờ của lớp 6A.','/lich-moi','/tin-tcu')
+];
+const results=[
+ ['Hình ảnh','Hoa sen trắng tại vườn trường','Bộ sưu tập ảnh trường · 18/09','hoa sen trắng ảnh hồ vườn trường'],
+ ['Video','Video chăm sóc sen trắng','Câu lạc bộ trồng cây · 12/08','hoa sen trắng cách chăm sóc'],
+ ['Bài viết','Giờ mở cửa thường lệ – Thư viện A','Website Thư viện A · 01/08','thư viện A chủ nhật giờ mở cửa'],
+ ['Bài viết','Lịch tạm thời 17/11 – Thư viện A','Thông báo chính thức · 15/11','thư viện A giờ mở cửa chủ nhật 17 11 sửa chữa lịch tạm thời'],
+ ['Bài viết','Lịch 17/11 – Thư viện B','Bài đăng cộng đồng · 16/11','thư viện B giờ mở cửa chủ nhật 17 11']
+];
+function searchCase(title,prompt,goal,type,required,good){
+ return {title,prompt,draw(box,s,u){
+  s.query??='';s.filter??='Tất cả';s.view??=null;
+  const q=input(s.query,v=>s.query=v,{placeholder:'Nhập từ khóa…'});
+  const run=()=>{s.view=s.query;s.result=null;u.nextRender();u.root.querySelector('input')?.focus()};
+  q.addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+  add(box,add(h('div','search-bar'),field('Từ khóa',q),b('Tìm kiếm',run,'btn primary')));
+  const tabs=h('div','tool-row');['Tất cả','Hình ảnh','Video','Bài viết'].forEach(t=>tabs.append(pressed(t,s.filter===t,()=>{s.filter=t;s.result=null;u.nextRender();[...u.root.querySelectorAll('.tool-row button')||[]].find(e=>e.textContent===t)?.focus()})));box.append(tabs);
+  const list=h('div','search-results');
+  if(s.view===null)list.append(h('p','muted','Nhập từ khóa rồi bấm Tìm kiếm.'));
+  else {
+   const terms=folded(s.view).match(/[a-z0-9]+/g)||[];
+   const found=results.map(([t,name,source,keys],i)=>({i,t,name,source,score:terms.filter(x=>folded(keys).split(/[^a-z0-9]+/).includes(x)).length})).filter(r=>r.score>0&&(s.filter==='Tất cả'||s.filter===r.t)).sort((a,b)=>b.score-a.score||a.i-b.i);
+   if(!found.length)list.append(h('p','muted','Chưa có kết quả trong mô phỏng. Thử tên đối tượng hoặc ngày cụ thể.'));
+   found.forEach(r=>list.append(add(h('article','search-result'),pressed(r.name,s.result===r.i,()=>{s.result=r.i;u.nextRender();[...u.root.querySelectorAll('.search-result button')||[]].find(e=>e.textContent===r.name)?.focus()},'result-title'),h('small','muted',r.t+' · '+r.source))));
+  }
+  add(box,list,u.action('Nộp kết quả đã chọn',()=>u.verdict(s.result===goal&&s.filter===type&&required.every(t=>(folded(s.view||'').match(/[a-z0-9]+/g)||[]).includes(t)),good,'Kiểm tra lại từ khóa, thẻ kết quả và ngày của nguồn. Truy vấn nên có đối tượng cùng chi tiết mà đề yêu cầu.')));
+ }}
+}
+LABS.search=[
+ searchCase('Tìm đúng ảnh sen trắng','Gõ từ khóa, mở thẻ Hình ảnh, chọn ảnh hoa sen trắng của trường.',0,'Hình ảnh',['sen','trang'],'Đã tìm đúng loại kết quả và đúng hình cần lấy.'),
+ searchCase('Một ngày Chủ nhật khác thường','Tìm lịch mở cửa Thư viện A ngày 17/11 khi sửa chữa. Dùng thẻ Bài viết và chọn nguồn áp dụng đúng ngày.',3,'Bài viết',['thu','vien','a','17','11'],'Lịch tạm thời của thư viện trả lời trực tiếp cho ngày 17/11.')
+];
+function mailCase(title,prompt,mode,target){
+ return {title,prompt,draw(box,s,u){
+  s.to??='';s.subject??='';s.body??='';s.files??=(mode==='fix'?['bai8-cu.pdf']:[]);s.drafted??=false;s.out??=false;
+  const bar=add(h('div','window-bar'),h('strong','','✉ Hộp thư thực hành'),h('span','badge',s.out?'Đã đăng xuất':s.drafted?'Có bản nháp':'Đang soạn'));
+  const composer=h('div','composer');
+  const body=h('textarea');body.rows=2;body.value=s.body;body.placeholder='Viết lời nhắn…';body.addEventListener('input',()=>{s.body=body.value;s.drafted=false});
+  function note(k,v){s[k]=v;s.drafted=false}
+  add(composer,field('Đến',input(s.to,v=>note('to',v),{placeholder:'ten@truong.example',type:'email'})),
+   field('Chủ đề',input(s.subject,v=>note('subject',v),{placeholder:'Tên bài – tên học sinh – lớp'})),field('Nội dung thư',body));
+  const attach=h('div','tool-row');
+  ['bai8.pdf','bai8-cu.pdf','bai8-sua.pdf'].forEach((f,i)=>attach.append(pressed((s.files.includes(f)?'✓ ':'＋ ')+f,s.files.includes(f),()=>{
+    s.files=s.files.includes(f)?s.files.filter(x=>x!==f):[...s.files,f];s.drafted=false;u.nextRender();u.root.querySelectorAll('.composer .chip')[i]?.focus();
+  })));
+  add(composer,h('p','field-label','Tệp mẫu · bấm để đính kèm hoặc gỡ'),attach);
+  const complete=()=>s.to.trim().toLowerCase()==='cohoa@truong.example'&&/bai\s*8/.test(folded(s.subject))&&/\bminh\b/.test(folded(s.subject))&&/6\s*a/.test(folded(s.subject))&&s.body.trim().length>=8&&same(s.files,[target]);
+  if(mode==='fix'){
+   const save=b('Lưu nháp',()=>{if(s.out){u.notify('Phiên đã đăng xuất. Dùng Đăng nhập lại để sửa.');return}if(!complete()){u.notify('Bản nháp chưa đáp ứng đủ: kiểm tra địa chỉ, tên bài, Minh 6A, lời nhắn và tệp bản sửa.');return}s.drafted=true;u.notify('Đã lưu bản nháp đúng. Hãy đăng xuất trên máy dùng chung.')});
+   const logout=b(s.out?'Đăng nhập lại':'Đăng xuất',()=>{s.out=!s.out;u.nextRender();u.root.querySelector('.mail-logout')?.focus()},'btn subtle mail-logout');
+   if(s.out)composer.replaceChildren(h('p','muted','Đã đăng xuất. Nội dung hộp thư đang được ẩn trên máy dùng chung.'),logout);
+   else add(composer,add(h('div','tool-row'),save,logout));
+  }
+  add(box,add(h('div','mock-mail'),bar,composer),u.action(mode==='fix'?'Kiểm tra bản nháp':'Gửi thử (mô phỏng)',()=>u.verdict(complete()&&(mode!=='fix'||s.drafted&&s.out),'Đúng người nhận, đúng lời nhắn và đúng phiên bản tệp. Không có thư thật được gửi.','Đối chiếu từng trường với yêu cầu. Khi dùng máy chung, lưu nháp đúng rồi đăng xuất.')));
+ }}
+}
+LABS.mail=[
+ mailCase('Soạn thư nộp bài','Địa chỉ cô: cohoa@truong.example. Chủ đề phải có Bài 8, Minh và 6A; viết một lời nhắn, đính kèm đúng bai8.pdf.','send','bai8.pdf'),
+ mailCase('Cứu bản nháp trên máy chung','Bản nháp đang kèm bản cũ. Giữ đúng địa chỉ cô, chủ đề Bài 8 – Minh 6A và lời nhắn; chỉ kèm bai8-sua.pdf, lưu nháp và đăng xuất.','fix','bai8-sua.pdf')
+];
+function safetyCase(title,prompt,inbox,actions,expect,good){
+ return {title,prompt,draw(box,s,u){
+  s.active??=[];
+  const ticket=add(h('div','incident'),h('span','badge','TIN NHẮN MÔ PHỎNG'),h('strong','',inbox[0]),h('p','',inbox[1]));
+  const steps=h('div','safety-actions');
+  actions.forEach((a,i)=>steps.append(pressed(a,s.active.includes(i),()=>{
+   s.active=s.active.includes(i)?s.active.filter(v=>v!==i):[...s.active,i];u.nextRender();u.root.querySelectorAll('.safety-actions button')[i]?.focus();
+  },'safety-action')));
+  const log=h('ol','ordered-tray');s.active.forEach(i=>log.append(h('li','',actions[i])));if(!s.active.length)log.append(h('li','empty-slot','Chưa có hành động.'));
+  add(box,ticket,h('p','field-label','Chọn các hành động phù hợp · có thể bỏ chọn'),steps,h('p','field-label','Phương án của em'),log,
+  u.action('Đánh giá phương án',()=>u.verdict(same([...s.active].sort(),expect),good,'Tránh mở liên kết hoặc phát tán thông tin. Dùng kênh đã biết và nhờ người lớn phù hợp.')));
+ }}
+}
+LABS.safety=[
+ safetyCase('Lời mời nhận quà','Chọn đúng hai cách để giữ kín mã đăng nhập.',['Tài khoản lạ','“Gửi mã đăng nhập để nhận quà. Đừng nói với ai!”'],['Không cung cấp mã','Gửi thử mã của bạn khác','Báo người lớn tin cậy','Đăng mã lên nhóm hỏi ý kiến'],[0,2],'Em đã giữ kín mã và tìm được người có thể trợ giúp.'),
+ safetyCase('Mạo danh và dữ liệu riêng','Chọn đúng ba cách vừa xác minh vừa bảo vệ bằng chứng.',['Ảnh đại diện giống giáo viên','“Bấm liên kết nhập mật khẩu để xem điểm. Gửi kèm ảnh thẻ học sinh.”'],['Chuyển liên kết cho cả lớp','Không bấm, không gửi ảnh hay mật khẩu','Hỏi cô qua kênh lớp đã biết','Lưu bằng chứng riêng để báo người lớn','Tin ngay vì thấy ảnh giáo viên'],[1,2,3],'Em xác minh bằng kênh độc lập và không làm lộ thông tin.')
+];
+function mindCase(title,prompt,center,branches,leaves,expected){
+ return {title,prompt,draw(box,s,u){
+  s.map??=Array(leaves.length).fill(null);
+  const tree=h('div','mind-tree');
+  tree.append(h('div','mind-root',center));
+  const cols=h('div','mind-branches');
+  branches.forEach((name,i)=>{const col=add(h('div','mind-branch'),h('strong','',name));const list=h('ul');leaves.forEach((x,j)=>{if(s.map[j]===i)list.append(h('li','',x))});if(!list.children.length)list.append(h('li','muted','Chưa có ý'));col.append(list);cols.append(col)});
+  tree.append(cols);box.append(tree);
+  const fields=h('div','form-grid');leaves.forEach((x,i)=>fields.append(field(x,select(branches,s.map[i],v=>{s.map[i]=v;u.nextRender();u.root.querySelectorAll('.form-grid select')[i]?.focus()}))));
+  add(box,fields,u.action('Thử tra cứu sơ đồ',()=>u.verdict(same(s.map,expected),'Đường từ chủ đề đến các nhánh và chi tiết đã đúng.','Mỗi chi tiết cần trả lời đúng ý của nhánh mẹ. Hãy đọc từ trung tâm tới từng ý.')));
+ }}
+}
+LABS.mindmap=[
+ mindCase('Sơ đồ góc học tập','Gắn bốn ý vào hai nhánh; xem sơ đồ thay đổi theo từng lựa chọn.','Góc học tập',['Sách','Dụng cụ'],['Bút chì','Sách giáo khoa','Truyện','Thước'],[1,0,0,1]),
+ mindCase('Tra nội dung trong sổ lớp','Tạo đường tra cho bài viết, người và sự kiện.','Sổ lưu niệm 6A',['Thành viên','Hoạt động','Bài viết'],['Cô chủ nhiệm','Ngày hội đọc','Cảm nghĩ đầu năm','Tổ 2','Hội khỏe','Lời chúc cuối năm'],[0,1,2,0,1,2])
+];
+function editorCase(title,prompt,subject,body,target){
+ return {title,prompt,draw(box,s,u){
+  s.bold??=false;s.align??='left';s.orientation??='dọc';s.margin??='2';s.preview??=false;s.bodyLeft??=true;
+  function pick(key,value,i){s[key]=value;s.preview=false;u.nextRender();u.root.querySelectorAll('.editor-tools button')[i]?.focus()}
+  const tools=h('div','tool-row editor-tools');
+  add(tools,pressed('B · Đậm tiêu đề',s.bold,()=>pick('bold',!s.bold,0)),
+   pressed('Căn giữa tiêu đề',s.align==='center',()=>pick('align',s.align==='center'?'left':'center',1)),
+   pressed('Trang ngang',s.orientation==='ngang',()=>pick('orientation',s.orientation==='ngang'?'dọc':'ngang',2)),
+   pressed('Thân bài căn trái',s.bodyLeft,()=>pick('bodyLeft',!s.bodyLeft,3)),
+   pressed('Xem trước',s.preview,()=>{s.preview=!s.preview;u.nextRender();u.root.querySelectorAll('.editor-tools button')[4]?.focus()}));
+  const paper=h('article','paper '+(s.orientation==='ngang'?'landscape ':'')+(s.preview?'preview':''));
+  paper.style.setProperty('--paper-margin',s.margin==='2'?'10%':'5%');
+  const header=h('h4','',subject);header.style.fontWeight=s.bold?'800':'400';header.style.textAlign=s.align;
+  const p=h('p','',body);p.style.textAlign=s.bodyLeft?'left':'center';
+  add(paper,h('div','paper-watermark',s.preview?'XEM TRƯỚC · A4':'BẢN SOẠN · A4'),header,p);
+  const margin=select(['Lề trái/phải 2 cm','Lề trái/phải 1 cm'],s.margin==='2'?0:1,v=>{if(v===null)return;s.margin=v===0?'2':'1';s.preview=false;u.nextRender();u.root.querySelector('.lab-play select')?.focus()});
+  add(box,tools,field('Lề trang',margin),paper,u.action('Kiểm tra bản trình bày',()=>u.verdict(s.bold&&s.align==='center'&&s.bodyLeft&&s.orientation===target&&s.margin==='2'&&s.preview,'Bản A4 đúng hướng, đúng lề, tiêu đề nổi bật; đã kiểm tra bản xem trước.','Kiểm tra cả tiêu đề, thân bài, hướng trang, lề 2 cm và bấm Xem trước sau lần chỉnh cuối.')));
+ }}
+}
+LABS.editor=[
+ editorCase('Thông báo khổ dọc','Làm tiêu đề đậm, căn giữa; thân bài căn trái; trang A4 dọc, lề trái/phải 2 cm; xem trước.','Ngày hội đọc','Thứ Sáu, 8 giờ. Mang theo một quyển sách yêu thích đến thư viện.','dọc'),
+ editorCase('Áp phích khổ ngang','Định dạng trang A4 ngang với lề trái/phải 2 cm, tiêu đề đậm và giữa, thân bài trái. Kiểm tra bản xem trước.','Góc trưng bày lớp 6A','Ba khu: Sách, Tranh minh họa và Lời giới thiệu. Mời cả lớp ghé xem.','ngang')
+];
+function tableCase(title,prompt,target,start){
+ return {title,prompt,draw(box,s,u){
+  s.cells??=start.map(r=>[...r]);
+  function change(fn,i){fn();u.nextRender();u.root.querySelectorAll('.table-tools button')[i]?.focus()}
+  const tools=h('div','tool-row table-tools');
+  const W=s.cells[0].length,R=s.cells.length;
+  [['+ Hàng',()=>s.cells.push(Array(W).fill('')),R>=5],['+ Cột',()=>s.cells.forEach(r=>r.push('')),W>=4],['− Hàng cuối',()=>s.cells.pop(),R<=1],['− Cột cuối',()=>s.cells.forEach(r=>r.pop()),W<=1]].forEach(([label,fn,disable],i)=>{const x=b(label,()=>change(fn,i));x.disabled=disable;tools.append(x)});
+  const table=h('table','data-table edit-table');
+  s.cells.forEach((row,r)=>{const tr=h('tr');row.forEach((v,c)=>{
+   const td=h(r===0?'th':'td');if(r===0)td.scope='col';
+   const e=input(v,v=>s.cells[r][c]=v,{placeholder:r===0?'Tên cột':'…',maxLength:25});
+   e.setAttribute('aria-label','Hàng '+(r+1)+', cột '+(c+1));td.append(e);tr.append(td);
+  });table.append(tr)});
+  const equal=()=>s.cells.length===target.length&&s.cells.every((row,i)=>same(row.map(folded),target[i].map(folded)));
+  add(box,tools,h('p','readout',R+' hàng × '+W+' cột · hàng 1 là tiêu đề'),add(h('div','table-wrap'),table),
+   u.action('Đối chiếu bảng',()=>u.verdict(equal(),'Bảng đúng số hàng, cột và dữ liệu. Có thể tra theo nhãn hàng/cột.','Đếm riêng hàng tiêu đề; đối chiếu thứ tự cột và vị trí từng dữ liệu.')));
+ }}
+}
+LABS.table=[
+ tableCase('Tạo bảng mượn sách','Tạo bảng 3 hàng × 2 cột. Tiêu đề: Tên, Sách. Dòng 2: An, 3. Dòng 3: Bình, 5.',[['Tên','Sách'],['An','3'],['Bình','5']],[['']]),
+ tableCase('Thêm cột và bản ghi','Giữ bảng cũ. Thêm cột Tổ (An tổ 1) và một hàng Chi – 4 sách – tổ 2.',[['Tên','Sách','Tổ'],['An','3','1'],['Chi','4','2']],[['Tên','Sách'],['An','3']])
+];
+function replaceCase(title,prompt,original,target){
+ return {title,prompt,draw(box,s,u){
+  s.text??=original;s.find??='';s.into??='';s.position??=-1;s.history??=[];
+  const form=h('div','form-grid');
+  const f=input(s.find,v=>{s.find=v;s.position=-1},{placeholder:'Mẫu cần tìm',maxLength:60});
+  const r=input(s.into,v=>s.into=v,{placeholder:'Nội dung mới',maxLength:60});
+  add(form,field('Tìm',f),field('Thay bằng',r));
+  function seek(){return s.find?s.text.indexOf(s.find,s.position<0?0:s.position+s.find.length):-1}
+  function mark(){if(!s.find){u.notify('Hãy nhập cụm từ cần tìm.');return}
+   const i=seek();s.position=i<0?s.text.indexOf(s.find):i;u.notify(s.position<0?'Không thấy mẫu trong văn bản.':'Đã đánh dấu một kết quả. Kiểm tra ngữ cảnh trước khi thay.')}
+  function replace(all){
+   if(!s.find||!s.text.includes(s.find)){u.notify('Không có kết quả cho mẫu hiện tại.');return}
+   const i=s.position;
+   if(!all&&(i<0||s.text.slice(i,i+s.find.length)!==s.find)){u.notify('Bấm Tìm tiếp để đánh dấu đúng một chỗ trước khi thay.');return}
+   s.history.push(s.text);
+   s.text=all?s.text.split(s.find).join(s.into):s.text.slice(0,i)+s.into+s.text.slice(i+s.find.length);
+   s.position=-1;u.notify(all?'Đã thay tất cả vị trí khớp.':'Đã thay vị trí vừa chọn.');
+  }
+  const tools=add(h('div','tool-row'),b('Tìm tiếp',mark),b('Thay chỗ này',()=>replace(false)),b('Thay tất cả',()=>replace(true)));
+  const undo=b('Hoàn tác',()=>{s.text=s.history.pop();s.position=-1;u.notify('Đã hoàn tác lượt thay vừa rồi.')});undo.disabled=!s.history.length;tools.append(undo);
+  const doc=h('div','draft-text');
+  if(s.position>=0&&s.find){add(doc,document.createTextNode(s.text.slice(0,s.position)),h('mark','',s.find),document.createTextNode(s.text.slice(s.position+s.find.length)))}
+  else doc.textContent=s.text;
+  add(box,form,tools,doc,u.action('Kiểm tra bản cuối',()=>u.verdict(s.text===target,'Bản thảo khớp yêu cầu; phần cần giữ vẫn nguyên vẹn.','Đọc lại toàn văn. Nếu thay nhầm, hoàn tác và tìm cụm đủ cụ thể hoặc thay từng chỗ.')));
+ }}
+}
+LABS.replace=[
+ replaceCase('Đổi đúng một hạn nộp','Chỉ đổi hạn của Tổ 2 thành thứ Hai. Hạn của Tổ 1 giữ nguyên.','Tổ 1 nộp thứ Sáu. Tổ 2 nộp thứ Sáu.','Tổ 1 nộp thứ Sáu. Tổ 2 nộp thứ Hai.'),
+ replaceCase('Sửa chữ, giữ mã','Sửa hai cụm “mượn sach” thành “mượn sách”, đổi riêng hạn của Nhóm B thành thứ Tư. Giữ mã sach01.','Nhóm A mượn sach thứ Ba. Nhóm B mượn sach thứ Ba. Mã: sach01.','Nhóm A mượn sách thứ Ba. Nhóm B mượn sách thứ Tư. Mã: sach01.')
+];
+function binderCase(title,prompt,pages,expected,requireReview){
+ return {title,prompt,draw(box,s,u){
+  s.pick??=[];s.seen??=[];
+  const shelf=h('div','binder-shelf');
+  pages.forEach(([title,desc],i)=>{
+   const x=b('＋ '+title,()=>{s.pick.push(i);u.nextRender();u.root.querySelectorAll('.binder-shelf button')[i]?.focus()},'btn chip');
+   x.disabled=s.pick.includes(i);shelf.append(x)
+  });
+  const stack=h('div','binder-stack');
+  s.pick.forEach((id,index)=>{
+   const [name,desc]=pages[id];
+   const page=add(h('article','binder-page'),h('span','page-number',String(index+1)),h('div','',name));
+   const tools=h('div','tool-row');
+   function move(fn){fn();u.nextRender();u.root.querySelector('.binder-stack button')?.focus()}
+   const up=b('↑ Lên',()=>move(()=>[s.pick[index-1],s.pick[index]]=[s.pick[index],s.pick[index-1]]));up.disabled=index===0;
+   const view=b(s.seen.includes(id)?'✓ Đã xem':'Xem trang',()=>{if(!s.seen.includes(id))s.seen.push(id);u.notify(name+' — '+desc)});
+   add(tools,up,view,b('Gỡ',()=>move(()=>s.pick.splice(index,1))));page.append(tools);stack.append(page)
+  });
+  if(!s.pick.length)stack.append(h('p','muted','Chưa có trang trong cuốn sổ.'));
+  add(box,shelf,stack,u.action('Duyệt cuốn sổ',()=>u.verdict(same(s.pick,expected)&&(!requireReview||expected.every(x=>s.seen.includes(x))),
+   'Cuốn sổ đã có đúng nội dung và thứ tự để bàn giao.','Bìa phải ở đầu. Đọc yêu cầu từng mục, gỡ bản nháp hoặc thông tin thừa; xem đủ các trang nếu nhiệm vụ yêu cầu.')));
+ }}
+}
+LABS.binder=[
+ binderCase('Ghép ba trang đầu','Xếp bìa, bài viết, rồi bảng thành viên. Bỏ bản nháp cũ.',[['Bảng thành viên','Danh sách hai tổ.'],['Bản nháp','Bản chưa hoàn thiện.'],['Bìa sổ','Sổ lưu niệm lớp 6A.'],['Bài Hội khỏe','Một kỉ niệm của lớp.']],[2,3,0],false),
+ binderCase('Bản đọc được phép chia sẻ','Chọn bìa 6A → bài kỉ niệm → bảng không có liên lạc → ảnh được phép. Mở xem đủ từng trang rồi duyệt.',[['Bảng có số liên lạc','Có số điện thoại riêng.'],['Ảnh đã xin phép','Ảnh Hội khỏe, đã được phép.'],['Bìa 6B','Không đúng lớp.'],['Bài kỉ niệm','Kể về hoạt động lớp.'],['Bảng chỉ có tên và tổ','Không có dữ liệu liên lạc.'],['Bìa 6A','Đúng tên sổ và lớp.']],[5,3,4,1],true)
+];
+const algorithmOps={
+  input:['Nhập hai số',null],
+  add:['Tính tổng: a + b',(a,b)=>a+b],
+  sub:['Tính hiệu: a − b',(a,b)=>a-b],
+  reverse:['Tính hiệu: b − a',(a,b)=>b-a],
+  avg:['Tính trung bình: (a + b) : 2',(a,b)=>(a+b)/2],
+  multiply:['Tính tích: a × b',(a,b)=>a*b],
+  output:['Xuất kết quả',null]
+};
+function algorithmCase(title,prompt,keys,cases){
+ return {title,prompt,draw(box,s,u){
+  s.pick??=[];
+  tray(box,keys.map(k=>algorithmOps[k][0]),s.pick,i=>{if(s.pick.length<3){s.pick.push(i);u.nextRender();u.root.querySelector('.ordered-tray li:last-child')?.focus()}},u.change(()=>s.pick.pop()),u.change(()=>s.pick=[]),'Bắt đầu ↓ Sơ đồ của em ↓ Kết thúc');
+  const goal=h('div','result-card');
+  add(goal,h('strong','','Ca kiểm tra'),checkTable([['a','b','Mong đợi'],...cases.map(row=>row.map(String))]));box.append(goal);
+  box.append(u.action('Chạy mọi ca',()=>{
+   const blocks=s.pick.map(i=>keys[i]);
+   if(blocks[0]!=='input'||blocks[2]!=='output'||!algorithmOps[blocks[1]]?.[1]){
+    u.verdict(false,'','Sơ đồ chưa chạy được. Nhập trước, thực hiện một phép tính, rồi mới xuất.');return
+   }
+   const values=cases.map(([a,b])=>algorithmOps[blocks[1]][1](a,b));
+   const text=values.join(' và ');
+   u.verdict(same(values,cases.map(c=>c[2])),'Máy cho '+text+', khớp cả hai ca.','Máy cho '+text+'. Đối chiếu cột mong đợi và thay khối xử lí hoặc thứ tự.');
+  }));
+ }}
+}
+LABS.algorithm=[
+ algorithmCase('Đếm ghế trống','a là tổng ghế, b là số đã có người. Lắp 3 khối để máy xuất số ghế còn trống.',['output','add','input','sub','reverse'],[[20,13,7],[20,20,0]]),
+ algorithmCase('Tính trung bình hai lượt','a và b là số đo của hai lượt. Lắp 3 khối để tính trung bình và thử hai bộ dữ liệu.',['multiply','input','add','output','avg'],[[6,10,8],[12,6,9]])
+];
+function robotCase(title,prompt,mode){
+ return {title,prompt,draw(box,s,u){
+  s.cond??=null;s.action??=null;
+  const cases=mode==='loop'?[{start:0,goal:3},{start:2,goal:2}]:[{start:0,goal:3,battery:2},{start:0,goal:3,battery:3},{start:0,goal:3,battery:5}];
+  const goals=mode==='loop'?cases.map(c=>c.goal):[0,3,3];
+  const map=h('div','robot-map');
+  cases.forEach(({start,goal,battery},i)=>{
+   const track=h('div','robot-track'),at=s.out?.[i]??start;
+   for(let j=0;j<=4;j++)track.append(h('span','track-cell '+(goal===j?'target ':''),at===j?'🤖':goal===j?'⚑':String(j)));
+   add(map,h('p','field-label','Ca '+(i+1)+' · bắt đầu ô '+start+' · đích ô '+goal+(battery===undefined?'':' · pin '+battery)),track);
+  });
+  const options=mode==='loop'?['Vị trí < đích','Vị trí ≤ đích','Vị trí > đích']:['Pin > quãng đường','Pin < quãng đường','Pin = 0'];
+  const actions=mode==='loop'?['Tiến thêm 1 ô','Đứng yên','Lùi 1 ô']:['Đúng: đứng chờ; sai: đi đến trạm','Đúng: đi đến trạm; sai: đứng chờ','Luôn đi đến trạm'];
+  const fields=add(h('div','form-grid'),field(mode==='loop'?'Trong khi điều kiện đúng':'Nếu điều kiện đúng',select(options,s.cond,v=>s.cond=v)),
+    field(mode==='loop'?'Việc lặp':'Hai nhánh',select(actions,s.action,v=>s.action=v)));
+  add(box,fields,map,u.action('Chạy thử robot',()=>{
+   if(s.cond===null||s.action===null){u.notify('Chọn đủ điều kiện và việc robot cần làm.');return}
+   let stopped=true;
+   s.out=cases.map(c=>{
+    let x=c.start;
+    if(mode==='loop'){
+     const cond=[()=>x<c.goal,()=>x<=c.goal,()=>x>c.goal][s.cond];
+     let steps=0;while(cond()&&steps<8){x+=[1,0,-1][s.action];steps++}
+     if(cond())stopped=false;
+    }else{
+     const d=c.goal-x,test=[c.battery>d,c.battery<d,c.battery===0][s.cond];
+     if(s.action===2||s.action===0&&!test||s.action===1&&test)x=c.goal;
+    }
+    return x;
+   });
+   const accurate=mode==='loop'?s.cond===0&&s.action===0:s.cond===1&&s.action===0;
+   u.verdict(stopped&&same(s.out,goals)&&accurate,'Robot đi đúng ở các ca: '+s.out.join(' và ')+'.',
+    stopped?'Vị trí cuối: '+s.out.join(' và ')+'. Hãy chọn điều kiện đúng cả ở ngưỡng và việc cần làm ở từng nhánh.':'Robot chưa dừng sau 8 lượt mô phỏng. Hãy sửa điều kiện hoặc bước lặp.');
+  }));
+ }}
+}
+LABS.robot=[
+ robotCase('Đi tới trạm và dừng','Chọn điều kiện và bước lặp. Nếu robot đã ở đích ngay từ đầu, nó không được nhúc nhích.','loop'),
+ robotCase('Đủ pin mới đi','Robot cần 1 đơn vị pin cho mỗi ô. Nếu pin ít hơn quãng đường thì đứng chờ; nếu đủ, đi đến trạm. Thử cả trường hợp pin vừa đủ.','branch')
+];
+function scratchCase(title,prompt,mode){
+ const cases=mode==='sum'?[[3,8,11],[9,0,9]]:[[4,5,'Thiếu'],[4,6,'Đủ'],[4,7,'Đủ']];
+ return {title,prompt,draw(box,s,u){
+  s.blocks??=[null,null,null];
+  const choices=[
+   ['Hỏi a → lưu a → hỏi b → lưu b','Hỏi hai lần → lưu cả a, b bằng trả lời cuối','Đặt a và b thành 0'],
+   ['Đặt tổng thành a + b','Đặt tổng thành a − b','Đặt tổng thành b'],
+   mode==='sum'?['Nói tổng','Nói a','Nói b']:['Nếu tổng ≥ 10: nói Đủ; nếu không: nói Thiếu','Nếu tổng > 10: nói Đủ; nếu không: nói Thiếu','Luôn nói Đủ']
+  ];
+  const stage=add(h('div','scratch-stage'),h('span','scratch-cat','🐱'),h('span','speech',s.outputs?s.outputs.join(' · '):'Đang chờ bấm cờ xanh…'));
+  const script=add(h('div','scratch-script'),h('div','scratch-hat','⚑ Khi bấm cờ xanh'));
+  choices.forEach((ops,i)=>script.append(add(h('div','scratch-block sb'+i),field(['Nhập và lưu','Tính toán','Thông báo'][i],select(ops,s.blocks[i],v=>s.blocks[i]=v)))));
+  add(box,stage,script,checkTable([['a','b','Kết quả mong đợi'],...cases.map(r=>r.map(String))]),u.action('⚑ Chạy chương trình',()=>{
+   if(s.blocks.some(v=>v===null)){u.notify('Lắp đủ cả ba khối trước khi bấm cờ xanh.');return}
+   s.outputs=cases.map(([a,b])=>{
+    const [enter,op,out]=s.blocks;
+    if(enter===1)a=b;else if(enter===2){a=0;b=0}
+    const sum=[a+b,a-b,b][op];
+    if(mode==='sum')return [sum,a,b][out];
+    return out===2?'Đủ':(out===0?sum>=10:sum>10)?'Đủ':'Thiếu';
+   });
+   u.verdict(same(s.outputs,cases.map(r=>r[2])),'Nhân vật trả lời đúng: '+s.outputs.join(' · ')+'.','Nhân vật nói '+s.outputs.join(' · ')+'. So từng ca, kiểm tra khối lưu dữ liệu, phép tính và điều kiện.');
+  }));
+ }}
+}
+LABS.scratch=[
+ scratchCase('Nhân vật cộng hai số','Lắp ba khối mô phỏng Scratch để nhân vật hỏi hai số, tính và nói tổng.','sum'),
+ scratchCase('Bài toán quyên góp','Lắp chương trình nhập số vở của hai tổ, cộng lại và báo Đủ khi tổng từ 10 trở lên. Thử cả dưới, đúng và trên ngưỡng.','threshold')
+];
+
+const main=document.getElementById('main');
+const nav=document.getElementById('header-links');
+const brand=document.getElementById('brand');
+const DIFF=['Nhận biết','Thông hiểu','Vận dụng','Phân tích','Tổng hợp'];
+const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
+let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let storageProblem=false;
+const mem=new Map();
+const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[]});
+function get(n){
+  if(mem.has(n))return mem.get(n);
+  let state=empty();
+  try{
+   const x=JSON.parse(localStorage.getItem(STORAGE+n)||'null');
+   if(x&&Number.isInteger(x.count)&&x.count>=0&&x.count<=TOTAL){
+    const ids=Object.fromEntries(Object.entries(x.tries&&typeof x.tries==='object'?x.tries:{}).filter(([k,v])=>/^([0-9]|1[0-9]|2[0-4])$/.test(k)&&Number.isInteger(v)&&v>0&&v<1000));
+    state={count:x.count,xp:Number.isInteger(x.xp)&&x.xp>=0?x.xp:0,tries:ids,lab:[...new Set((Array.isArray(x.lab)?x.lab:[]).filter(v=>v===0||v===1))],extras:[...new Set((Array.isArray(x.extras)?x.extras:[]).filter(v=>typeof v==='string'))]};
+   }
+  }catch{storageProblem=true}
+  mem.set(n,state);return state;
+}
+function save(n){try{localStorage.setItem(STORAGE+n,JSON.stringify(mem.get(n)))}catch{storageProblem=true}}
+function link(text,url,cls='text-link'){const e=h('a',cls,text);e.href=url;return e}
+function focus(e){if(e){if(!e.matches('button,a,input,textarea,select'))e.tabIndex=-1;e.focus({preventScroll:true})}}
+function top(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
+function courseLink(text='Chương trình',cls='text-link'){return link(text,STANDALONE?'index.html#chuong-trinh':'#chuong-trinh',cls)}
+function lessonLink(n,text,cls){return link(text,'bai'+n+'.html',cls)}
+function setTheme(m){document.body.style.setProperty('--accent',m?.color||'#1e594c');document.body.style.setProperty('--tint',m?.tint||'#b3f2c4')}
+function setHeader(m){
+ brand.href=STANDALONE?'index.html':'#trang-chu';
+ nav.replaceChildren(courseLink('Chương trình','nav-link'));
+ if(m)nav.append(add(h('span','nav-tag'),h('span','status-dot'),h('span','','Bài '+m.n+' / 17')));
+ else nav.append(h('span','nav-tag','17 bài · 6 chủ đề'));
+}
+function number(n){return String(n).padStart(2,'0')}
+function meter(val,max,caption){const x=h('div','meter');x.setAttribute('role','progressbar');x.setAttribute('aria-label',caption);x.setAttribute('aria-valuenow',String(val));x.setAttribute('aria-valuemin','0');x.setAttribute('aria-valuemax',String(max));const fill=h('span');fill.style.width=(val/max*100)+'%';x.append(fill);return x}
+function stats(m){const s=get(m.n),grid=h('div','lesson-stats');
+ const clean=Object.values(s.tries).reduce((a,b)=>a+b,0);
+ [['✦',s.xp,'XP'],['◇',Math.floor(s.count/5)+'/5','chặng'],['↻',clean,'lần thử lại']].forEach(([i,v,label])=>grid.append(add(h('div','stat-tile'),h('span','',i),h('strong','',String(v)),h('small','',label))));return grid
+}
+function art(m){
+ const el=h('div','hero-art '+(m?'lesson-art':'atlas-art'));el.setAttribute('aria-hidden','true');
+ const path=h('div','art-track');
+ for(const [i,icon] of (m?['⌁','◈',m.icon,'➜','✧']:['▦','✉','⌘','◇','▰']).entries())path.append(h('span','art-node node'+i,icon));
+ add(el,h('span','art-label',m?'MÔ PHỎNG / '+number(m.n):'LAB / T6'),path,h('span','art-index',m?number(m.n):'01—17'));return el
+}
+function home(scroll){
+ setTheme(null);setHeader(null);
+ const complete=MISSIONS.filter(m=>get(m.n).count===TOTAL).length;
+ const labs=MISSIONS.reduce((acc,m)=>acc+get(m.n).lab.length,0);
+ const recent=MISSIONS.find(m=>{const p=get(m.n);return p.count>0&&p.count<TOTAL})||MISSIONS.find(m=>get(m.n).lab.length>0&&get(m.n).count<TOTAL);
+ const hero=h('section','course-hero hero');
+ const copy=h('div','hero-copy'),title=h('h1','','Phòng nhiệm vụ');
+ const actions=h('div','hero-actions');actions.append(recent?lessonLink(recent.n,'Tiếp tục Bài '+recent.n+' →','btn primary'):lessonLink(1,'Bắt đầu với Bài 1 →','btn primary'),courseLink('Xem 17 bài','btn outline'));
+ add(copy,h('p','eyebrow','TIN HỌC QUA THỰC HÀNH'),title,h('p','hero-desc','Mỗi bài là một thế giới để thử: dựng ảnh bằng bit, nối mạng, sửa bản thảo và chạy chương trình của chính em.'),actions);
+ add(hero,copy,art());
+ const signals=h('section','signal-band');
+ [['17','Bài học'],['34','Nhiệm vụ mô phỏng'],[complete+'/17','Bài đã hoàn thành'],[labs+'/34','Mô phỏng đã đạt']].forEach(([num,label])=>signals.append(add(h('div','signal-stat'),h('strong','',num),h('span','',label))));
+ const head=add(h('div','section-head'),add(h('div'),h('p','eyebrow','BẢN ĐỒ HÀNH TRÌNH'),h('h2','','Chọn một phòng nhiệm vụ')),h('p','muted','Mỗi bài có 5 chặng tăng dần và một khu mô phỏng riêng.'));
+ const lib=add(h('section','library'),head);lib.id='chuong-trinh';
+ const groups=['Tất cả',...new Set(MISSIONS.map(m=>m.group))],filters=h('div','filter-row'),cards=h('div','course-grid');
+ function renderCards(keepFocus=false){
+  filters.replaceChildren(...groups.map(g=>pressed(g,filter===g,()=>{filter=g;renderCards(true)})));
+  cards.replaceChildren();
+  const shown=MISSIONS.filter(m=>filter==='Tất cả'||filter===m.group);
+  const status=h('p','sr-only',shown.length+' bài trong danh sách');status.setAttribute('role','status');cards.append(status);
+  shown.forEach(m=>{
+   const data=CATALOG[m.n-1],p=get(m.n),a=lessonLink(m.n,'','course-card');
+   a.style.setProperty('--card-tint',m.tint);a.style.setProperty('--card-accent',m.color);
+   const visual=add(h('div','card-visual'),h('span','card-no','BÀI '+number(m.n)),h('span','card-icon',m.icon),h('span','card-arrow','↗'));
+   visual.querySelector('.card-icon').setAttribute('aria-hidden','true');
+   visual.querySelector('.card-arrow').setAttribute('aria-hidden','true');
+   const body=add(h('div','card-copy'),h('span','card-group',m.group),h('h3','',m.title),h('p','',data.title),h('span','mechanic',m.mechanic));
+   const status=p.count===TOTAL?'Hoàn thành':p.count||p.lab.length?'Đang làm':'Chưa bắt đầu';
+   const track=add(h('div','card-track'),meter(p.count,TOTAL,'Câu đã hoàn thành'),add(h('div','card-progress'),h('span','',status),h('span','',p.count+'/'+TOTAL)));
+   add(a,visual,body,track);cards.append(a);
+  });
+  if(keepFocus)focus([...filters.children].find(x=>x.textContent===filter));
+ }
+ renderCards();add(lib,filters,cards);
+ main.replaceChildren(hero,signals,lib);
+ if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
+ if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else top(title);
+}
+function lessonPage(scroll=true){
+ cancel();attempt=null;
+ setTheme(mission);setHeader(mission);
+ const p=progress,n=lesson.n;
+ const cr=add(h('div','crumb'),courseLink('← Bản đồ 17 bài'),h('span','crumb-divider','/'),h('span','',mission.group));
+ const title=h('h1','',mission.title),acts=h('div','hero-actions');
+ add(acts,b(p.count===TOTAL?'Xem kết quả':p.count?'Tiếp tục chặng '+(Math.floor(p.count/5)+1)+' →':'Bắt đầu chặng 1 →',()=>p.count===TOTAL?summary():play(p.count),'btn primary'),b('Vào mô phỏng',()=>lab(),'btn outline'));
+ const copy=add(h('div','hero-copy'),h('p','eyebrow','BÀI '+number(n)+' · '+lesson.title.toUpperCase()),title,h('p','hero-desc',mission.story),acts);
+ const hero=add(h('section','hero mission-hero'),copy,art(mission));
+ const summary=add(h('div','lesson-summary'),stats(mission),add(h('div','source-note'),h('strong','','📖 SGK · trang '+lesson.pages),h('small','','Đọc 15 giây trước mỗi câu · tiến độ lưu trên trình duyệt này')));
+ const details=h('div','lesson-body');
+ const stageList=h('ol','stage-list');
+ const sectionTitle=add(h('div','section-head'),add(h('div'),h('p','eyebrow','LỘ TRÌNH · 5 CHẶNG'),h('h2','','Từ khám phá đến vận dụng')));
+ mission.stages.forEach((name,i)=>{
+  const solved=Math.max(0,Math.min(5,p.count-i*5)),open=p.count>=i*5;
+  const row=h('li','stage-row'+(solved===5?' done':'')+(!open?' locked':''));
+  const medal=h('span','stage-number',solved===5?'✓':number(i+1));
+  const info=add(h('div','stage-info'),h('span','tiny',DIFF[i].toUpperCase()),h('h3','',name),h('p','muted',lesson.stages[i].goal));
+  const c=h('div','stage-controls');c.append(h('span','tiny',solved+'/5 · '+(solved===5?'Đã đạt':open?'Đã mở':'Chưa mở')));
+  if(solved===5)c.append(b('Xem lời giải',()=>review(i)));
+  else if(open){
+   c.append(b(solved?'Tiếp tục':'Bắt đầu',()=>play(p.count),'btn primary'));
+   if(solved)c.append(b('Xem '+solved+' câu đã qua',()=>review(i),'btn text-btn'));
+  }
+  add(row,medal,info,c);stageList.append(row);
+ });
+ add(details,sectionTitle,stageList);
+ const aside=h('aside','lesson-aside');
+ const labCard=add(h('section','side-card lab-card'),h('span','lab-icon','⌁'),h('p','eyebrow','THỰC HÀNH RIÊNG CỦA BÀI'),h('h2','',mission.lab),h('p','muted',mission.mechanic+' · 2 tình huống để tự thử.'),meter(p.lab.length,2,'Nhiệm vụ mô phỏng'),h('span','tiny',p.lab.length+'/2 đã đạt'),b('Mở khu mô phỏng →',()=>lab(),'btn primary'));
+ aside.append(labCard);
+ const trouble=weakStage();
+ if(trouble!==null){
+  const reviewed=Math.min(5,Math.max(0,p.count-5*trouble));
+  aside.append(add(h('section','side-card recommendation'),h('p','eyebrow','GỢI Ý CHO EM'),h('h3','','Ôn '+mission.stages[trouble]),h('p','muted','Đây là chặng em thử lại nhiều nhất. Đọc lại mục tiêu rồi thử thêm trong khu mô phỏng.'),b(reviewed?'Ôn lời giải':'Mở tư liệu',()=>review(trouble))));
+ }
+ if(lesson.extras.length)aside.append(add(h('section','side-card'),h('p','eyebrow','THỬ NGOÀI MÔ PHỎNG'),h('h3','','Nhiệm vụ bổ sung'),h('p','muted',p.extras.length+'/'+lesson.extras.length+' đã tự đối chiếu'),b('Mở nhiệm vụ',()=>extra())));
+ aside.append(b('Đặt lại tiến độ bài này',()=>{
+  if(!confirm('Xóa điểm, chặng đã mở và mô phỏng đã đạt của Bài '+n+' trên trình duyệt này?'))return;
+  progress=empty();mem.set(n,progress);save(n);lessonPage();
+ },'btn text-btn reset'));
+ add(details,aside);main.replaceChildren(cr,hero,summary,details);
+ if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
+ if(scroll)top(title);
+}
+function weakStage(){
+ const scores=[0,0,0,0,0];Object.entries(progress.tries).forEach(([k,v])=>scores[Math.floor(+k/5)]+=v);
+ const max=Math.max(...scores);return max?scores.indexOf(max):null;
+}
+function cancel(){cancelAnimationFrame(timer);timer=0}
+function route(){
+ cancel();attempt=null;
+ const hash=location.hash;
+ const match=hash.match(/^#bai-(\d+)$/);
+ const n=STANDALONE||(match?+match[1]:0);
+ if(BANK[n]){
+  lesson=BANK[n];mission=MISSIONS[n-1];progress=get(n);
+  document.title='Bài '+n+' · '+lesson.title+' | Tin học 6';
+  lessonPage();
+ }else{
+  lesson=mission=progress=null;
+  document.title='Tin học 6 · Phòng nhiệm vụ';
+  home(hash==='#chuong-trinh');
+ }
+}
+function basePanel(label,title,desc,back=()=>lessonPage()){
+ const head=h('div','view-heading');
+ const titleNode=h('h1','',title);
+ add(head,b('← Về bản đồ bài',back,'btn text-btn'),h('p','eyebrow',label),titleNode,desc?h('p','muted',desc):null);
+ return [head,titleNode];
+}
+function lab(){
+ cancel();attempt=null;
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · MÔ PHỎNG',mission.lab,mission.story);
+ const box=h('div','lab-shell');
+ main.replaceChildren(head,box);
+ mountLab(box,mission,progress.lab,i=>{if(!progress.lab.includes(i)){progress.lab.push(i);progress.xp+=30;save(lesson.n)}});
+ top(title);
+}
+function drawStudy(stage,i){
+ const panel=h('section','study');
+ add(panel,h('p','eyebrow','📖 TƯ LIỆU · SGK TRANG '+lesson.pages),h('h2','','Đọc trước khi làm'),h('p','study-objective',stage.goal),h('p','study-body',stage.text));
+ return panel;
+}
+function hint(q,stage){
+ if(q.type==='order')return 'Tìm việc phải làm trước khi có thể thực hiện bước kế tiếp.';
+ if(q.type==='match')return 'Đọc từng dòng và dựa vào vai trò hoặc dấu hiệu riêng để chọn.';
+ if(q.type==='multi')return 'Đối chiếu từng lựa chọn với câu hỏi. Có thể có hơn một ý đúng.';
+ return stage.goal+' Hãy tìm chi tiết trong đề giúp loại một phương án.';
+}
+function play(index,retry=false){
+ cancel();
+ if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
+ const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · CHẶNG '+number(i+1)+' / 05',mission.stages[i],DIFF[i]+' · Câu '+(index%5+1)+' / 5');
+ const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage,i);
+ const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),add(h('div'),h('strong','','Đọc tư liệu để mở câu hỏi'),h('p','muted','Câu hỏi sẽ xuất hiện sau 15 giây.')),h('span','gate-time','15s'));
+ const status=h('span','sr-only');status.setAttribute('role','status');
+ const pane=h('section','question-card');pane.hidden=!retry;
+ add(left,study,gate,status,pane);
+ const right=add(h('aside','side-card play-sidebar'),h('p','eyebrow','TIẾN ĐỘ BÀI'),h('h2','',progress.count+'/'+TOTAL+' câu'),meter(progress.count,TOTAL,'Câu hoàn thành'),h('p','muted','Đạt đủ 5 câu để mở chặng tiếp theo.'),h('p','tiny','Tự luận được em tự đối chiếu theo tiêu chí.'));
+ add(grid,left,right);main.replaceChildren(head,grid);
+ attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
+ function unlock(){
+  if(attempt?.pane!==pane)return;
+  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
+  drawQuestion(q,pane,stage,index);
+  status.textContent='Câu hỏi đã mở.';
+ }
+ if(retry){gate.hidden=true;unlock()}
+ else{
+  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
+  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
+   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
+  study.classList.add('reading');tick();
+ }
+ top(title);
+ if(retry)focus(pane.querySelector('h2'));
+}
+function drawQuestion(q,pane,stage,index){
+ const head=add(h('div','question-meta'),h('span','badge',q.id),h('span','tiny',modes[q.type]));
+ const prompt=h('h2','question-prompt',q.prompt);
+ add(pane,head,prompt);
+ if(q.table)pane.append(checkTable(q.table));
+ if(q.type==='practice'){drawPractice(q,pane,()=>complete(index,q,pane,true));return}
+ const area=h('div','answer-area');pane.append(area);
+ const toolbar=h('div','tool-row');pane.append(toolbar);
+ const submit=b('Kiểm tra',grade,'btn primary');submit.disabled=true;toolbar.append(submit);
+ let valid=()=>false,correct=()=>false;
+ const update=()=>submit.disabled=!valid();
+ if(q.type==='order'){
+  const local=[];const order=stableOrder(q.steps.length,q.id);
+  function drawOrder(){
+   area.replaceChildren(h('p','muted','Bấm từng bước theo thứ tự. Có thể bỏ bước cuối hoặc xếp lại.'));
+   tray(area,order.map(i=>q.steps[i]),local,i=>{local.push(i);drawOrder();focus(area.querySelector('.ordered-tray li:last-child'))},()=>{local.pop();drawOrder();focus(area.querySelector('.ordered-tray'))},()=>{local.splice(0);drawOrder();focus(area.querySelector('.tool-row button'))},'Thứ tự của em');
+   update();
+  }
+  valid=()=>local.length===q.steps.length;
+  correct=()=>same(local.map(i=>order[i]),q.sequence);drawOrder();
+ }else if(q.type==='match'){
+  const chosen=Array(q.items.length).fill(null);
+  const order=stableOrder(q.groups.length,q.id);
+  q.items.forEach((x,i)=>area.append(field(x,select(order.map(k=>q.groups[k]),null,v=>{chosen[i]=v;update()}))));
+  valid=()=>chosen.every(x=>x!==null);correct=()=>same(chosen.map(i=>order[i]),q.assign);
+ }else{
+  const ids=stableOrder(q.choices.length,q.id),set=new Set(),fields=h('fieldset','answer-options');
+  const legend=h('legend','sr-only',q.type==='multi'?'Chọn tất cả phương án đúng':'Chọn một phương án đúng');fields.append(legend);
+  ids.forEach((idx,i)=>{
+   const f=h('input');f.type=q.type==='multi'?'checkbox':'radio';f.name=q.id;f.value=String(idx);
+   f.addEventListener('change',()=>{if(q.type==='choice')set.clear();if(f.checked)set.add(idx);else set.delete(idx);update()});
+   fields.append(add(h('label','answer-choice'),f,h('span','letter',String.fromCharCode(65+i)),h('span','',q.choices[idx])));
+  });
+  area.append(fields);
+  valid=()=>set.size>0;correct=()=>same([...set].sort(),[...q.correct].sort());
+ }
+ function grade(){
+  if(attempt?.phase!=='answer'||!valid()||pane!==attempt.pane)return;
+  if(correct())complete(index,q,pane,false);
+  else wrong(index,q,pane,stage);
+ }
+}
+function drawPractice(q,pane,finish){
+ const intro=h('p','muted','Thực hiện trên giấy hoặc trong công cụ phù hợp. Sau đó tự đối chiếu từng tiêu chí. Phần này không được máy chấm.');
+ const entry=h('textarea');entry.rows=3;entry.placeholder='Có thể ghi nháp tại đây. Bản nháp sẽ không được lưu.';
+ const holder=h('div','practice-rubric');holder.hidden=true;
+ const checks=[];
+ const submit=b('Ghi nhận đã tự đối chiếu',()=>{if(checks.every(x=>x.checked))finish()},'btn primary');submit.disabled=true;
+ q.rubric.forEach(line=>{const e=h('input');e.type='checkbox';e.addEventListener('change',()=>submit.disabled=!checks.every(x=>x.checked));checks.push(e);
+  holder.append(add(h('label','rubric-item'),e,h('span','',line)))});
+ holder.append(submit);
+ const show=b('Mở tiêu chí tự kiểm tra',()=>{holder.hidden=false;show.hidden=true;focus(checks[0])});
+ add(pane,intro,field('Ghi nháp nếu cần',entry),show,holder);
+}
+function disable(pane){pane.querySelectorAll('button,input,select,textarea').forEach(x=>x.disabled=true)}
+function complete(index,q,pane,self){
+ if(attempt?.phase!=='answer'||index!==progress.count)return;
+ attempt.phase='complete';disable(pane);
+ progress.count++;
+ if(!self)progress.xp+=progress.tries[index]?10:20;
+ if(progress.count%5===0)progress.xp+=30;
+ save(lesson.n);
+ const end=progress.count%5===0;
+ const result=add(h('div','result-card success'),h('strong','',self?'✓ Đã ghi nhận tự đối chiếu':'✓ Chính xác!'),h('p','',self?'Em đã tự kiểm tra bài theo tiêu chí.':q.why));
+ result.setAttribute('role','status');
+ if(end)result.append(h('p','medal','◇ Huy chương chặng '+(Math.floor(index/5)+1)+' · '+mission.stages[Math.floor(index/5)]));
+ const next=b(progress.count===TOTAL?'Xem tổng kết':end?'Về bản đồ chặng':'Sang câu tiếp theo',()=>end?(progress.count===TOTAL?summary():lessonPage()):play(progress.count),'btn primary');
+ add(pane,result,next);focus(next);
+}
+function wrong(index,q,pane,stage){
+ attempt.phase='retry';disable(pane);
+ progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const e=h('input');e.type='checkbox';
+ const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
+ e.addEventListener('change',()=>retry.disabled=!e.checked);
+ add(read,add(h('label','rubric-item'),e,h('span','','Em đã đọc lại tư liệu')),retry);pane.append(read);focus(e);
+}
+function solution(q){
+ if(q.type==='practice')return q.rubric.join(' ');
+ if(q.type==='order')return q.sequence.map(i=>q.steps[i]).join(' → ');
+ if(q.type==='match')return q.items.map((t,i)=>t+' → '+q.groups[q.assign[i]]).join(' · ');
+ return q.correct.map(i=>q.choices[i]).join(' · ');
+}
+function review(i){
+ cancel();attempt=null;
+ const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
+ const box=h('div','review-stack');box.append(drawStudy(s,i));
+ s.tasks.slice(0,solved).forEach(q=>{
+  const item=add(h('details','review-item'),h('summary','',q.id+' · '+q.prompt));
+  if(q.table)item.append(checkTable(q.table));
+  add(item,h('p','',solution(q)),q.why?h('p','muted',q.why):null);box.append(item);
+ });
+ if(!solved)box.append(h('p','muted','Lời giải sẽ xuất hiện ở đây sau khi em vượt qua từng câu.'));
+ main.replaceChildren(head,box);top(title);
+}
+function extra(){
+ cancel();attempt=null;
+ const q=lesson.extras[0];
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · THỰC HÀNH BỔ SUNG','Làm thử ngoài mô phỏng','Tự đối chiếu với tiêu chí khi hoàn thành.');
+ const box=add(h('section','question-card'),h('h2','',q.prompt));
+ drawPractice(q,box,()=>{
+  if(!progress.extras.includes(q.id)){progress.extras.push(q.id);save(lesson.n)}
+  disable(box);const result=h('p','result-card success','✓ Đã ghi nhận tự đối chiếu.');box.append(result);focus(result);
+ });
+ main.replaceChildren(head,box);top(title);
+}
+function summary(){
+ cancel();attempt=null;
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · TỔNG KẾT','Hoàn thành '+mission.title,'Em đã vượt qua đủ 5 chặng.');
+ const box=add(h('section','side-card summary-box'),stats(mission),h('p','muted',progress.lab.length+'/2 nhiệm vụ mô phỏng đã đạt.'),b('Mở khu mô phỏng',()=>lab(),'btn primary'),courseLink('Chọn bài khác →','btn subtle'));
+ const weak=weakStage();if(weak!==null)box.append(b('Ôn lại '+mission.stages[weak],()=>review(weak)));
+ main.replaceChildren(head,box);top(title);
+}
+document.querySelector?.('.skip')?.addEventListener('click',e=>{e.preventDefault();main.scrollIntoView({block:'start'});focus(main)});
+window.addEventListener('hashchange',route);
+route();
+
+</script>
+</body>
+</html>
