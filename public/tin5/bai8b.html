@@ -223,7 +223,7 @@ function home(){
   show("home");
   byId("medals").textContent=progress.level+"/5 huy chương";
   byId("reset").hidden=!(progress.level||progress.step);
-  byId("start").textContent=progress.level===5?"Xem lại cấp cuối":progress.level||progress.step?"Tiếp tục":"Bắt đầu";
+  byId("start").textContent=progress.level===levels.length?"Xem kết quả":progress.level||progress.step?"Tiếp tục":"Bắt đầu";
   const list=byId("stages");
   list.replaceChildren();
   levels.forEach((level,i)=>{
@@ -412,9 +412,16 @@ byId("submit").onclick=()=>{
 function celebrate(level){
   show("celebration");
   byId("award").textContent=trophies[level];
-  byId("celebrationTitle").textContent="Em đã vượt qua cấp "+(level+1)+"!";
-  byId("celebrationMessage").textContent="Em nhận được huy chương “"+levels[level].name+"” sau khi trả lời đúng cả 5 câu."+(level===levels.length-1?" Em đã hoàn thành tất cả các cấp!":"");
-  byId("awardNext").hidden=level===levels.length-1;
+  const completed=level===levels.length-1;
+  const questionCount=levels.reduce((total,stage)=>total+stage.questions.length,0);
+  byId("celebrationTitle").textContent=completed
+    ?"Chúc mừng em đã hoàn thành bài học!"
+    :"Em đã vượt qua cấp "+(level+1)+"!";
+  byId("celebrationMessage").textContent=completed
+    ?"Em đã trả lời đúng "+questionCount+" câu hỏi và nhận đủ "+levels.length+" huy chương."
+    :"Em nhận được huy chương “"+levels[level].name+"” sau khi trả lời đúng cả "+levels[level].questions.length+" câu.";
+  byId("awardNext").hidden=completed;
+  byId("awardReview").textContent=completed?"Xem lời giải cấp cuối":"Xem lời giải";
   byId("awardNext").onclick=()=>play(progress.level,progress.step);
   byId("awardReview").onclick=()=>review(level);
   byId("celebrationTitle").focus();
@@ -425,7 +432,7 @@ byId("retry").onclick=()=>{
 };
 byId("next").onclick=()=>play(activeLevel,activeStep+1);
 byId("reviewCurrent").onclick=()=>review(activeLevel);
-byId("start").onclick=()=>progress.level===5?review(4):play(progress.level,progress.step);
+byId("start").onclick=()=>progress.level===levels.length?celebrate(levels.length-1):play(progress.level,progress.step);
 byId("reset").onclick=()=>{if(confirm("Đặt lại toàn bộ tiến độ của Bài 8B?")){progress=blank();save();home()}};
 document.querySelectorAll("[data-home]").forEach(button=>button.onclick=home);
 home();
