@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"3":{"n":3,"title":"Thông tin trong máy tính","pages":"12–15","stages":[{"goal":"Nhận ra đơn vị và cách biểu diễn trong máy tính.","text":"Nhớ bit, byte, dạng dãy bit và thiết bị lưu trữ.","tasks":[{"id":"T6-B03-C01","prompt":"Bit có thể mang giá trị nào?","type":"choice","choices":["Mọi chữ cái","1 hoặc 2","0 hoặc 1","Bất kì số nguyên nào"],"correct":[2],"why":"Hai trạng thái được biểu diễn bằng 0 và 1."},{"id":"T6-B03-C02","prompt":"Một byte gồm mấy bit?","type":"choice","choices":["4","2","16","8"],"correct":[3],"why":"Một byte bằng 8 bit."},{"id":"T6-B03-C03","prompt":"Dãy nào chỉ gồm các bit?","type":"choice","choices":["10,5","01A110","010110","012110"],"correct":[2],"why":"Chỉ dãy đầu dùng hai kí hiệu 0 và 1."},{"id":"T6-B03-C04","prompt":"Đơn vị nào lớn hơn MB?","type":"choice","choices":["KB","Byte","GB","Bit"],"correct":[2],"why":"GB biểu thị lượng dữ liệu lớn hơn MB."},{"id":"T6-B03-C05","prompt":"Thiết bị nào thường dùng để lưu và mang tệp sang máy khác?","type":"choice","choices":["Máy chiếu","Chuột","USB lưu trữ","Loa"],"correct":[2],"why":"USB lưu trữ giữ dữ liệu để dùng trên máy khác."}]},{"goal":"Đọc biểu diễn và so sánh dung lượng.","text":"Cần biết bảng quy ước để giải mã, cùng đơn vị để so sánh.","tasks":[{"id":"T6-B03-C06","prompt":"Quy ước sáng = 1, tắt = 0. Dãy sáng, tắt, sáng biểu diễn thế nào?","type":"choice","choices":["110","101","010","011"],"correct":[1],"why":"Đổi từng trạng thái theo đúng thứ tự."},{"id":"T6-B03-C07","prompt":"Hai tệp 6 MB và 600 KB. Tệp nào có dung lượng lớn hơn?","type":"choice","choices":["Không thể so sánh hai đơn vị này","Tệp 600 KB","Hai tệp bằng nhau","Tệp 6 MB"],"correct":[3],"why":"6 MB tương đương hàng nghìn KB."},{"id":"T6-B03-C08","prompt":"Vì sao cùng dãy 01 có thể biểu diễn hai ý khác nhau trong hai bài?","type":"choice","choices":["Bit 0 luôn có hai giá trị cùng lúc","Hai bài có thể dùng bảng mã khác nhau","Dãy bit tự mang nghĩa cố định","Dãy ngắn không thể biểu diễn dữ liệu"],"correct":[1],"why":"Bảng mã quy định ý nghĩa của dãy."},{"id":"T6-B03-C09","prompt":"Thiết bị ghi 16 GB; thư mục ghi 12 MB. Hai số dùng để mô tả gì?","type":"choice","choices":["Sức chứa thiết bị và lượng dữ liệu của thư mục","Số tệp thiết bị chứa và số tệp thư mục","Tốc độ mạng và thời gian tải","Thời gian dùng và thời gian tạo"],"correct":[0],"why":"Đây là hai giá trị dung lượng, ở hai đơn vị khác nhau."},{"id":"T6-B03-C10","prompt":"Mã A = 00, B = 01, C = 10. Dãy 01 biểu diễn gì?","type":"choice","choices":["B","A","AB","C"],"correct":[0],"why":"Đối chiếu cả cặp bit với bảng mã."}]},{"goal":"Mã hóa, giải mã và tính dung lượng đơn giản.","text":"Đọc nhóm bit hoặc tính các tệp trong cùng đơn vị.","tasks":[{"id":"T6-B03-C11","prompt":"Mã X = 00, Y = 01, Z = 10. Chuỗi YZX là gì?","type":"choice","choices":["010010","011000","001001","100100"],"correct":[1],"why":"Ghép 01, 10, 00."},{"id":"T6-B03-C12","prompt":"Thẻ nhớ còn 9 MB; hai ảnh là 4 MB và 6 MB. Có chép cả hai được không?","type":"choice","choices":["Không, vì hai tệp luôn cần hai thẻ","Có, vì từng ảnh nhỏ hơn 9 MB","Có, vì tổng bằng 9 MB","Không, cần 10 MB"],"correct":[3],"why":"Dung lượng cần là tổng 10 MB."},{"id":"T6-B03-C13","prompt":"Dãy 16 bit chiếm mấy byte nếu chỉ tính dãy bit đó?","type":"choice","choices":["8 byte","2 byte","1 byte","16 byte"],"correct":[1],"why":"16 chia 8 bằng 2."},{"id":"T6-B03-C14","prompt":"Mã trắng = 0, đen = 1. Viết mã cho hai hàng ô: trắng–đen–đen; đen–trắng–đen. Ghi rõ mã từng hàng.","type":"practice","rubric":["011 và 101."]},{"id":"T6-B03-C15","prompt":"Thẻ còn 15 MB. Em chép hai tệp 6 MB và 4 MB; còn bao nhiêu? Tệp tiếp theo 7 MB có chép được không?","type":"practice","rubric":["Còn 5 MB.","Không, vì 7 > 5."]}]},{"goal":"Phát hiện lỗi bảng mã, cách tách nhóm và đơn vị.","text":"Dò điều kiện nào khiến dữ liệu không thể đọc đúng.","tasks":[{"id":"T6-B03-C16","prompt":"Bảng mã A = 00, B = 00, C = 10. Lỗi gì xuất hiện khi đọc 00?","type":"choice","choices":["Không phân biệt A với B","Không thể đọc C","Mọi mã phải dài 8 bit","Không phân biệt A với C"],"correct":[0],"why":"A và B trùng mã."},{"id":"T6-B03-C17","prompt":"Mỗi kí hiệu chiếm 2 bit. Nhận dãy 01100, điều gì cần kiểm tra?","type":"choice","choices":["Máy chỉ cho phép dãy toàn 1","Dãy chắc chắn gồm năm kí hiệu","Số bit lẻ, có thể thiếu hoặc thừa bit","Bit đầu phải luôn là 0"],"correct":[2],"why":"Không chia 5 bit thành các nhóm 2 bit trọn vẹn."},{"id":"T6-B03-C18","prompt":"Bạn so 900 KB với 2 MB và nói 900 lớn hơn 2 nên tệp đầu lớn hơn. Sửa gì?","type":"choice","choices":["Chỉ đổi tên hai tệp","Đổi về cùng đơn vị trước khi so","So số chữ số","Nhân cả hai số với 2, giữ nguyên đơn vị"],"correct":[1],"why":"Phải xét đơn vị, không chỉ số đứng trước đơn vị."},{"id":"T6-B03-C19","prompt":"Bảng mã A = 00, B = 01, C = 10. Bạn giải 0100 thành AC. Khoanh nhóm bit và sửa kết quả.","type":"practice","rubric":["Tách 01 và 00.","BA."]},{"id":"T6-B03-C20","prompt":"Một USB ghi 8 GB nhưng máy báo chỉ còn trống 30 MB. Bạn cần chép tệp 40 MB. Giải thích vì sao nhìn nhãn 8 GB chưa đủ.","type":"practice","rubric":["8 GB là dung lượng toàn thiết bị.","Chỉ còn 30 MB, thiếu 10 MB."]}]},{"goal":"Kết hợp quy ước và kiểm tra bằng ví dụ mới.","text":"Tự đặt bảng mã hoặc chọn dữ liệu vừa sức chứa.","tasks":[{"id":"T6-B03-C21","prompt":"Cần mã hóa bốn màu khác nhau bằng các mã dài bằng nhau. Phương án nào đủ và không trùng?","type":"choice","choices":["00, 01, 10, 11","1, 10, 11, 100","00, 01, 01, 11","0, 1, 0, 1"],"correct":[0],"why":"Bốn mã 2 bit khác nhau đủ cho bốn màu."},{"id":"T6-B03-C22","prompt":"Thẻ còn 13 MB; cần giữ hai tệp bắt buộc 5 MB và 4 MB. Có thể thêm tệp nào nếu chỉ chọn một?","type":"choice","choices":["Tệp 6 MB","Tệp 5 MB","Tệp 7 MB","Tệp 4 MB"],"correct":[3],"why":"Sau hai tệp còn 4 MB."},{"id":"T6-B03-C23","prompt":"Nhóm chia sẻ dãy bit cho ảnh đen trắng. Kèm gì để người khác dựng lại đúng?","type":"choice","choices":["Quy ước màu, số ô mỗi hàng và thứ tự đọc","Chỉ số lượng bit 1","Chỉ tên tệp ảnh","Chỉ số lượng màu"],"correct":[0],"why":"Cần cả cách giải màu và cách xếp vị trí."},{"id":"T6-B03-C24","prompt":"Đặt bảng mã dài 2 bit cho ba kí hiệu N, T, V, rồi mã hóa VNT và tách lại để kiểm tra.","type":"practice","rubric":["Ba mã 2 bit khác nhau.","Ghép đúng VNT theo bảng.","Tách và giải lại đúng."]},{"id":"T6-B03-C25","prompt":"Bộ nhớ còn 18 MB. Bắt buộc chép bản trình bày 6 MB và âm thanh 5 MB. Chọn giữa ảnh A 8 MB và ảnh B 7 MB để chép thêm một ảnh; giải thích.","type":"practice","rubric":["Còn 7 MB sau tệp bắt buộc.","Chọn B vừa đủ.","A vượt 1 MB."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=3;
+const BANK={"3":{"n":3,"title":"Thông tin trong máy tính","pages":"12–15","stages":[{"goal":"Nhận ra đơn vị và cách biểu diễn trong máy tính.","study":{"points":["Bit là đơn vị thông tin nhỏ nhất trong máy tính và có hai giá trị là 0 hoặc 1. Một byte bằng 8 bit.","Máy tính biểu diễn chữ, hình và âm thanh dưới dạng các dãy bit theo quy ước.","KB, MB và GB dùng để nói về dung lượng. GB lớn hơn MB, MB lớn hơn KB. Dung lượng trống quyết định em còn lưu được bao nhiêu."],"example":"Dãy 10110010 có 8 bit, tức 1 byte. USB và thẻ nhớ là các thiết bị dùng để lưu tệp."},"tasks":[{"id":"T6-B03-C01","prompt":"Bit có thể mang giá trị nào?","type":"choice","choices":["Mọi chữ cái","1 hoặc 2","0 hoặc 1","Bất kì số nguyên nào"],"correct":[2],"why":"Hai trạng thái được biểu diễn bằng 0 và 1."},{"id":"T6-B03-C02","prompt":"Một byte gồm mấy bit?","type":"choice","choices":["4","2","16","8"],"correct":[3],"why":"Một byte bằng 8 bit."},{"id":"T6-B03-C03","prompt":"Dãy nào chỉ gồm các bit?","type":"choice","choices":["10,5","01A110","010110","012110"],"correct":[2],"why":"Chỉ dãy đầu dùng hai kí hiệu 0 và 1."},{"id":"T6-B03-C04","prompt":"Đơn vị nào lớn hơn MB?","type":"choice","choices":["KB","Byte","GB","Bit"],"correct":[2],"why":"GB biểu thị lượng dữ liệu lớn hơn MB."},{"id":"T6-B03-C05","prompt":"Thiết bị nào thường dùng để lưu và mang tệp sang máy khác?","type":"choice","choices":["Máy chiếu","Chuột","USB lưu trữ","Loa"],"correct":[2],"why":"USB lưu trữ giữ dữ liệu để dùng trên máy khác."}]},{"goal":"Đọc biểu diễn và so sánh dung lượng.","study":{"points":["Muốn đọc dãy bit cần biết quy ước. Cùng dãy 01 có thể mang ý nghĩa khác trong hai bảng mã khác nhau.","Khi đọc mã theo nhóm, đếm đúng số bit của mỗi kí hiệu rồi đọc lần lượt. Khi mã hóa hình, đọc theo thứ tự hàng và cột đã quy định.","Phân biệt dung lượng của thiết bị với lượng dữ liệu chiếm chỗ của tệp hay thư mục."],"example":"Nếu sáng là 1 và tắt là 0, ba đèn theo thứ tự tắt, sáng, sáng được ghi là 011."},"tasks":[{"id":"T6-B03-C06","prompt":"Quy ước sáng = 1, tắt = 0. Dãy sáng, tắt, sáng biểu diễn thế nào?","type":"choice","choices":["110","101","010","011"],"correct":[1],"why":"Đổi từng trạng thái theo đúng thứ tự."},{"id":"T6-B03-C07","prompt":"Hai tệp 6 MB và 600 KB. Tệp nào có dung lượng lớn hơn?","type":"choice","choices":["Không thể so sánh hai đơn vị này","Tệp 600 KB","Hai tệp bằng nhau","Tệp 6 MB"],"correct":[3],"why":"6 MB tương đương hàng nghìn KB."},{"id":"T6-B03-C08","prompt":"Vì sao cùng dãy 01 có thể biểu diễn hai ý khác nhau trong hai bài?","type":"choice","choices":["Bit 0 luôn có hai giá trị cùng lúc","Hai bài có thể dùng bảng mã khác nhau","Dãy bit tự mang nghĩa cố định","Dãy ngắn không thể biểu diễn dữ liệu"],"correct":[1],"why":"Bảng mã quy định ý nghĩa của dãy."},{"id":"T6-B03-C09","prompt":"Thiết bị ghi 16 GB; thư mục ghi 12 MB. Hai số dùng để mô tả gì?","type":"choice","choices":["Sức chứa thiết bị và lượng dữ liệu của thư mục","Số tệp thiết bị chứa và số tệp thư mục","Tốc độ mạng và thời gian tải","Thời gian dùng và thời gian tạo"],"correct":[0],"why":"Đây là hai giá trị dung lượng, ở hai đơn vị khác nhau."},{"id":"T6-B03-C10","prompt":"Mã A = 00, B = 01, C = 10. Dãy 01 biểu diễn gì?","type":"choice","choices":["B","A","AB","C"],"correct":[0],"why":"Đối chiếu cả cặp bit với bảng mã."}]},{"goal":"Mã hóa, giải mã và tính dung lượng đơn giản.","study":{"points":["Để mã hóa nhiều kí hiệu, tra mã từng kí hiệu rồi nối theo thứ tự. Để giải mã, tách đúng độ dài mỗi mã trước khi tra.","Đổi bit sang byte bằng cách chia cho 8 khi số bit chia hết cho 8.","Khi chép nhiều tệp, cộng dung lượng của tất cả tệp và so với phần còn trống. Kiểm tra cùng đơn vị."],"example":"Với X = 00 và Y = 11, chuỗi YXY được ghi là 11 00 11. Hai tệp 3 MB và 4 MB cần ít nhất 7 MB trống."},"tasks":[{"id":"T6-B03-C11","prompt":"Mã X = 00, Y = 01, Z = 10. Chuỗi YZX là gì?","type":"choice","choices":["010010","011000","001001","100100"],"correct":[1],"why":"Ghép 01, 10, 00."},{"id":"T6-B03-C12","prompt":"Thẻ nhớ còn 9 MB; hai ảnh là 4 MB và 6 MB. Có chép cả hai được không?","type":"choice","choices":["Không, vì hai tệp luôn cần hai thẻ","Có, vì từng ảnh nhỏ hơn 9 MB","Có, vì tổng bằng 9 MB","Không, cần 10 MB"],"correct":[3],"why":"Dung lượng cần là tổng 10 MB."},{"id":"T6-B03-C13","prompt":"Dãy 16 bit chiếm mấy byte nếu chỉ tính dãy bit đó?","type":"choice","choices":["8 byte","2 byte","1 byte","16 byte"],"correct":[1],"why":"16 chia 8 bằng 2."},{"id":"T6-B03-C14","prompt":"Mã trắng = 0, đen = 1. Viết mã cho hai hàng ô: trắng–đen–đen; đen–trắng–đen. Ghi rõ mã từng hàng.","type":"practice","rubric":["011 và 101."]},{"id":"T6-B03-C15","prompt":"Thẻ còn 15 MB. Em chép hai tệp 6 MB và 4 MB; còn bao nhiêu? Tệp tiếp theo 7 MB có chép được không?","type":"practice","rubric":["Còn 5 MB.","Không, vì 7 > 5."]}]},{"goal":"Phát hiện lỗi bảng mã, cách tách nhóm và đơn vị.","study":{"points":["Nếu hai kí hiệu dùng chung một mã, người đọc không biết mã ấy đại diện cho kí hiệu nào. Mỗi kí hiệu phải có mã riêng.","Với mã dài 2 bit, một dãy có số bit lẻ có thể đã bị thiếu hoặc thừa bit. Hãy kiểm tra dãy trước khi giải mã.","Khi so dung lượng, đổi cùng đơn vị. Khi chép tệp, so với dung lượng trống thay vì dung lượng ghi trên vỏ thiết bị."],"example":"Thẻ 8 GB chỉ còn 20 MB trống. Dù thẻ có dung lượng lớn, tệp 25 MB vẫn chưa chép vừa nếu không giải phóng chỗ."},"tasks":[{"id":"T6-B03-C16","prompt":"Bảng mã A = 00, B = 00, C = 10. Lỗi gì xuất hiện khi đọc 00?","type":"choice","choices":["Không phân biệt A với B","Không thể đọc C","Mọi mã phải dài 8 bit","Không phân biệt A với C"],"correct":[0],"why":"A và B trùng mã."},{"id":"T6-B03-C17","prompt":"Mỗi kí hiệu chiếm 2 bit. Nhận dãy 01100, điều gì cần kiểm tra?","type":"choice","choices":["Máy chỉ cho phép dãy toàn 1","Dãy chắc chắn gồm năm kí hiệu","Số bit lẻ, có thể thiếu hoặc thừa bit","Bit đầu phải luôn là 0"],"correct":[2],"why":"Không chia 5 bit thành các nhóm 2 bit trọn vẹn."},{"id":"T6-B03-C18","prompt":"Bạn so 900 KB với 2 MB và nói 900 lớn hơn 2 nên tệp đầu lớn hơn. Sửa gì?","type":"choice","choices":["Chỉ đổi tên hai tệp","Đổi về cùng đơn vị trước khi so","So số chữ số","Nhân cả hai số với 2, giữ nguyên đơn vị"],"correct":[1],"why":"Phải xét đơn vị, không chỉ số đứng trước đơn vị."},{"id":"T6-B03-C19","prompt":"Bảng mã A = 00, B = 01, C = 10. Bạn giải 0100 thành AC. Khoanh nhóm bit và sửa kết quả.","type":"practice","rubric":["Tách 01 và 00.","BA."]},{"id":"T6-B03-C20","prompt":"Một USB ghi 8 GB nhưng máy báo chỉ còn trống 30 MB. Bạn cần chép tệp 40 MB. Giải thích vì sao nhìn nhãn 8 GB chưa đủ.","type":"practice","rubric":["8 GB là dung lượng toàn thiết bị.","Chỉ còn 30 MB, thiếu 10 MB."]}]},{"goal":"Kết hợp quy ước và kiểm tra bằng ví dụ mới.","study":{"points":["Khi tạo bảng mã, chọn đủ số mã khác nhau và giữ độ dài nhất quán để dễ tách khi đọc.","Để người khác dựng lại ảnh từ bit, gửi cả dãy bit, quy ước màu, số ô mỗi hàng và thứ tự đọc.","Nếu phải giữ một số tệp, cộng dung lượng của chúng trước rồi tính dung lượng còn lại cho các tệp khác."],"example":"Ảnh đen trắng 3 cột có hai hàng 101 và 010. Nếu quy ước 1 là đen, hàng đầu có hai ô đen ở hai đầu."},"tasks":[{"id":"T6-B03-C21","prompt":"Cần mã hóa bốn màu khác nhau bằng các mã dài bằng nhau. Phương án nào đủ và không trùng?","type":"choice","choices":["00, 01, 10, 11","1, 10, 11, 100","00, 01, 01, 11","0, 1, 0, 1"],"correct":[0],"why":"Bốn mã 2 bit khác nhau đủ cho bốn màu."},{"id":"T6-B03-C22","prompt":"Thẻ còn 13 MB; cần giữ hai tệp bắt buộc 5 MB và 4 MB. Có thể thêm tệp nào nếu chỉ chọn một?","type":"choice","choices":["Tệp 6 MB","Tệp 5 MB","Tệp 7 MB","Tệp 4 MB"],"correct":[3],"why":"Sau hai tệp còn 4 MB."},{"id":"T6-B03-C23","prompt":"Nhóm chia sẻ dãy bit cho ảnh đen trắng. Kèm gì để người khác dựng lại đúng?","type":"choice","choices":["Quy ước màu, số ô mỗi hàng và thứ tự đọc","Chỉ số lượng bit 1","Chỉ tên tệp ảnh","Chỉ số lượng màu"],"correct":[0],"why":"Cần cả cách giải màu và cách xếp vị trí."},{"id":"T6-B03-C24","prompt":"Đặt bảng mã dài 2 bit cho ba kí hiệu N, T, V, rồi mã hóa VNT và tách lại để kiểm tra.","type":"practice","rubric":["Ba mã 2 bit khác nhau.","Ghép đúng VNT theo bảng.","Tách và giải lại đúng."]},{"id":"T6-B03-C25","prompt":"Bộ nhớ còn 18 MB. Bắt buộc chép bản trình bày 6 MB và âm thanh 5 MB. Chọn giữa ảnh A 8 MB và ảnh B 7 MB để chép thêm một ảnh; giải thích.","type":"practice","rubric":["Còn 7 MB sau tệp bắt buộc.","Chọn B vừa đủ.","A vượt 1 MB."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=3;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});

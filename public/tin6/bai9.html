@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"9":{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41","stages":[{"goal":"Nhận diện nguy cơ và quy tắc an toàn.","text":"Giữ kín thông tin cá nhân, kiểm tra độ tin cậy và nói với người lớn khi cần.","tasks":[{"id":"T6-B09-C01","prompt":"Mục nào cần giữ riêng?","type":"choice","choices":["Mật khẩu hộp thư","Tên một loài cây","Tên một tỉnh","Tên một môn học"],"correct":[0],"why":"Mật khẩu bảo vệ quyền truy cập tài khoản."},{"id":"T6-B09-C02","prompt":"Tin nhắn nào có dấu hiệu bắt nạt?","type":"choice","choices":["Gửi tài liệu theo yêu cầu","Chúc mừng sinh nhật","Nhắc giờ học lịch sự","Liên tục chế giễu và đe dọa bạn"],"correct":[3],"why":"Chế giễu và đe dọa có thể gây tổn thương."},{"id":"T6-B09-C03","prompt":"Người lạ hẹn gặp riêng. Quy tắc nào phù hợp?","type":"choice","choices":["Không đi gặp, nói với người lớn tin cậy","Gửi địa chỉ nhà trước","Giữ bí mật với gia đình","Đến một mình"],"correct":[0],"why":"Không tự gặp người chỉ quen trên mạng."},{"id":"T6-B09-C04","prompt":"Việc nào giúp bảo vệ tài khoản?","type":"choice","choices":["Dùng mật khẩu dài, khó đoán và riêng cho tài khoản","Ghi mật khẩu vào bài đăng","Dùng tên lớp làm mật khẩu","Dùng chung mật khẩu cả nhóm"],"correct":[0],"why":"Mật khẩu riêng và khó đoán làm giảm nguy cơ bị đoán hoặc lộ dây chuyền."},{"id":"T6-B09-C05","prompt":"Phần mềm độc hại có thể gây hậu quả nào?","type":"choice","choices":["Làm hỏng hoặc lấy cắp dữ liệu","Tự sửa mọi lỗi","Tăng quyền riêng tư","Bảo đảm thông tin đúng"],"correct":[0],"why":"Phần mềm độc hại có thể gây mất an toàn dữ liệu."}]},{"goal":"Giải thích dấu hiệu và biện pháp phù hợp.","text":"Tách dấu hiệu rủi ro khỏi điều đã được kiểm chứng.","tasks":[{"id":"T6-B09-C06","prompt":"Bạn thân xin mật khẩu để làm hộ bài. Vì sao vẫn không nên đưa?","type":"choice","choices":["Đổi hình nền sẽ bảo vệ được dữ liệu","Bạn cùng lớp nên tài khoản tự khóa","Người khác có thể đọc dữ liệu và hành động bằng tài khoản em","Mật khẩu chỉ dùng cho máy tính ở trường"],"correct":[2],"why":"Chia sẻ mật khẩu là chia sẻ quyền truy cập."},{"id":"T6-B09-C07","prompt":"Một bài đăng nhiều lượt chia sẻ nhưng thiếu nguồn. Điều gì đúng?","type":"choice","choices":["Phải chia sẻ trước để hỏi","Tin thiếu nguồn chắc chắn đúng nếu có ảnh","Số lượt chia sẻ không chứng minh tin đúng","Tin phổ biến luôn đúng"],"correct":[2],"why":"Cần đối chiếu nguồn và nội dung."},{"id":"T6-B09-C08","prompt":"Bạn đăng ảnh có bảng tên và số điện thoại. Điều nào có thể xảy ra?","type":"choice","choices":["Chỉ người chụp mới thấy thông tin","Người ngoài có thể nhận diện và liên lạc ngoài ý muốn","Ảnh tự ẩn mọi chữ","Đăng ảnh làm số điện thoại tự đổi"],"correct":[1],"why":"Ảnh có thể để lộ thông tin cá nhân."},{"id":"T6-B09-C09","prompt":"Nhận tệp cài đặt ngoài dự kiến từ người lạ. Dấu hiệu nào đáng ngờ nhất?","type":"choice","choices":["Tên tệp có một chữ viết hoa","Tên tệp ngắn","Nguồn không rõ và em không yêu cầu tệp","Thư đến vào buổi sáng"],"correct":[2],"why":"Nên kiểm tra nguồn qua kênh đáng tin trước khi mở."},{"id":"T6-B09-C10","prompt":"Vì sao nên hỏi ý kiến bạn trước khi đăng ảnh có bạn?","type":"choice","choices":["Để tăng dung lượng ảnh","Để ảnh tự biến thành ảnh công khai hợp lệ","Để đổi mật khẩu của bạn","Để tôn trọng quyền riêng tư và lựa chọn của bạn"],"correct":[3],"why":"Người có mặt có quyền cân nhắc việc ảnh được chia sẻ."}]},{"goal":"Chọn hành động an toàn trong từng tình huống.","text":"Ưu tiên dừng tương tác và dùng kênh đã biết.","tasks":[{"id":"T6-B09-C11","prompt":"Một tin yêu cầu gửi mã đăng nhập để nhận quà. Em làm gì?","type":"choice","choices":["Chụp mã đăng lên nhóm","Thử bằng tài khoản bạn","Không gửi mã; báo người lớn tin cậy","Gửi mã rồi hỏi sau"],"correct":[2],"why":"Mã đăng nhập phải giữ kín."},{"id":"T6-B09-C12","prompt":"Máy thư viện dùng chung. Khi dùng xong tài khoản, làm gì?","type":"choice","choices":["Lưu mật khẩu cho lần sau","Chỉ đóng cửa sổ, để tài khoản vẫn đăng nhập","Gửi mật khẩu cho người ngồi kế tiếp","Đăng xuất và không lưu mật khẩu trên máy"],"correct":[3],"why":"Đăng xuất giúp ngăn người dùng tiếp theo mở tài khoản."},{"id":"T6-B09-C13","prompt":"Một người liên tục nhắn xúc phạm. Phản ứng nào phù hợp?","type":"choice","choices":["Đáp trả bằng lời xúc phạm","Dừng đáp trả, lưu bằng chứng để báo người lớn, chặn/báo cáo","Công khai thông tin riêng của họ","Gửi thêm ảnh cá nhân"],"correct":[1],"why":"Giảm tiếp xúc và nhờ hỗ trợ."},{"id":"T6-B09-C14","prompt":"Viết hai câu em có thể nói với người lớn khi nhận tin nhắn đe dọa trong trò chơi.","type":"practice","rubric":["Mô tả sự việc.","Xin trợ giúp và đề nghị cho xem bằng chứng riêng."]},{"id":"T6-B09-C15","prompt":"Trước khi gửi ảnh nhóm cho lớp, chỉ ra hai việc kiểm tra liên quan đến quyền riêng tư.","type":"practice","rubric":["Xin phép người có mặt; che/bỏ chi tiết riêng tư hoặc hạn chế đúng người xem."]}]},{"goal":"Phân tích dấu hiệu rủi ro và cách kiểm chứng.","text":"Xác minh bằng kênh độc lập đã biết, không dựa vào tên hoặc ảnh đại diện.","tasks":[{"id":"T6-B09-C16","prompt":"Tin nhắn hiện ảnh cô giáo nhưng đòi nhập mật khẩu ở liên kết lạ. Cách xác minh nào đáng tin?","type":"choice","choices":["Chuyển liên kết cho cả lớp bấm thử","Hỏi đúng tài khoản vừa gửi rồi nhập mật khẩu","Hỏi cô qua số hoặc kênh lớp đã biết","Tin ảnh đại diện và mở ngay"],"correct":[2],"why":"Kênh đã biết tránh dựa vào chính nơi đáng ngờ."},{"id":"T6-B09-C17","prompt":"Một tin gây hoang mang có ảnh chụp, nhưng không ghi thời gian, địa điểm. Cách xử lí nào tốt?","type":"choice","choices":["Chỉ đếm lượt thích","Tạm không chia sẻ; đối chiếu thông báo chính thức đúng nơi và thời gian","Cắt ảnh làm mất phần ngữ cảnh","Đăng lại và ghi “có thể đúng”"],"correct":[1],"why":"Cần ngữ cảnh và nguồn tin trước khi lan truyền."},{"id":"T6-B09-C18","prompt":"Bạn vô tình công khai số điện thoại trong ảnh lớp. Bước nào giúp giảm lộ thông tin ngay?","type":"choice","choices":["Chỉ đổi tên ảnh","Hạn chế hoặc gỡ ảnh, báo người phụ trách","Nhờ nhiều nhóm chia sẻ tiếp","Đăng lại ảnh để hỏi ý kiến"],"correct":[1],"why":"Hạn chế khả năng người khác tiếp tục xem."},{"id":"T6-B09-C19","prompt":"Tài khoản lạ mạo danh bạn, yêu cầu ảnh thẻ học sinh và giục giữ bí mật. Nêu hai dấu hiệu và cách xử lí.","type":"practice","rubric":["Nêu hai dấu hiệu như đòi ảnh riêng tư, giục giữ bí mật.","Không gửi, xác minh độc lập và báo người lớn."]},{"id":"T6-B09-C20","prompt":"Bạn đã nhập mật khẩu vào trang đáng ngờ. Nêu hai việc ưu tiên sau khi rời trang.","type":"practice","rubric":["Báo người lớn/người quản lí ngay.","Đổi mật khẩu qua dịch vụ chính thức và kiểm tra phiên đăng nhập với người hỗ trợ."]}]},{"goal":"Tổng hợp cách bảo vệ và hỗ trợ người khác.","text":"Giữ bằng chứng riêng, hạn chế lộ dữ liệu và tìm trợ giúp.","tasks":[{"id":"T6-B09-C21","prompt":"Một bạn bị đe dọa trong nhóm, tin còn chứa địa chỉ nhà. Cách nào bảo vệ bạn và giúp xử lí?","type":"choice","choices":["Chụp và đăng lên nhóm khác","Xóa bằng chứng trước khi nói với người lớn","Thách người đe dọa gặp mặt","Giữ bằng chứng riêng để báo người lớn, không chuyển tiếp công khai"],"correct":[3],"why":"Chia sẻ riêng đúng người hỗ trợ giảm việc phát tán địa chỉ."},{"id":"T6-B09-C22","prompt":"Nhóm cần công bố kết quả thi đua nhưng bảng gốc có số liên lạc. Đăng bản nào?","type":"choice","choices":["Chỉ các dữ liệu cần công bố, bỏ số liên lạc và theo phạm vi được phép","Bảng kèm mật khẩu tài khoản","Bảng đầy đủ để ai cũng xem","Ảnh chụp toàn màn hình chứa dữ liệu gốc"],"correct":[0],"why":"Chỉ công bố dữ liệu cần thiết."},{"id":"T6-B09-C23","prompt":"Một bài đăng yêu cầu số điện thoại để xem lịch nghỉ học. Em làm gì để biết lịch chính xác và giữ kín số điện thoại?","type":"choice","choices":["Nhập số rồi xóa bài","Không nhập số; kiểm tra lịch trên kênh chính thức của trường","Chuyển tiếp để cả lớp kiểm tra hộ","Tin ngay vì tiêu đề nói về trường"],"correct":[1],"why":"Xác minh thông tin mà không để lộ dữ liệu."},{"id":"T6-B09-C24","prompt":"Lập hướng dẫn ba bước cho bạn gặp tài khoản lạ giả danh giáo viên, gửi liên kết và yêu cầu mật khẩu.","type":"practice","rubric":["Không bấm/không cung cấp.","Kiểm tra qua kênh trường đã biết.","Báo người lớn hoặc quản trị viên và lưu bằng chứng riêng."]},{"id":"T6-B09-C25","prompt":"Soạn quy tắc cho nhóm lớp về đăng ảnh và xử lí bình luận xúc phạm. Có cách báo cáo cụ thể.","type":"practice","rubric":["Xin phép và hạn chế chi tiết riêng tư.","Không đáp trả/phát tán.","Báo giáo viên hoặc quản trị viên và gửi bằng chứng riêng."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=9;
+const BANK={"9":{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41","stages":[{"goal":"Nhận diện nguy cơ và quy tắc an toàn.","study":{"points":["Thông tin cá nhân như địa chỉ nhà, mật khẩu và mã đăng nhập cần được bảo vệ. Chỉ cung cấp thông tin cần thiết qua kênh đã xác minh.","Rủi ro trên mạng gồm tin giả, phần mềm độc hại, lừa lấy tài khoản và bắt nạt. Hành vi chế giễu hoặc đe dọa lặp lại có thể gây tổn thương.","Dùng mật khẩu dài, khó đoán và riêng cho từng tài khoản. Không gặp riêng người chỉ quen trên mạng."],"example":"Người lạ hẹn em gặp và yêu cầu giữ bí mật. Em từ chối và báo một người lớn đáng tin."},"tasks":[{"id":"T6-B09-C01","prompt":"Mục nào cần giữ riêng?","type":"choice","choices":["Mật khẩu hộp thư","Tên một loài cây","Tên một tỉnh","Tên một môn học"],"correct":[0],"why":"Mật khẩu bảo vệ quyền truy cập tài khoản."},{"id":"T6-B09-C02","prompt":"Tin nhắn nào có dấu hiệu bắt nạt?","type":"choice","choices":["Gửi tài liệu theo yêu cầu","Chúc mừng sinh nhật","Nhắc giờ học lịch sự","Liên tục chế giễu và đe dọa bạn"],"correct":[3],"why":"Chế giễu và đe dọa có thể gây tổn thương."},{"id":"T6-B09-C03","prompt":"Người lạ hẹn gặp riêng. Quy tắc nào phù hợp?","type":"choice","choices":["Không đi gặp, nói với người lớn tin cậy","Gửi địa chỉ nhà trước","Giữ bí mật với gia đình","Đến một mình"],"correct":[0],"why":"Không tự gặp người chỉ quen trên mạng."},{"id":"T6-B09-C04","prompt":"Việc nào giúp bảo vệ tài khoản?","type":"choice","choices":["Dùng mật khẩu dài, khó đoán và riêng cho tài khoản","Ghi mật khẩu vào bài đăng","Dùng tên lớp làm mật khẩu","Dùng chung mật khẩu cả nhóm"],"correct":[0],"why":"Mật khẩu riêng và khó đoán làm giảm nguy cơ bị đoán hoặc lộ dây chuyền."},{"id":"T6-B09-C05","prompt":"Phần mềm độc hại có thể gây hậu quả nào?","type":"choice","choices":["Làm hỏng hoặc lấy cắp dữ liệu","Tự sửa mọi lỗi","Tăng quyền riêng tư","Bảo đảm thông tin đúng"],"correct":[0],"why":"Phần mềm độc hại có thể gây mất an toàn dữ liệu."}]},{"goal":"Giải thích dấu hiệu và biện pháp phù hợp.","study":{"points":["Nhiều lượt chia sẻ không chứng minh thông tin đúng. Hãy xem ai đăng, thời điểm và nguồn gốc.","Ảnh có thể tiết lộ tên, trường, địa chỉ hoặc số điện thoại. Xin phép người trong ảnh và kiểm tra chi tiết nhạy cảm trước khi đăng.","Không mở tệp cài đặt hoặc tệp đính kèm bất ngờ từ người lạ. Xác minh người gửi qua kênh đã biết."],"example":"Trước khi đăng ảnh lớp, em nhận ra một bảng tên có số điện thoại. Hãy xin phép và che số trước khi chia sẻ."},"tasks":[{"id":"T6-B09-C06","prompt":"Bạn thân xin mật khẩu để làm hộ bài. Vì sao vẫn không nên đưa?","type":"choice","choices":["Đổi hình nền sẽ bảo vệ được dữ liệu","Bạn cùng lớp nên tài khoản tự khóa","Người khác có thể đọc dữ liệu và hành động bằng tài khoản em","Mật khẩu chỉ dùng cho máy tính ở trường"],"correct":[2],"why":"Chia sẻ mật khẩu là chia sẻ quyền truy cập."},{"id":"T6-B09-C07","prompt":"Một bài đăng nhiều lượt chia sẻ nhưng thiếu nguồn. Điều gì đúng?","type":"choice","choices":["Phải chia sẻ trước để hỏi","Tin thiếu nguồn chắc chắn đúng nếu có ảnh","Số lượt chia sẻ không chứng minh tin đúng","Tin phổ biến luôn đúng"],"correct":[2],"why":"Cần đối chiếu nguồn và nội dung."},{"id":"T6-B09-C08","prompt":"Bạn đăng ảnh có bảng tên và số điện thoại. Điều nào có thể xảy ra?","type":"choice","choices":["Chỉ người chụp mới thấy thông tin","Người ngoài có thể nhận diện và liên lạc ngoài ý muốn","Ảnh tự ẩn mọi chữ","Đăng ảnh làm số điện thoại tự đổi"],"correct":[1],"why":"Ảnh có thể để lộ thông tin cá nhân."},{"id":"T6-B09-C09","prompt":"Nhận tệp cài đặt ngoài dự kiến từ người lạ. Dấu hiệu nào đáng ngờ nhất?","type":"choice","choices":["Tên tệp có một chữ viết hoa","Tên tệp ngắn","Nguồn không rõ và em không yêu cầu tệp","Thư đến vào buổi sáng"],"correct":[2],"why":"Nên kiểm tra nguồn qua kênh đáng tin trước khi mở."},{"id":"T6-B09-C10","prompt":"Vì sao nên hỏi ý kiến bạn trước khi đăng ảnh có bạn?","type":"choice","choices":["Để tăng dung lượng ảnh","Để ảnh tự biến thành ảnh công khai hợp lệ","Để đổi mật khẩu của bạn","Để tôn trọng quyền riêng tư và lựa chọn của bạn"],"correct":[3],"why":"Người có mặt có quyền cân nhắc việc ảnh được chia sẻ."}]},{"goal":"Chọn hành động an toàn trong từng tình huống.","study":{"points":["Với tin xin mã hoặc mật khẩu, không bấm liên kết và không cung cấp dữ liệu. Nếu chưa rõ, hỏi người lớn hoặc liên hệ nơi được nhắc đến bằng kênh chính thức.","Khi bị xúc phạm hay đe dọa, không đáp trả. Giữ bằng chứng riêng nếu an toàn, chặn hoặc báo cáo và nhờ người lớn giúp.","Trên máy dùng chung, không lưu mật khẩu. Đăng xuất khỏi tài khoản sau khi dùng."],"example":"Tin “gửi mã để nhận quà” đòi dữ liệu đăng nhập. Em giữ kín mã và báo người lớn thay vì thử gửi."},"tasks":[{"id":"T6-B09-C11","prompt":"Một tin yêu cầu gửi mã đăng nhập để nhận quà. Em làm gì?","type":"choice","choices":["Chụp mã đăng lên nhóm","Thử bằng tài khoản bạn","Không gửi mã; báo người lớn tin cậy","Gửi mã rồi hỏi sau"],"correct":[2],"why":"Mã đăng nhập phải giữ kín."},{"id":"T6-B09-C12","prompt":"Máy thư viện dùng chung. Khi dùng xong tài khoản, làm gì?","type":"choice","choices":["Lưu mật khẩu cho lần sau","Chỉ đóng cửa sổ, để tài khoản vẫn đăng nhập","Gửi mật khẩu cho người ngồi kế tiếp","Đăng xuất và không lưu mật khẩu trên máy"],"correct":[3],"why":"Đăng xuất giúp ngăn người dùng tiếp theo mở tài khoản."},{"id":"T6-B09-C13","prompt":"Một người liên tục nhắn xúc phạm. Phản ứng nào phù hợp?","type":"choice","choices":["Đáp trả bằng lời xúc phạm","Dừng đáp trả, lưu bằng chứng để báo người lớn, chặn/báo cáo","Công khai thông tin riêng của họ","Gửi thêm ảnh cá nhân"],"correct":[1],"why":"Giảm tiếp xúc và nhờ hỗ trợ."},{"id":"T6-B09-C14","prompt":"Viết hai câu em có thể nói với người lớn khi nhận tin nhắn đe dọa trong trò chơi.","type":"practice","rubric":["Mô tả sự việc.","Xin trợ giúp và đề nghị cho xem bằng chứng riêng."]},{"id":"T6-B09-C15","prompt":"Trước khi gửi ảnh nhóm cho lớp, chỉ ra hai việc kiểm tra liên quan đến quyền riêng tư.","type":"practice","rubric":["Xin phép người có mặt; che/bỏ chi tiết riêng tư hoặc hạn chế đúng người xem."]}]},{"goal":"Phân tích dấu hiệu rủi ro và cách kiểm chứng.","study":{"points":["Ảnh đại diện và tên quen không chứng minh người gửi là thật. Hỏi trực tiếp qua kênh lớp hoặc số liên hệ đã lưu.","Nếu đã nhập mật khẩu ở nơi đáng ngờ, báo người lớn hoặc người quản lí ngay. Đổi mật khẩu trên dịch vụ chính thức và kiểm tra các phiên đăng nhập với người hỗ trợ.","Nếu ảnh đăng nhầm dữ liệu riêng, hạn chế người xem hoặc gỡ ảnh và báo người phụ trách. Không chuyển tiếp ảnh để cảnh báo."],"example":"Một tài khoản giống tên cô giáo gửi liên kết xin mật khẩu. Em hỏi cô qua kênh lớp đã biết để xác minh."},"tasks":[{"id":"T6-B09-C16","prompt":"Tin nhắn hiện ảnh cô giáo nhưng đòi nhập mật khẩu ở liên kết lạ. Cách xác minh nào đáng tin?","type":"choice","choices":["Chuyển liên kết cho cả lớp bấm thử","Hỏi đúng tài khoản vừa gửi rồi nhập mật khẩu","Hỏi cô qua số hoặc kênh lớp đã biết","Tin ảnh đại diện và mở ngay"],"correct":[2],"why":"Kênh đã biết tránh dựa vào chính nơi đáng ngờ."},{"id":"T6-B09-C17","prompt":"Một tin gây hoang mang có ảnh chụp, nhưng không ghi thời gian, địa điểm. Cách xử lí nào tốt?","type":"choice","choices":["Chỉ đếm lượt thích","Tạm không chia sẻ; đối chiếu thông báo chính thức đúng nơi và thời gian","Cắt ảnh làm mất phần ngữ cảnh","Đăng lại và ghi “có thể đúng”"],"correct":[1],"why":"Cần ngữ cảnh và nguồn tin trước khi lan truyền."},{"id":"T6-B09-C18","prompt":"Bạn vô tình công khai số điện thoại trong ảnh lớp. Bước nào giúp giảm lộ thông tin ngay?","type":"choice","choices":["Chỉ đổi tên ảnh","Hạn chế hoặc gỡ ảnh, báo người phụ trách","Nhờ nhiều nhóm chia sẻ tiếp","Đăng lại ảnh để hỏi ý kiến"],"correct":[1],"why":"Hạn chế khả năng người khác tiếp tục xem."},{"id":"T6-B09-C19","prompt":"Tài khoản lạ mạo danh bạn, yêu cầu ảnh thẻ học sinh và giục giữ bí mật. Nêu hai dấu hiệu và cách xử lí.","type":"practice","rubric":["Nêu hai dấu hiệu như đòi ảnh riêng tư, giục giữ bí mật.","Không gửi, xác minh độc lập và báo người lớn."]},{"id":"T6-B09-C20","prompt":"Bạn đã nhập mật khẩu vào trang đáng ngờ. Nêu hai việc ưu tiên sau khi rời trang.","type":"practice","rubric":["Báo người lớn/người quản lí ngay.","Đổi mật khẩu qua dịch vụ chính thức và kiểm tra phiên đăng nhập với người hỗ trợ."]}]},{"goal":"Tổng hợp cách bảo vệ và hỗ trợ người khác.","study":{"points":["Chỉ chia sẻ thông tin cần thiết và trong phạm vi được phép. Xin phép trước khi đăng ảnh người khác.","Khi cần nhờ giúp, lưu bằng chứng riêng để người lớn hoặc quản trị viên xử lí. Tránh phát tán lại nội dung gây hại.","Muốn xác nhận một tin liên quan tới trường, mở kênh chính thức thay vì điền dữ liệu vào bài đăng lạ."],"example":"Bảng thi đua có số liên lạc. Trước khi đăng, tạo bản chỉ có những cột được phép công bố và kiểm tra lại."},"tasks":[{"id":"T6-B09-C21","prompt":"Một bạn bị đe dọa trong nhóm, tin còn chứa địa chỉ nhà. Cách nào bảo vệ bạn và giúp xử lí?","type":"choice","choices":["Chụp và đăng lên nhóm khác","Xóa bằng chứng trước khi nói với người lớn","Thách người đe dọa gặp mặt","Giữ bằng chứng riêng để báo người lớn, không chuyển tiếp công khai"],"correct":[3],"why":"Chia sẻ riêng đúng người hỗ trợ giảm việc phát tán địa chỉ."},{"id":"T6-B09-C22","prompt":"Nhóm cần công bố kết quả thi đua nhưng bảng gốc có số liên lạc. Đăng bản nào?","type":"choice","choices":["Chỉ các dữ liệu cần công bố, bỏ số liên lạc và theo phạm vi được phép","Bảng kèm mật khẩu tài khoản","Bảng đầy đủ để ai cũng xem","Ảnh chụp toàn màn hình chứa dữ liệu gốc"],"correct":[0],"why":"Chỉ công bố dữ liệu cần thiết."},{"id":"T6-B09-C23","prompt":"Một bài đăng yêu cầu số điện thoại để xem lịch nghỉ học. Em làm gì để biết lịch chính xác và giữ kín số điện thoại?","type":"choice","choices":["Nhập số rồi xóa bài","Không nhập số; kiểm tra lịch trên kênh chính thức của trường","Chuyển tiếp để cả lớp kiểm tra hộ","Tin ngay vì tiêu đề nói về trường"],"correct":[1],"why":"Xác minh thông tin mà không để lộ dữ liệu."},{"id":"T6-B09-C24","prompt":"Lập hướng dẫn ba bước cho bạn gặp tài khoản lạ giả danh giáo viên, gửi liên kết và yêu cầu mật khẩu.","type":"practice","rubric":["Không bấm/không cung cấp.","Kiểm tra qua kênh trường đã biết.","Báo người lớn hoặc quản trị viên và lưu bằng chứng riêng."]},{"id":"T6-B09-C25","prompt":"Soạn quy tắc cho nhóm lớp về đăng ảnh và xử lí bình luận xúc phạm. Có cách báo cáo cụ thể.","type":"practice","rubric":["Xin phép và hạn chế chi tiết riêng tư.","Không đáp trả/phát tán.","Báo giáo viên hoặc quản trị viên và gửi bằng chứng riêng."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=9;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});

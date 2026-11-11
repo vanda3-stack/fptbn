@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"12":{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57","stages":[{"goal":"Nhận diện hàng, cột, ô và công dụng của bảng.","text":"Hàng đi ngang, cột đi dọc, ô nằm tại giao điểm.","tasks":[{"id":"T6-B12-C01","prompt":"Ô trong bảng là gì?","type":"choice","choices":["Toàn bộ một hàng","Giao của một hàng và một cột","Toàn bộ một cột","Tên của cả bảng"],"correct":[1],"why":"Mỗi ô có một vị trí hàng và cột."},{"id":"T6-B12-C02","prompt":"Bảng nào thích hợp nhất để so sánh điểm theo môn của nhiều bạn?","type":"choice","choices":["Danh sách chỉ có tên bạn","Một đoạn không có tên môn","Bảng có hàng theo bạn và cột theo môn","Một ảnh lớp không có số liệu"],"correct":[2],"why":"Các cột chung giúp so sánh cùng môn."},{"id":"T6-B12-C03","prompt":"Hàng đầu ghi “Họ tên” và “Tổ” có tác dụng gì?","type":"choice","choices":["Chỉ đánh số trang","Đặt tên cho các cột","Gộp toàn bộ dữ liệu","Xóa cột"],"correct":[1],"why":"Tên cột giúp đọc đúng ý nghĩa của ô bên dưới."},{"id":"T6-B12-C04","prompt":"Muốn thêm một bảng vào văn bản, dùng nhóm lệnh nào?","type":"choice","choices":["In văn bản","Đổi hướng trang","Chèn bảng","Thay thế từ"],"correct":[2],"why":"Lệnh chèn bảng tạo các ô."},{"id":"T6-B12-C05","prompt":"Chọn nhiều ô liền nhau rồi hợp thành một ô gọi là gì?","type":"choice","choices":["Xóa hàng","Tách trang","Chèn cột","Gộp ô"],"correct":[3],"why":"Gộp ô thay nhóm ô bằng một ô chung."}]},{"goal":"Đọc cấu trúc và chọn thao tác.","text":"Đếm riêng số cột, số hàng tiêu đề và hàng dữ liệu.","tasks":[{"id":"T6-B12-C06","prompt":"Bảng có ba cột: Tên, Tổ, Số sách. Mỗi bạn nằm ở đâu?","type":"choice","choices":["Một hàng dữ liệu","Ba bảng riêng","Chỉ một ô tiêu đề","Một cột mới"],"correct":[0],"why":"Mỗi hàng lưu một bản ghi."},{"id":"T6-B12-C07","prompt":"Có bốn bạn và cần một hàng tiêu đề. Tối thiểu mấy hàng?","type":"choice","choices":["5","8","4","3"],"correct":[0],"why":"Bốn hàng dữ liệu cộng một hàng tiêu đề."},{"id":"T6-B12-C08","prompt":"Muốn thêm trường “Ghi chú” cho mọi bạn thì thêm gì?","type":"choice","choices":["Một hàng","Một cột","Một trang trống","Một tiêu đề phụ ngoài bảng"],"correct":[1],"why":"Trường mới ứng với một cột."},{"id":"T6-B12-C09","prompt":"Bảng ghi hàng Mai, cột Số sách = 4. Đọc thế nào?","type":"choice","choices":["Bảng có 4 cột","Có 4 bạn tên Mai","Mai ở tổ 4","Mai có 4 sách theo bảng"],"correct":[3],"why":"Cần đọc đồng thời nhãn hàng và cột."},{"id":"T6-B12-C10","prompt":"Muốn bỏ toàn bộ trường “Số điện thoại”, dùng thao tác nào?","type":"choice","choices":["Xóa cột đó","Chỉ đổi màu cột","Xóa hàng cuối","Gộp với cột Họ tên"],"correct":[0],"why":"Một trường chiếm toàn bộ một cột."}]},{"goal":"Tạo, nhập và chỉnh bảng.","text":"Chọn số hàng, số cột và bố trí ô theo yêu cầu.","tasks":[{"id":"T6-B12-C11","prompt":"Có ba bạn, mỗi bạn ghi tên, tổ và số sách. Tính cả tiêu đề, tạo bảng nào?","type":"choice","choices":["3 cột, 4 hàng","3 cột, 3 hàng","4 cột, 3 hàng","4 cột, 4 hàng"],"correct":[0],"why":"Ba trường, ba bản ghi, một hàng tiêu đề."},{"id":"T6-B12-C12","prompt":"Bảng 3 cột cần thêm hàng trên cùng để đặt một tên chung. Làm gì?","type":"choice","choices":["Tạo ba bảng một cột","Xóa ba cột trước","Chèn hàng trên, chọn ba ô của hàng mới rồi gộp","Gộp các ô dữ liệu dưới cùng"],"correct":[2],"why":"Tên chung có thể nằm trong một ô phủ cả hàng."},{"id":"T6-B12-C13","prompt":"Tên dài bị xuống nhiều dòng trong cột hẹp, cột bên cạnh còn dư. Sửa gì?","type":"choice","choices":["Đổi tên tệp","Điều chỉnh độ rộng hai cột phù hợp","Xóa bớt tên","Thêm hàng trắng cho mọi người"],"correct":[1],"why":"Điều chỉnh kích thước để giữ dữ liệu và dễ đọc."},{"id":"T6-B12-C14","prompt":"Tạo bảng ba cột Tên, Tổ, Sách với hai dòng An–1–3 và Bình–2–5. Ghi lại ô ở hàng Bình, cột Sách.","type":"practice","rubric":["Đủ bảng và dữ liệu.","Đọc đúng 5."]},{"id":"T6-B12-C15","prompt":"Thêm một hàng dữ liệu cho Chi–1–4 ở cuối bảng có tiêu đề và thêm cột Ghi chú. Lưu bản mới.","type":"practice","rubric":["Thêm hàng đúng.","Thêm cột đúng.","Lưu được tệp."]}]},{"goal":"Phân tích lỗi cấu trúc và nội dung.","text":"Kiểm tra liệu chỉnh sửa có làm mất hàng, cột hoặc ý nghĩa dữ liệu.","tasks":[{"id":"T6-B12-C16","prompt":"Bảng thiếu bạn Chi, nhưng ba trường hiện có đã đủ. Sửa gì?","type":"choice","choices":["Gộp tên Chi vào hàng An","Thêm một cột mang tên Chi","Xóa tiêu đề","Thêm một hàng dữ liệu cho Chi"],"correct":[3],"why":"Thêm bản ghi, không thêm trường."},{"id":"T6-B12-C17","prompt":"Sau khi gộp, tiêu đề của từng cột biến mất vì chọn nhầm hàng. Sửa thế nào?","type":"choice","choices":["Gộp thêm toàn bộ bảng","Nhập mọi giá trị vào ô đầu","Đổi màu hàng dữ liệu","Hoàn tác, chèn hàng riêng rồi chỉ gộp hàng đó"],"correct":[3],"why":"Giữ hàng tên cột và tạo hàng tên bảng riêng."},{"id":"T6-B12-C18","prompt":"Sau khi xóa một ô, các giá trị trên hàng bị dịch và gắn nhầm tên cột. Sửa trước tiên thế nào?","type":"choice","choices":["Hoàn tác, đối chiếu nhãn cột rồi xóa nội dung ô nếu chỉ cần làm trống","Xóa hàng tiêu đề","Xóa toàn bộ cột","Điền đại số vào các ô"],"correct":[0],"why":"Xóa nội dung khác với xóa ô và dịch các ô."},{"id":"T6-B12-C19","prompt":"Bảng có hai hàng tiêu đề giống nhau và một bạn bị thiếu. Nêu cách sửa mà vẫn giữ một hàng tiêu đề.","type":"practice","rubric":["Xóa hàng tiêu đề lặp.","Thêm một hàng dữ liệu đủ các trường cho bạn thiếu."]},{"id":"T6-B12-C20","prompt":"Bảng in bị cắt cột Ghi chú ở mép phải. Nêu cách chỉnh độ rộng hoặc hướng trang và cách xác nhận sửa thành công.","type":"practice","rubric":["Chỉnh hợp lý mà giữ dữ liệu.","Xem trước xác nhận đủ cột và đọc được."]}]},{"goal":"Thiết kế bảng để tra cứu và so sánh.","text":"Chọn cấu trúc đáp ứng yêu cầu và kiểm tra dữ liệu bằng một phép đọc.","tasks":[{"id":"T6-B12-C21","prompt":"Cần theo dõi số sách theo từng tổ trong hai tuần. Cấu trúc nào dễ so sánh?","type":"choice","choices":["Mỗi tuần chỉ ghi tên tệp","Hàng theo tổ, cột Tổ, Tuần 1, Tuần 2","Hai số đặt ngẫu nhiên cạnh tên tổ","Một ô chứa tất cả số không nhãn"],"correct":[1],"why":"Các cột theo tuần cho phép so cùng tổ."},{"id":"T6-B12-C22","prompt":"Lập danh sách phát sách, cần thấy nhanh bạn nào chưa nhận. Thêm trường nào hữu ích nhất?","type":"choice","choices":["Màu bìa tệp","Tên máy in","Trạng thái nhận","Kích thước màn hình"],"correct":[2],"why":"Trạng thái trả lời trực tiếp câu hỏi."},{"id":"T6-B12-C23","prompt":"Hai tổ có cùng số sách tuần 1. Muốn biết tổ nào tăng nhiều hơn, cần gì?","type":"choice","choices":["Chỉ lấy số tuần 1","Chỉ so tên tổ","Đọc đủ số của cả hai tuần rồi so mức tăng","Chỉ nhìn hàng cuối"],"correct":[2],"why":"Mức tăng là số tuần 2 trừ tuần 1."},{"id":"T6-B12-C24","prompt":"Tạo bảng cho tổ 1 có 7 và 10 sách, tổ 2 có 8 và 9 sách theo tuần 1, tuần 2. Cho biết tổ nào tăng nhiều hơn.","type":"practice","rubric":["Cột và hàng đúng.","Dữ liệu đúng.","Tổ 1 tăng 3, tổ 2 tăng 1."]},{"id":"T6-B12-C25","prompt":"Thiết kế bảng lịch trực nhật cho hai ngày, mỗi ngày hai nhiệm vụ và một người phụ trách cho mỗi nhiệm vụ. Nêu cách tìm người làm một nhiệm vụ cụ thể.","type":"practice","rubric":["Trường Ngày, Nhiệm vụ, Người phụ trách hoặc cấu trúc tương đương.","Đủ bốn nhiệm vụ và người.","Chỉ đúng cách tra theo ngày và việc."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=12;
+const BANK={"12":{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57","stages":[{"goal":"Nhận diện hàng, cột, ô và công dụng của bảng.","study":{"points":["Bảng gồm hàng, cột và ô. Một ô nằm tại giao điểm của một hàng và một cột.","Tiêu đề cột cho biết loại dữ liệu, như Tên, Tổ hay Số sách. Mỗi hàng thường là một bản ghi.","Dùng lệnh Chèn bảng để tạo bảng. Có thể gộp các ô liền nhau thành một ô khi cần tiêu đề chung."],"example":"Trong bảng mượn sách, ô ở hàng Mai và cột Số sách ghi số sách của Mai."},"tasks":[{"id":"T6-B12-C01","prompt":"Ô trong bảng là gì?","type":"choice","choices":["Toàn bộ một hàng","Giao của một hàng và một cột","Toàn bộ một cột","Tên của cả bảng"],"correct":[1],"why":"Mỗi ô có một vị trí hàng và cột."},{"id":"T6-B12-C02","prompt":"Bảng nào thích hợp nhất để so sánh điểm theo môn của nhiều bạn?","type":"choice","choices":["Danh sách chỉ có tên bạn","Một đoạn không có tên môn","Bảng có hàng theo bạn và cột theo môn","Một ảnh lớp không có số liệu"],"correct":[2],"why":"Các cột chung giúp so sánh cùng môn."},{"id":"T6-B12-C03","prompt":"Hàng đầu ghi “Họ tên” và “Tổ” có tác dụng gì?","type":"choice","choices":["Chỉ đánh số trang","Đặt tên cho các cột","Gộp toàn bộ dữ liệu","Xóa cột"],"correct":[1],"why":"Tên cột giúp đọc đúng ý nghĩa của ô bên dưới."},{"id":"T6-B12-C04","prompt":"Muốn thêm một bảng vào văn bản, dùng nhóm lệnh nào?","type":"choice","choices":["In văn bản","Đổi hướng trang","Chèn bảng","Thay thế từ"],"correct":[2],"why":"Lệnh chèn bảng tạo các ô."},{"id":"T6-B12-C05","prompt":"Chọn nhiều ô liền nhau rồi hợp thành một ô gọi là gì?","type":"choice","choices":["Xóa hàng","Tách trang","Chèn cột","Gộp ô"],"correct":[3],"why":"Gộp ô thay nhóm ô bằng một ô chung."}]},{"goal":"Đọc cấu trúc và chọn thao tác.","study":{"points":["Đếm riêng hàng tiêu đề và hàng dữ liệu. Nếu có một tiêu đề và bốn bạn, cần năm hàng.","Thêm một người thường cần thêm hàng. Thêm một loại thông tin thường cần thêm cột.","Khi đọc, chỉ đúng hàng của đối tượng và cột của thuộc tính. Xóa cột sẽ bỏ thông tin của cột đó ở mọi hàng."],"example":"Bảng có hai cột Tên và Tổ. Muốn ghi thêm số sách cho từng bạn, thêm một cột “Số sách”."},"tasks":[{"id":"T6-B12-C06","prompt":"Bảng có ba cột: Tên, Tổ, Số sách. Mỗi bạn nằm ở đâu?","type":"choice","choices":["Một hàng dữ liệu","Ba bảng riêng","Chỉ một ô tiêu đề","Một cột mới"],"correct":[0],"why":"Mỗi hàng lưu một bản ghi."},{"id":"T6-B12-C07","prompt":"Có bốn bạn và cần một hàng tiêu đề. Tối thiểu mấy hàng?","type":"choice","choices":["5","8","4","3"],"correct":[0],"why":"Bốn hàng dữ liệu cộng một hàng tiêu đề."},{"id":"T6-B12-C08","prompt":"Muốn thêm trường “Ghi chú” cho mọi bạn thì thêm gì?","type":"choice","choices":["Một hàng","Một cột","Một trang trống","Một tiêu đề phụ ngoài bảng"],"correct":[1],"why":"Trường mới ứng với một cột."},{"id":"T6-B12-C09","prompt":"Bảng ghi hàng Mai, cột Số sách = 4. Đọc thế nào?","type":"choice","choices":["Bảng có 4 cột","Có 4 bạn tên Mai","Mai ở tổ 4","Mai có 4 sách theo bảng"],"correct":[3],"why":"Cần đọc đồng thời nhãn hàng và cột."},{"id":"T6-B12-C10","prompt":"Muốn bỏ toàn bộ trường “Số điện thoại”, dùng thao tác nào?","type":"choice","choices":["Xóa cột đó","Chỉ đổi màu cột","Xóa hàng cuối","Gộp với cột Họ tên"],"correct":[0],"why":"Một trường chiếm toàn bộ một cột."}]},{"goal":"Tạo, nhập và chỉnh bảng.","study":{"points":["Trước khi chèn, tính số hàng và số cột cần có. Mỗi tiêu đề cột cần một ô ở hàng tiêu đề.","Nếu cần tên chung trên đầu bảng, chèn một hàng riêng rồi gộp các ô của hàng đó. Giữ nguyên các tiêu đề cột bên dưới.","Điều chỉnh độ rộng cột để tên và số liệu dễ đọc. Giữ dữ liệu đúng hàng, đúng cột."],"example":"Ba bạn, mỗi bạn có Tên, Tổ và Số sách. Cần ba cột và bốn hàng nếu có một hàng tiêu đề."},"tasks":[{"id":"T6-B12-C11","prompt":"Có ba bạn, mỗi bạn ghi tên, tổ và số sách. Tính cả tiêu đề, tạo bảng nào?","type":"choice","choices":["3 cột, 4 hàng","3 cột, 3 hàng","4 cột, 3 hàng","4 cột, 4 hàng"],"correct":[0],"why":"Ba trường, ba bản ghi, một hàng tiêu đề."},{"id":"T6-B12-C12","prompt":"Bảng 3 cột cần thêm hàng trên cùng để đặt một tên chung. Làm gì?","type":"choice","choices":["Tạo ba bảng một cột","Xóa ba cột trước","Chèn hàng trên, chọn ba ô của hàng mới rồi gộp","Gộp các ô dữ liệu dưới cùng"],"correct":[2],"why":"Tên chung có thể nằm trong một ô phủ cả hàng."},{"id":"T6-B12-C13","prompt":"Tên dài bị xuống nhiều dòng trong cột hẹp, cột bên cạnh còn dư. Sửa gì?","type":"choice","choices":["Đổi tên tệp","Điều chỉnh độ rộng hai cột phù hợp","Xóa bớt tên","Thêm hàng trắng cho mọi người"],"correct":[1],"why":"Điều chỉnh kích thước để giữ dữ liệu và dễ đọc."},{"id":"T6-B12-C14","prompt":"Tạo bảng ba cột Tên, Tổ, Sách với hai dòng An–1–3 và Bình–2–5. Ghi lại ô ở hàng Bình, cột Sách.","type":"practice","rubric":["Đủ bảng và dữ liệu.","Đọc đúng 5."]},{"id":"T6-B12-C15","prompt":"Thêm một hàng dữ liệu cho Chi–1–4 ở cuối bảng có tiêu đề và thêm cột Ghi chú. Lưu bản mới.","type":"practice","rubric":["Thêm hàng đúng.","Thêm cột đúng.","Lưu được tệp."]}]},{"goal":"Phân tích lỗi cấu trúc và nội dung.","study":{"points":["Nếu thiếu một bản ghi nhưng đủ loại thông tin, thêm hàng thay vì thêm cột. Xóa dữ liệu trong ô khác với xóa ô làm các giá trị bị dịch.","Nếu gộp nhầm, hoàn tác rồi chọn đúng các ô. Sau thao tác, so dữ liệu với nhãn cột để phát hiện lệch.","Khi bảng in bị cắt, kiểm tra độ rộng cột, lề và hướng trang trong bản xem trước."],"example":"Nếu hai ô ở hàng tiêu đề bị gộp nhầm, hoàn tác. Chèn hàng riêng phía trên nếu em cần một tiêu đề chung."},"tasks":[{"id":"T6-B12-C16","prompt":"Bảng thiếu bạn Chi, nhưng ba trường hiện có đã đủ. Sửa gì?","type":"choice","choices":["Gộp tên Chi vào hàng An","Thêm một cột mang tên Chi","Xóa tiêu đề","Thêm một hàng dữ liệu cho Chi"],"correct":[3],"why":"Thêm bản ghi, không thêm trường."},{"id":"T6-B12-C17","prompt":"Sau khi gộp, tiêu đề của từng cột biến mất vì chọn nhầm hàng. Sửa thế nào?","type":"choice","choices":["Gộp thêm toàn bộ bảng","Nhập mọi giá trị vào ô đầu","Đổi màu hàng dữ liệu","Hoàn tác, chèn hàng riêng rồi chỉ gộp hàng đó"],"correct":[3],"why":"Giữ hàng tên cột và tạo hàng tên bảng riêng."},{"id":"T6-B12-C18","prompt":"Sau khi xóa một ô, các giá trị trên hàng bị dịch và gắn nhầm tên cột. Sửa trước tiên thế nào?","type":"choice","choices":["Hoàn tác, đối chiếu nhãn cột rồi xóa nội dung ô nếu chỉ cần làm trống","Xóa hàng tiêu đề","Xóa toàn bộ cột","Điền đại số vào các ô"],"correct":[0],"why":"Xóa nội dung khác với xóa ô và dịch các ô."},{"id":"T6-B12-C19","prompt":"Bảng có hai hàng tiêu đề giống nhau và một bạn bị thiếu. Nêu cách sửa mà vẫn giữ một hàng tiêu đề.","type":"practice","rubric":["Xóa hàng tiêu đề lặp.","Thêm một hàng dữ liệu đủ các trường cho bạn thiếu."]},{"id":"T6-B12-C20","prompt":"Bảng in bị cắt cột Ghi chú ở mép phải. Nêu cách chỉnh độ rộng hoặc hướng trang và cách xác nhận sửa thành công.","type":"practice","rubric":["Chỉnh hợp lý mà giữ dữ liệu.","Xem trước xác nhận đủ cột và đọc được."]}]},{"goal":"Thiết kế bảng để tra cứu và so sánh.","study":{"points":["Thiết kế bảng theo câu hỏi em muốn trả lời. Để so theo thời gian, dùng cột riêng cho từng tuần hoặc ghi thời điểm rõ ràng.","Thêm cột trạng thái nếu cần tìm người đã nhận hoặc chưa nhận. Dùng nhãn nhất quán để dễ so sánh.","Sau khi nhập, kiểm tra vài ô bằng tên hàng và cột. Muốn biết tăng bao nhiêu, lấy giá trị sau trừ giá trị trước."],"example":"Tổ 1 có 7 sách tuần trước và 10 sách tuần này. Mức tăng là 3 sách. Hãy đặt hai số ở hai cột có nhãn rõ."},"tasks":[{"id":"T6-B12-C21","prompt":"Cần theo dõi số sách theo từng tổ trong hai tuần. Cấu trúc nào dễ so sánh?","type":"choice","choices":["Mỗi tuần chỉ ghi tên tệp","Hàng theo tổ, cột Tổ, Tuần 1, Tuần 2","Hai số đặt ngẫu nhiên cạnh tên tổ","Một ô chứa tất cả số không nhãn"],"correct":[1],"why":"Các cột theo tuần cho phép so cùng tổ."},{"id":"T6-B12-C22","prompt":"Lập danh sách phát sách, cần thấy nhanh bạn nào chưa nhận. Thêm trường nào hữu ích nhất?","type":"choice","choices":["Màu bìa tệp","Tên máy in","Trạng thái nhận","Kích thước màn hình"],"correct":[2],"why":"Trạng thái trả lời trực tiếp câu hỏi."},{"id":"T6-B12-C23","prompt":"Hai tổ có cùng số sách tuần 1. Muốn biết tổ nào tăng nhiều hơn, cần gì?","type":"choice","choices":["Chỉ lấy số tuần 1","Chỉ so tên tổ","Đọc đủ số của cả hai tuần rồi so mức tăng","Chỉ nhìn hàng cuối"],"correct":[2],"why":"Mức tăng là số tuần 2 trừ tuần 1."},{"id":"T6-B12-C24","prompt":"Tạo bảng cho tổ 1 có 7 và 10 sách, tổ 2 có 8 và 9 sách theo tuần 1, tuần 2. Cho biết tổ nào tăng nhiều hơn.","type":"practice","rubric":["Cột và hàng đúng.","Dữ liệu đúng.","Tổ 1 tăng 3, tổ 2 tăng 1."]},{"id":"T6-B12-C25","prompt":"Thiết kế bảng lịch trực nhật cho hai ngày, mỗi ngày hai nhiệm vụ và một người phụ trách cho mỗi nhiệm vụ. Nêu cách tìm người làm một nhiệm vụ cụ thể.","type":"practice","rubric":["Trường Ngày, Nhiệm vụ, Người phụ trách hoặc cấu trúc tương đương.","Đủ bốn nhiệm vụ và người.","Chỉ đúng cách tra theo ngày và việc."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=12;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});
