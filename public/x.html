@@ -1217,7 +1217,7 @@
 
         <div id="empty">
 
-            👨‍🎓 Chưa có học sinh trong lớp.
+            👨‍🎓 Chưa có học sinh trực tuyến.
 
             <br><br>
 
@@ -1257,7 +1257,7 @@
 
     </div>
 
-    <aside id="rosterPanel" aria-label="Danh sách sĩ số"><div class="rosterTop"><strong>👥 Danh sách học sinh</strong><button id="rosterClose" type="button" aria-label="Đóng">✕</button></div><div class="rosterStats"><span id="rosterTotal">0 sĩ số</span><span id="rosterOnline">0 đã vào</span><span id="rosterMissing">0 chưa vào</span></div><input id="rosterSearch" placeholder="Tìm học sinh..." aria-label="Tìm học sinh"><div class="rosterTabs"><button data-roster-filter="missing" class="selected">Chưa vào</button><button data-roster-filter="online">Đã vào</button><button data-roster-filter="all">Tất cả</button></div><div id="rosterList"></div><small id="rosterStatus"></small></aside><div id="rosterShade"></div>
+    <aside id="rosterPanel" aria-label="Danh sách sĩ số"><div class="rosterTop"><strong>👥 Danh sách học sinh</strong><button id="rosterClose" type="button" aria-label="Đóng">✕</button></div><div class="rosterStats"><span id="rosterTotal">0 sĩ số</span><span id="rosterOnline">0 trực tuyến</span><span id="rosterPaused" hidden></span><span id="rosterMissing">0 chưa vào</span></div><input id="rosterSearch" placeholder="Tìm học sinh..." aria-label="Tìm học sinh"><div class="rosterTabs"><button data-roster-filter="missing" class="selected">Chưa vào</button><button data-roster-filter="online">Trực tuyến</button><button data-roster-filter="all">Tất cả</button></div><div id="rosterList"></div><small id="rosterStatus"></small></aside><div id="rosterShade"></div>
     <!-- ==========================================
          SOCKET.IO
 
@@ -1274,7 +1274,7 @@
     =========================================== -->
 
     <script
-        src="/js/teacher.js?v=mobile-device1"
+        src="/js/teacher.js?v=live-attendance1"
     ></script>
 
     <script
@@ -1303,12 +1303,15 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.con
 function render(){
     const exam=isMixedRoom();
     const online=students.filter(s=>s.online).length;
+    const paused=students.filter(s=>s.connectionPaused).length;
     const total=students.length;
-    // EXAM has no assigned class roster. Count only students actually connected.
     document.getElementById("rosterBadge").textContent=exam?String(online):online+"/"+total;
-    document.getElementById("rosterTotal").textContent=exam?online+" tham gia":total+" sĩ số";
-    document.getElementById("rosterOnline").textContent=exam?online+" trực tuyến":online+" đã vào";
-    document.getElementById("rosterMissing").textContent=(total-online)+" chưa vào";
+    document.getElementById("rosterTotal").textContent=exam?total+" tham gia":total+" sĩ số";
+    document.getElementById("rosterOnline").textContent=online+" trực tuyến";
+    const pausedCount=document.getElementById("rosterPaused");
+    pausedCount.textContent=paused+" tạm mất kết nối";
+    pausedCount.hidden=paused===0;
+    document.getElementById("rosterMissing").textContent=(total-online-paused)+" chưa vào";
     document.getElementById("rosterMissing").hidden=exam;
     tabs.hidden=exam;
     const title=panel.querySelector(".rosterTop strong");
@@ -1316,13 +1319,13 @@ function render(){
     document.querySelectorAll("[data-roster-filter]").forEach(b=>b.classList.toggle("selected",b.dataset.rosterFilter===filter));
     const q=search.value.trim().toLocaleLowerCase("vi");
     list.replaceChildren();
-    const visible=students.filter(s=>(exam||filter==="all"||(filter==="online"?s.online:!s.online))&&
+    const visible=students.filter(s=>(exam||filter==="all"||(filter==="online"?s.online:!s.online&&!s.connectionPaused))&&
         (String(s.full_name||"")+" "+String(s.student_code||"")+" "+String(s.original_class||"")).toLocaleLowerCase("vi").includes(q));
     for(const s of visible){
         const item=document.createElement("div");item.className="rosterItem";
         const name=document.createElement("span");name.className="rosterPerson";
         const fullName=document.createElement("span");
-        const device=s.online?studentDeviceLabel(s.device,s.screenReady):"";
+        const device=(s.online||s.connectionPaused)?studentDeviceLabel(s.device,s.screenReady):"";
         fullName.textContent=s.full_name||s.student_code||"Học sinh";
         if(device){
             const badge=document.createElement("span");badge.className="student-device-label";badge.textContent=device;
@@ -1333,7 +1336,7 @@ function render(){
         details.textContent=[s.student_code||"",exam&&s.original_class?"Lớp "+s.original_class:""].filter(Boolean).join(" · ");
         if(details.textContent)name.append(details);
         const state=document.createElement("small");state.className=s.online?"online":"missing";
-        state.textContent=s.connectionPaused?"● Tạm mất kết nối":s.online?(exam?"● Đang tham gia":"● Đã vào"):"○ Chưa vào";
+        state.textContent=s.connectionPaused?"● Tạm mất kết nối":s.online?"● Trực tuyến":"○ Chưa vào";
         item.append(name,state);list.append(item);
     }
     if(!visible.length){
@@ -1359,7 +1362,7 @@ async function refresh(){
         }
         if(lastClass!==cls)return; // Ignore a response for a previously selected class.
         students=Array.isArray(data.students)?data.students:[];
-        status.textContent=["EXAM","CLB"].includes(cls)?"Danh sách học sinh đang trực tuyến · Tự cập nhật mỗi 5 giây":"Tự cập nhật mỗi 5 giây";
+        status.textContent="Tự cập nhật mỗi 5 giây";
         render();
     }catch(e){status.textContent="Không tải được danh sách: "+e.message}finally{loading=false}
 }

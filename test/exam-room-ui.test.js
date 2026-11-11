@@ -97,3 +97,29 @@ test("teacher device badge identifies an unshared iPad, iPhone or tablet and hid
     context.setStudentDeviceBadge("1", "", false);
     assert.equal(badge.hidden, true);
 });
+
+
+test("the teacher grid drops a disconnected student silently and shows them again on reconnect", () => {
+    const source = fs.readFileSync(path.join(__dirname, "..", "public", "js", "teacher.js"), "utf8");
+    const events = new Map(), studentNames = new Map(), cards = new Set();
+    const context = {
+        console: {log() {}}, socket: {on: (event, callback) => events.set(event, callback)},
+        studentNames, teacherStream: null, updateCount() {},
+        updateStudentCard(student) {studentNames.set(student.id, student.name);cards.add(student.id);},
+        removeStudent(id) {studentNames.delete(id);cards.delete(id);},
+        showStudentLeftAlert() {assert.fail("a transport pause must never report an exit");}
+    };
+    const start = source.indexOf('socket.on("student-connection-paused"');
+    const end = source.indexOf('socket.on(\n    "student-screen-ready"', start);
+    vm.runInNewContext(source.slice(start, end), context);
+    const student = {id: "before", name: "HS"};
+    events.get("student-list")([student]);
+    assert.deepEqual([...cards], ["before"]);
+    events.get("student-connection-paused")(student);
+    assert.equal(cards.size, 0);
+    assert.equal(studentNames.size, 0);
+    events.get("student-list")([{...student, connectionPaused: true}]);
+    assert.equal(cards.size, 0);
+    events.get("student-joined")({...student, id: "after", replacesId: "before"});
+    assert.deepEqual([...cards], ["after"]);
+});

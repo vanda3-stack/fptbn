@@ -231,16 +231,8 @@ function updateStudentCard(student, screenReady = student.screenReady) {
 // DANH SÁCH HS HIỆN TẠI
 // =====================================================
 
-function markStudentConnectionPaused({id, device}) {
-    setStudentDeviceBadge(id, device, false);
-    clearStudentRetry(id);
-    clearConnectTimeout(id);
-    closeStudentPeer(id);
-    closeTeacherPeer(id);
-    setStudentStatus(id, "🟡 Tạm mất kết nối · vẫn giữ phiên học", false);
-}
-
-socket.on("student-connection-paused", markStudentConnectionPaused);
+// Suspended sessions remain on the server. The grid represents live connections.
+socket.on("student-connection-paused", ({id}) => removeStudent(id));
 socket.on("student-removed", ({id}) => removeStudent(id));
 
 socket.on(
@@ -253,20 +245,16 @@ socket.on(
         );
 
 
-        const present = new Set(list.map(student => student.id));
+        const connected = list.filter(student => !student.connectionPaused);
+        const present = new Set(connected.map(student => student.id));
         for (const id of studentNames.keys()) {
             if (!present.has(id)) removeStudent(id);
         }
 
-        list.forEach(
+        connected.forEach(
             student => {
 
                 updateStudentCard(student);
-
-                if (student.connectionPaused) {
-                    markStudentConnectionPaused(student);
-                    return;
-                }
 
                 // =====================================
                 // HS ĐÃ SHARE

@@ -4732,7 +4732,7 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         if (classCode === "EXAM" || classCode === "CLB") {
             const roomStudents = Array.from(students.values())
                 .filter(x => x.classCode === classCode)
-                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true,connectionPaused:x.connectionPaused === true,screenReady:x.screenReady === true,device:x.device || ""}));
+                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:x.connectionPaused !== true,connectionPaused:x.connectionPaused === true,screenReady:x.screenReady === true,device:x.device || ""}));
             return res.json({success:true,students:roomStudents});
         }
 
@@ -4748,7 +4748,7 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         const classSessions = new Map(getStudentList(classCode).map(x => [Number(x.studentId), x]));
         res.json({success:true,students:rosterStudents.map(x => {
             const session = classSessions.get(Number(x.id));
-            return {...x, online: Boolean(session), connectionPaused: session?.connectionPaused === true, screenReady: session?.screenReady === true, device: session?.device || ""};
+            return {...x, online: Boolean(session && !session.connectionPaused), connectionPaused: session?.connectionPaused === true, screenReady: session?.screenReady === true, device: session?.device || ""};
         })});
     } catch (error) {
         console.error("CLASS ROSTER ERROR:",error);

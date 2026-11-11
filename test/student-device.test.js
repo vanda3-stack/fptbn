@@ -27,6 +27,7 @@ function roster({exam = false, token = 'valid'} = {}) {
         teacherLoginTokens: new Map([['valid', {}]]), normalizeClassCode: value => value,
         students: new Map([
             ['exam', {studentId: 1, studentCode: 'FBN12345', name: 'HS', classCode: 'EXAM', device: 'iPad'}],
+            ['exam-paused', {studentId: 2, classCode: 'EXAM', device: 'iPhone', connectionPaused: true}],
             ['class', {studentId: 1, classCode: '9A3', device: 'iPad', connectionPaused: true}],
             ['other', {studentId: 2, classCode: '9A4', device: 'iPhone'}],
         ]),
@@ -39,10 +40,10 @@ function roster({exam = false, token = 'valid'} = {}) {
     return handler({headers: {'x-teacher-token': token}, query: {classCode: exam ? 'EXAM' : '9A3'}}, response).then(() => ({result, code}));
 }
 
-test('class roster retains the paused iPad session and excludes devices from other classes', async () => {
+test('class roster keeps paused devices without counting them as online', async () => {
     const {result} = await roster();
     assert.equal(result.students[0].device, 'iPad');
-    assert.equal(result.students[0].online, true);
+    assert.equal(result.students[0].online, false);
     assert.equal(result.students[0].connectionPaused, true);
     assert.equal(result.students[1].device, '');
     assert.equal(result.students[1].online, false);
@@ -52,5 +53,7 @@ test('exam roster includes device hints and still requires a teacher session', a
     const {result} = await roster({exam: true});
     assert.equal(result.students[0].device, 'iPad');
     assert.equal(result.students[0].online, true);
+    assert.equal(result.students[1].online, false);
+    assert.equal(result.students[1].connectionPaused, true);
     assert.equal((await roster({token: ''})).code, 401);
 });
