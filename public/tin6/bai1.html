@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"1":{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7","stages":[{"goal":"Nhận ra thông tin, dữ liệu và vật mang tin.","text":"Tách nội dung hiểu được khỏi cách ghi và vật chứa nội dung.","tasks":[{"id":"T6-B01-C01","prompt":"Thứ gì là vật mang tin?","type":"choice","choices":["Tấm biển tên lớp","Tên gọi “lớp”","Ý hiểu rằng đây là lớp 6A","Dòng chữ “6A”"],"correct":[0],"why":"Tấm biển là vật chứa dòng chữ."},{"id":"T6-B01-C02","prompt":"Dữ liệu nào được biểu diễn bằng âm thanh?","type":"choice","choices":["Bản ghi tiếng trống","Ảnh chiếc trống","Số lần gõ ghi trên bảng","Dòng chữ “đến giờ vào lớp”"],"correct":[0],"why":"Bản ghi lưu tín hiệu âm thanh."},{"id":"T6-B01-C03","prompt":"Số 29 trên nhiệt kế điện tử thuộc loại nào nếu xét riêng con số hiển thị?","type":"choice","choices":["Một nhận xét về thời tiết","Thiết bị lưu trữ","Vật mang tin","Dữ liệu"],"correct":[3],"why":"Con số là dữ liệu; ý nghĩa còn phụ thuộc đơn vị và ngữ cảnh."},{"id":"T6-B01-C04","prompt":"Thông tin giúp em làm việc gì khi xem thời khóa biểu?","type":"choice","choices":["Tự thay đổi lịch học","Biết cần chuẩn bị sách môn nào","Tăng số tiết trên giấy","Tự xác nhận lớp khác có cùng lịch"],"correct":[1],"why":"Hiểu lịch giúp chuẩn bị đúng sách."},{"id":"T6-B01-C05","prompt":"Dòng chữ “Lối ra” trên biển gồm dữ liệu dạng nào?","type":"choice","choices":["Mùi","Âm thanh","Chữ","Video"],"correct":[2],"why":"Hai từ được biểu diễn bằng chữ."}]},{"goal":"Phân biệt ba vai trò trong ví dụ.","text":"Xem lần lượt vật chứa, dấu hiệu ghi được và điều người nhận hiểu.","tasks":[{"id":"T6-B01-C06","prompt":"Trên tờ giấy có ghi “Thư viện mở lúc 8 giờ”. Vật mang tin và thông tin lần lượt là gì?","type":"choice","choices":["Dòng chữ; tờ giấy","Thư viện; con số 8","Tờ giấy; thư viện mở lúc 8 giờ","Giờ mở cửa; dòng chữ"],"correct":[2],"why":"Giấy mang dòng chữ, người đọc hiểu giờ mở cửa."},{"id":"T6-B01-C07","prompt":"Ảnh và đoạn ghi âm đều báo trời đang mưa. Nhận xét nào đúng?","type":"choice","choices":["Cùng vật mang tin, chắc chắn khác thông tin","Cùng thông tin, khác dạng dữ liệu","Cùng dữ liệu vì cùng nói về mưa","Ảnh mới là dữ liệu, đoạn ghi âm không phải"],"correct":[1],"why":"Một nội dung có thể được biểu diễn bằng nhiều dạng."},{"id":"T6-B01-C08","prompt":"Cùng nhìn ảnh sân ướt, An nghĩ trời vừa mưa, Bình nghĩ sân vừa được tưới. Hai bạn có gì giống nhau?","type":"choice","choices":["Dữ liệu quan sát được","Kết luận về nguyên nhân","Mục đích chụp ảnh","Thông tin chắc chắn về thời tiết"],"correct":[0],"why":"Cùng ảnh nhưng hai cách suy luận khác nhau."},{"id":"T6-B01-C09","prompt":"Tờ lịch và bảng điện tử cùng ghi 12/11. Điều nào có thể thay đổi mà nội dung ngày vẫn giữ nguyên?","type":"choice","choices":["Số ngày được thông báo","Ngày được thông báo","Vật mang tin","Tháng của sự kiện"],"correct":[2],"why":"Đổi vật hiển thị không bắt buộc đổi nội dung."},{"id":"T6-B01-C10","prompt":"Nhìn thấy “6” trên một thẻ, vì sao chưa biết đó là số phòng hay số thứ tự?","type":"choice","choices":["Mỗi chữ số chỉ có một cách hiểu","Chữ số không thể là dữ liệu","Thẻ không thể chứa thông tin","Thiếu ngữ cảnh để hiểu con số"],"correct":[3],"why":"Cần biết thẻ dùng vào việc gì."}]},{"goal":"Áp dụng vào một tình huống cụ thể.","text":"Chọn dữ liệu đủ để người đọc quyết định.","tasks":[{"id":"T6-B01-C11","prompt":"Trên lịch lớp ghi “Thứ Tư: Tin học, phòng máy 2”. Em cần biết nơi đến. Chi tiết nào trả lời trực tiếp?","type":"choice","choices":["Vị trí của tờ lịch trên tường","Thứ Tư","Phòng máy 2","Tin học"],"correct":[2],"why":"Tên phòng cho biết nơi đến."},{"id":"T6-B01-C12","prompt":"Muốn giúp bạn không nghe được loa biết giờ họp, em có thể làm gì?","type":"choice","choices":["Chỉ nhắn “Có thông báo”","Ghi giờ họp thành chữ và gửi cho bạn","Gửi ảnh chiếc loa","Phát lại cùng âm thanh to hơn"],"correct":[1],"why":"Chữ biểu diễn giờ họp theo dạng bạn đọc được."},{"id":"T6-B01-C13","prompt":"Trên thẻ mượn sách ghi 15/11 ở cột “Hạn trả”. Đọc được thông tin nào?","type":"choice","choices":["Sách cần được trả vào hoặc trước 15/11","Thẻ được in ngày 15/11","Thư viện đóng cửa ngày 15/11","Sách được mượn đúng ngày 15/11"],"correct":[0],"why":"Tên cột giúp diễn giải ngày."},{"id":"T6-B01-C14","prompt":"Một bảng ở cổng ghi “Lớp 6B học phòng 203”. Chỉ ra vật mang tin, dữ liệu và thông tin giúp một bạn 6B đi đúng phòng.","type":"practice","rubric":["Bảng; dòng chữ có số 203; lớp 6B cần đến phòng 203."]},{"id":"T6-B01-C15","prompt":"Chuyển thông báo miệng “Tập trung lúc 7 giờ tại sân trường” thành tin nhắn. Giữ đủ chi tiết để bạn đến đúng nơi, đúng giờ.","type":"practice","rubric":["Viết thành tin nhắn; giữ 7 giờ; giữ sân trường."]}]},{"goal":"Phát hiện thiếu hoặc hiểu sai ngữ cảnh.","text":"Tìm chi tiết gây nhầm và chỉ ra cần kiểm tra gì.","tasks":[{"id":"T6-B01-C16","prompt":"Tờ giấy chỉ ghi “Nộp ngày 15”. Học sinh biết có hai môn cùng giao bài. Cần bổ sung gì để tránh nhầm bài và hạn?","type":"choice","choices":["Chỉ chữ “Nộp” in đậm","Tên bài hoặc môn và ngày, tháng đầy đủ","Chỉ màu giấy khác","Chỉ tên người viết"],"correct":[1],"why":"Thiếu cả đối tượng cần nộp và tháng."},{"id":"T6-B01-C17","prompt":"Bạn gọi tờ phiếu in “17 điểm” là dữ liệu số. Sửa thế nào?","type":"choice","choices":["Cả tờ phiếu lẫn 17 đều là thiết bị số","17 là vật mang tin; tờ phiếu là dữ liệu số","17 là thông tin về thời gian","Tờ phiếu là vật mang tin; 17 là dữ liệu số"],"correct":[3],"why":"Cần tách vật chứa khỏi giá trị ghi trên vật."},{"id":"T6-B01-C18","prompt":"Hai bảng ghi 24: một bảng đo nhiệt độ, một bảng đếm người. Vì sao không thể gộp thành hai phép đo giống nhau?","type":"choice","choices":["Hai số giống nhau thì bắt buộc cùng ý nghĩa","Chỉ bảng nhiệt độ là vật mang tin","Dữ liệu dạng số không dùng để đếm","Đơn vị và đối tượng đo khác nhau"],"correct":[3],"why":"Giá trị số giống nhau vẫn có thể mang ý nghĩa khác."},{"id":"T6-B01-C19","prompt":"Bạn đọc “25” trên tờ ghi chép và kết luận “lớp có 25 học sinh”. Chỉ ra điều chưa đủ và cách ghi để kết luận có căn cứ.","type":"practice","rubric":["Chỉ ra thiếu nhãn/ngữ cảnh.","Đề xuất ghi “Sĩ số lớp …: 25 học sinh” khi đã kiểm tra con số."]},{"id":"T6-B01-C20","prompt":"Tờ giấy ghi “họp thứ Sáu” nhưng loa thông báo “thứ Năm”. Nêu hai việc cần xác minh trước khi nhắn lại.","type":"practice","rubric":["Xác định hai thông báo có cùng lớp/sự kiện/ngày tuần không.","Hỏi người phụ trách hoặc đối chiếu thông báo mới nhất."]}]},{"goal":"Tạo thông báo và kiểm tra khả năng sử dụng.","text":"Kết hợp đối tượng, việc cần làm, thời gian và nơi chốn.","tasks":[{"id":"T6-B01-C21","prompt":"Lớp 6A đổi phòng tiết Tin thứ Hai từ 203 sang 205. Tin nào giúp người nhận hành động đúng?","type":"choice","choices":["Thứ Hai có phòng 205.","6A: tiết Tin thứ Hai chuyển từ phòng 203 sang 205.","Phòng 203 có thay đổi.","6A chuyển phòng; xem lại lịch cũ."],"correct":[1],"why":"Tin nêu đủ lớp, tiết, ngày và phòng mới."},{"id":"T6-B01-C22","prompt":"Hai nhóm dùng cùng phòng: nhóm 1 vào 8 giờ, nhóm 2 vào 9 giờ. Dạng ghi nào dễ kiểm tra nhất?","type":"choice","choices":["Bảng có cột Nhóm và Giờ, mỗi nhóm một hàng","Ghi tên nhóm ở tờ khác, không đánh dấu thứ tự","Chỉ gửi tên phòng","Ghi hai giờ trên một tờ không có tên nhóm"],"correct":[0],"why":"Bảng gắn từng giờ với đúng nhóm."},{"id":"T6-B01-C23","prompt":"Cần thông báo cho cả bạn khiếm thính và bạn khó đọc chữ nhỏ. Phương án nào phục vụ cả hai?","type":"choice","choices":["Chỉ phát tờ chữ nhỏ","Chỉ phát bản đọc","Dòng chữ lớn và bản đọc cùng nội dung","Chỉ gửi ảnh vật trang trí"],"correct":[2],"why":"Hai cách biểu diễn cùng thông tin giúp nhiều người tiếp nhận."},{"id":"T6-B01-C24","prompt":"Soạn một thông báo tập trung cho lớp 6C lúc 7 giờ 15 ngày 20/11 ở sân trường. Nêu vật hoặc phương tiện sẽ mang thông báo và một cách kiểm tra người nhận hiểu đúng.","type":"practice","rubric":["Đủ lớp, ngày, giờ, nơi.","Vật/phương tiện phù hợp.","Kiểm tra được giờ và nơi người nhận hiểu."]},{"id":"T6-B01-C25","prompt":"Một nhiệt kế hiển thị 38 °C. Viết hai cách biểu diễn cùng nội dung, rồi nêu vì sao cần ghi rõ đang đo thân nhiệt hay nhiệt độ ngoài trời.","type":"practice","rubric":["Biểu diễn thứ nhất; biểu diễn khác dạng; giải thích khác đối tượng làm đổi ý nghĩa của giá trị."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=1;
+const BANK={"1":{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7","stages":[{"goal":"Nhận ra thông tin, dữ liệu và vật mang tin.","study":{"points":["Thông tin là điều em hiểu được từ những gì nhìn, nghe hoặc đọc. Nó có thể giúp em trả lời một câu hỏi hoặc quyết định việc cần làm.","Dữ liệu là dạng biểu diễn thông tin, chẳng hạn số, chữ, hình ảnh hoặc âm thanh.","Vật mang tin là thứ chứa hoặc truyền tải dữ liệu, như tờ giấy, tấm biển hay bộ nhớ."],"example":"Trên tờ thông báo có dòng “Thư viện mở lúc 8 giờ”. Tờ giấy là vật mang tin, dòng chữ là dữ liệu, còn giờ mở cửa là thông tin em hiểu được."},"tasks":[{"id":"T6-B01-C01","prompt":"Thứ gì là vật mang tin?","type":"choice","choices":["Tấm biển tên lớp","Tên gọi “lớp”","Ý hiểu rằng đây là lớp 6A","Dòng chữ “6A”"],"correct":[0],"why":"Tấm biển là vật chứa dòng chữ."},{"id":"T6-B01-C02","prompt":"Dữ liệu nào được biểu diễn bằng âm thanh?","type":"choice","choices":["Bản ghi tiếng trống","Ảnh chiếc trống","Số lần gõ ghi trên bảng","Dòng chữ “đến giờ vào lớp”"],"correct":[0],"why":"Bản ghi lưu tín hiệu âm thanh."},{"id":"T6-B01-C03","prompt":"Số 29 trên nhiệt kế điện tử thuộc loại nào nếu xét riêng con số hiển thị?","type":"choice","choices":["Một nhận xét về thời tiết","Thiết bị lưu trữ","Vật mang tin","Dữ liệu"],"correct":[3],"why":"Con số là dữ liệu; ý nghĩa còn phụ thuộc đơn vị và ngữ cảnh."},{"id":"T6-B01-C04","prompt":"Thông tin giúp em làm việc gì khi xem thời khóa biểu?","type":"choice","choices":["Tự thay đổi lịch học","Biết cần chuẩn bị sách môn nào","Tăng số tiết trên giấy","Tự xác nhận lớp khác có cùng lịch"],"correct":[1],"why":"Hiểu lịch giúp chuẩn bị đúng sách."},{"id":"T6-B01-C05","prompt":"Dòng chữ “Lối ra” trên biển gồm dữ liệu dạng nào?","type":"choice","choices":["Mùi","Âm thanh","Chữ","Video"],"correct":[2],"why":"Hai từ được biểu diễn bằng chữ."}]},{"goal":"Phân biệt ba vai trò trong ví dụ.","study":{"points":["Cùng một thông tin có thể được biểu diễn bằng nhiều dạng dữ liệu. Một lịch học có thể được viết, đọc thành tiếng hoặc trình bày bằng hình.","Cùng một dữ liệu có thể được hiểu khác nhau nếu thiếu ngữ cảnh. Hãy tìm tên mục, đơn vị hoặc chú thích để xác định ý nghĩa.","Khi phân loại, hỏi lần lượt: vật nào chứa tin, dấu hiệu nào được ghi lại, và em hiểu được điều gì?"],"example":"Số 12 đứng một mình chưa cho biết gì về thời gian. Ghi “12 phút” cho biết thời lượng, còn “12 giờ trưa” cho biết thời điểm."},"tasks":[{"id":"T6-B01-C06","prompt":"Trên tờ giấy có ghi “Thư viện mở lúc 8 giờ”. Vật mang tin và thông tin lần lượt là gì?","type":"choice","choices":["Dòng chữ; tờ giấy","Thư viện; con số 8","Tờ giấy; thư viện mở lúc 8 giờ","Giờ mở cửa; dòng chữ"],"correct":[2],"why":"Giấy mang dòng chữ, người đọc hiểu giờ mở cửa."},{"id":"T6-B01-C07","prompt":"Ảnh và đoạn ghi âm đều báo trời đang mưa. Nhận xét nào đúng?","type":"choice","choices":["Cùng vật mang tin, chắc chắn khác thông tin","Cùng thông tin, khác dạng dữ liệu","Cùng dữ liệu vì cùng nói về mưa","Ảnh mới là dữ liệu, đoạn ghi âm không phải"],"correct":[1],"why":"Một nội dung có thể được biểu diễn bằng nhiều dạng."},{"id":"T6-B01-C08","prompt":"Cùng nhìn ảnh sân ướt, An nghĩ trời vừa mưa, Bình nghĩ sân vừa được tưới. Hai bạn có gì giống nhau?","type":"choice","choices":["Dữ liệu quan sát được","Kết luận về nguyên nhân","Mục đích chụp ảnh","Thông tin chắc chắn về thời tiết"],"correct":[0],"why":"Cùng ảnh nhưng hai cách suy luận khác nhau."},{"id":"T6-B01-C09","prompt":"Tờ lịch và bảng điện tử cùng ghi 12/11. Điều nào có thể thay đổi mà nội dung ngày vẫn giữ nguyên?","type":"choice","choices":["Số ngày được thông báo","Ngày được thông báo","Vật mang tin","Tháng của sự kiện"],"correct":[2],"why":"Đổi vật hiển thị không bắt buộc đổi nội dung."},{"id":"T6-B01-C10","prompt":"Nhìn thấy “6” trên một thẻ, vì sao chưa biết đó là số phòng hay số thứ tự?","type":"choice","choices":["Mỗi chữ số chỉ có một cách hiểu","Chữ số không thể là dữ liệu","Thẻ không thể chứa thông tin","Thiếu ngữ cảnh để hiểu con số"],"correct":[3],"why":"Cần biết thẻ dùng vào việc gì."}]},{"goal":"Áp dụng vào một tình huống cụ thể.","study":{"points":["Đọc cả nhãn và giá trị để lấy thông tin. Trong bảng, đối chiếu tên hàng với tên cột trước khi đọc ô giao nhau.","Thông tin có ích khi phù hợp với việc cần làm. Muốn tìm nơi học, em cần đọc tên phòng thay vì chỉ đọc tên môn.","Có thể chuyển dữ liệu sang dạng khác để người nhận dễ tiếp cận, miễn là giữ đúng nội dung."],"example":"Nếu loa báo “Họp lúc 9 giờ tại phòng 101”, em có thể viết lại đúng nội dung để bạn không nghe được loa vẫn biết nơi và giờ họp."},"tasks":[{"id":"T6-B01-C11","prompt":"Trên lịch lớp ghi “Thứ Tư: Tin học, phòng máy 2”. Em cần biết nơi đến. Chi tiết nào trả lời trực tiếp?","type":"choice","choices":["Vị trí của tờ lịch trên tường","Thứ Tư","Phòng máy 2","Tin học"],"correct":[2],"why":"Tên phòng cho biết nơi đến."},{"id":"T6-B01-C12","prompt":"Muốn giúp bạn không nghe được loa biết giờ họp, em có thể làm gì?","type":"choice","choices":["Chỉ nhắn “Có thông báo”","Ghi giờ họp thành chữ và gửi cho bạn","Gửi ảnh chiếc loa","Phát lại cùng âm thanh to hơn"],"correct":[1],"why":"Chữ biểu diễn giờ họp theo dạng bạn đọc được."},{"id":"T6-B01-C13","prompt":"Trên thẻ mượn sách ghi 15/11 ở cột “Hạn trả”. Đọc được thông tin nào?","type":"choice","choices":["Sách cần được trả vào hoặc trước 15/11","Thẻ được in ngày 15/11","Thư viện đóng cửa ngày 15/11","Sách được mượn đúng ngày 15/11"],"correct":[0],"why":"Tên cột giúp diễn giải ngày."},{"id":"T6-B01-C14","prompt":"Một bảng ở cổng ghi “Lớp 6B học phòng 203”. Chỉ ra vật mang tin, dữ liệu và thông tin giúp một bạn 6B đi đúng phòng.","type":"practice","rubric":["Bảng; dòng chữ có số 203; lớp 6B cần đến phòng 203."]},{"id":"T6-B01-C15","prompt":"Chuyển thông báo miệng “Tập trung lúc 7 giờ tại sân trường” thành tin nhắn. Giữ đủ chi tiết để bạn đến đúng nơi, đúng giờ.","type":"practice","rubric":["Viết thành tin nhắn; giữ 7 giờ; giữ sân trường."]}]},{"goal":"Phát hiện thiếu hoặc hiểu sai ngữ cảnh.","study":{"points":["Khi hai nguồn không khớp, so sánh người gửi, thời điểm và phạm vi áp dụng. Đừng chọn một nguồn chỉ vì em nhìn thấy nó trước.","Cùng một số có thể có nghĩa khác nhau khi đổi đơn vị hoặc đối tượng đo. Không nên bỏ nhãn khi chép dữ liệu.","Nếu dữ liệu thiếu, nêu phần cần xác nhận thay vì điền vào chỗ trống bằng suy đoán."],"example":"Tờ giấy chỉ ghi “Nộp ngày 15”. Em cần hỏi bài nào và ngày 15 của tháng nào trước khi ghi vào lịch."},"tasks":[{"id":"T6-B01-C16","prompt":"Tờ giấy chỉ ghi “Nộp ngày 15”. Học sinh biết có hai môn cùng giao bài. Cần bổ sung gì để tránh nhầm bài và hạn?","type":"choice","choices":["Chỉ chữ “Nộp” in đậm","Tên bài hoặc môn và ngày, tháng đầy đủ","Chỉ màu giấy khác","Chỉ tên người viết"],"correct":[1],"why":"Thiếu cả đối tượng cần nộp và tháng."},{"id":"T6-B01-C17","prompt":"Bạn gọi tờ phiếu in “17 điểm” là dữ liệu số. Sửa thế nào?","type":"choice","choices":["Cả tờ phiếu lẫn 17 đều là thiết bị số","17 là vật mang tin; tờ phiếu là dữ liệu số","17 là thông tin về thời gian","Tờ phiếu là vật mang tin; 17 là dữ liệu số"],"correct":[3],"why":"Cần tách vật chứa khỏi giá trị ghi trên vật."},{"id":"T6-B01-C18","prompt":"Hai bảng ghi 24: một bảng đo nhiệt độ, một bảng đếm người. Vì sao không thể gộp thành hai phép đo giống nhau?","type":"choice","choices":["Hai số giống nhau thì bắt buộc cùng ý nghĩa","Chỉ bảng nhiệt độ là vật mang tin","Dữ liệu dạng số không dùng để đếm","Đơn vị và đối tượng đo khác nhau"],"correct":[3],"why":"Giá trị số giống nhau vẫn có thể mang ý nghĩa khác."},{"id":"T6-B01-C19","prompt":"Bạn đọc “25” trên tờ ghi chép và kết luận “lớp có 25 học sinh”. Chỉ ra điều chưa đủ và cách ghi để kết luận có căn cứ.","type":"practice","rubric":["Chỉ ra thiếu nhãn/ngữ cảnh.","Đề xuất ghi “Sĩ số lớp …: 25 học sinh” khi đã kiểm tra con số."]},{"id":"T6-B01-C20","prompt":"Tờ giấy ghi “họp thứ Sáu” nhưng loa thông báo “thứ Năm”. Nêu hai việc cần xác minh trước khi nhắn lại.","type":"practice","rubric":["Xác định hai thông báo có cùng lớp/sự kiện/ngày tuần không.","Hỏi người phụ trách hoặc đối chiếu thông báo mới nhất."]}]},{"goal":"Tạo thông báo và kiểm tra khả năng sử dụng.","study":{"points":["Một thông báo cần đủ các chi tiết để người nhận hành động: ai, làm gì, khi nào, ở đâu. Với thay đổi, nêu rõ thông tin mới.","Chọn cách trình bày theo người nhận. Bảng phù hợp khi nhiều nhóm có nhiều mốc khác nhau, còn chữ lớn và bản đọc hỗ trợ các nhu cầu khác nhau.","So bản em viết với nguồn và đọc lại từ góc nhìn người nhận. Người mới đọc phải hiểu mà không cần đoán."],"example":"Lớp 6B chuyển tiết Tin sáng thứ Tư từ phòng 201 sang phòng 204. Thông báo phải ghi cả lớp, tiết, buổi và phòng mới."},"tasks":[{"id":"T6-B01-C21","prompt":"Lớp 6A đổi phòng tiết Tin thứ Hai từ 203 sang 205. Tin nào giúp người nhận hành động đúng?","type":"choice","choices":["Thứ Hai có phòng 205.","6A: tiết Tin thứ Hai chuyển từ phòng 203 sang 205.","Phòng 203 có thay đổi.","6A chuyển phòng; xem lại lịch cũ."],"correct":[1],"why":"Tin nêu đủ lớp, tiết, ngày và phòng mới."},{"id":"T6-B01-C22","prompt":"Hai nhóm dùng cùng phòng: nhóm 1 vào 8 giờ, nhóm 2 vào 9 giờ. Dạng ghi nào dễ kiểm tra nhất?","type":"choice","choices":["Bảng có cột Nhóm và Giờ, mỗi nhóm một hàng","Ghi tên nhóm ở tờ khác, không đánh dấu thứ tự","Chỉ gửi tên phòng","Ghi hai giờ trên một tờ không có tên nhóm"],"correct":[0],"why":"Bảng gắn từng giờ với đúng nhóm."},{"id":"T6-B01-C23","prompt":"Cần thông báo cho cả bạn khiếm thính và bạn khó đọc chữ nhỏ. Phương án nào phục vụ cả hai?","type":"choice","choices":["Chỉ phát tờ chữ nhỏ","Chỉ phát bản đọc","Dòng chữ lớn và bản đọc cùng nội dung","Chỉ gửi ảnh vật trang trí"],"correct":[2],"why":"Hai cách biểu diễn cùng thông tin giúp nhiều người tiếp nhận."},{"id":"T6-B01-C24","prompt":"Soạn một thông báo tập trung cho lớp 6C lúc 7 giờ 15 ngày 20/11 ở sân trường. Nêu vật hoặc phương tiện sẽ mang thông báo và một cách kiểm tra người nhận hiểu đúng.","type":"practice","rubric":["Đủ lớp, ngày, giờ, nơi.","Vật/phương tiện phù hợp.","Kiểm tra được giờ và nơi người nhận hiểu."]},{"id":"T6-B01-C25","prompt":"Một nhiệt kế hiển thị 38 °C. Viết hai cách biểu diễn cùng nội dung, rồi nêu vì sao cần ghi rõ đang đo thân nhiệt hay nhiệt độ ngoài trời.","type":"practice","rubric":["Biểu diễn thứ nhất; biểu diễn khác dạng; giải thích khác đối tượng làm đổi ý nghĩa của giá trị."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=1;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});

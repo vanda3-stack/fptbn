@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"13":{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60","stages":[{"goal":"Nhận ra lệnh tìm và thay thế.","text":"Tìm định vị văn bản; thay thế sửa nội dung tại vị trí khớp.","tasks":[{"id":"T6-B13-C01","prompt":"Muốn biết từ “sách” xuất hiện ở đâu mà chưa sửa, dùng lệnh nào?","type":"choice","choices":["Tìm kiếm","Thay thế tất cả","Chèn bảng","In"],"correct":[0],"why":"Tìm kiếm chỉ định vị."},{"id":"T6-B13-C02","prompt":"Lệnh nào sửa một kết quả đang được chọn?","type":"choice","choices":["Căn giữa","Thay thế từng chỗ","Tìm tiếp","In trang"],"correct":[1],"why":"Thay thế tác động đến kết quả hiện tại."},{"id":"T6-B13-C03","prompt":"Trong hộp Thay thế, ô “Tìm” nhập gì?","type":"choice","choices":["Chữ mới cần chèn","Văn bản hiện có cần tìm","Số trang in","Tên tệp sẽ lưu"],"correct":[1],"why":"Ô Tìm chứa chuỗi đang có."},{"id":"T6-B13-C04","prompt":"Ô “Thay bằng” nhập gì?","type":"choice","choices":["Văn bản mới","Tên tệp đang mở","Chuỗi cũ","Vị trí con trỏ"],"correct":[0],"why":"Ô này chứa nội dung dùng để thay."},{"id":"T6-B13-C05","prompt":"Lệnh nào thay mọi chỗ khớp trong phạm vi đang tìm?","type":"choice","choices":["Thay một chỗ","Tìm tiếp","Xem trước khi in","Thay thế tất cả"],"correct":[3],"why":"Lệnh áp dụng cho tất cả kết quả khớp trong phạm vi."}]},{"goal":"Lựa chọn phạm vi thay.","text":"Quyết định dựa trên việc sửa mọi chỗ hay chỉ một số ngữ cảnh.","tasks":[{"id":"T6-B13-C06","prompt":"Cần xem các chỗ có “Hà” nhưng giữ nguyên văn bản. Chọn gì?","type":"choice","choices":["Thay tất cả bằng “Hoa”","Xóa các kết quả","Gõ đè từng đoạn","Tìm và duyệt kết quả"],"correct":[3],"why":"Chỉ tìm đáp ứng yêu cầu đọc."},{"id":"T6-B13-C07","prompt":"Cùng một cụm xuất hiện trong lời kể và trích dẫn; chỉ sửa lời kể. Chọn gì?","type":"choice","choices":["Đổi khổ giấy","Thay tất cả toàn tệp","Xem từng kết quả và thay có chọn lọc","Xóa trích dẫn"],"correct":[2],"why":"Cần xét ngữ cảnh."},{"id":"T6-B13-C08","prompt":"Mọi chỗ có mẫu đặc trưng “LỚP-CŨ” đều cần sửa. Lệnh nào tiết kiệm thời gian sau khi kiểm tra?","type":"choice","choices":["Tìm nhưng không sửa","Thay thế tất cả","In từng trang","Chọn toàn bộ rồi gõ đè"],"correct":[1],"why":"Mẫu đã xác minh đủ cụ thể."},{"id":"T6-B13-C09","prompt":"Vì sao tìm “an” có thể thấy cả “ban”? Giả sử tìm chuỗi con.","type":"choice","choices":["Công cụ chỉ tìm chữ đầu","Vì hai từ luôn đồng nghĩa","“ban” là từ viết tắt của “an”","“an” xuất hiện liền nhau trong “ban”"],"correct":[3],"why":"Tìm chuỗi con không yêu cầu khớp cả từ."},{"id":"T6-B13-C10","prompt":"Làm gì để giữ bản trước khi chỉnh nhiều chỗ?","type":"choice","choices":["In một trang rồi ghi đè tệp gốc","Xóa bản đang có","Lưu một bản sao rồi sửa trên bản sao","Chỉ đổi màu chữ"],"correct":[2],"why":"Bản sao cho phép so lại và phục hồi."}]},{"goal":"Thực hiện tìm và sửa có kiểm tra.","text":"Xem từng kết quả hoặc thay hàng loạt khi mẫu đủ cụ thể.","tasks":[{"id":"T6-B13-C11","prompt":"Sửa “thư viẹn” thành “thư viện” ở mọi chỗ đã kiểm tra. Điền hai ô thế nào?","type":"choice","choices":["Tìm “thư viẹn”, thay bằng “thư viện”","Cả hai ô nhập “thư viện”","Ô Tìm để trống","Tìm “thư viện”, thay bằng “thư viẹn”"],"correct":[0],"why":"Tìm lỗi hiện có, thay bằng dạng đúng."},{"id":"T6-B13-C12","prompt":"Cần đổi lần đầu của “Tổ 2” thành “Tổ 3” và giữ lần sau. Thao tác nào đúng?","type":"choice","choices":["Chọn lần sau và thay","Thay tất cả","Đến lần đầu, thay một chỗ rồi dừng","Xóa cả hai lần"],"correct":[2],"why":"Yêu cầu giới hạn một kết quả."},{"id":"T6-B13-C13","prompt":"Đã thay hết “HỌC-KÌ-I” thành “HỌC-KÌ-II”. Kiểm tra trực tiếp gì?","type":"choice","choices":["Tìm lại mẫu cũ và đối chiếu vị trí mẫu mới","Chỉ nhìn màu cửa sổ","Chỉ đổi tên tệp","Chỉ đếm trang"],"correct":[0],"why":"Kiểm tra cả sót mẫu cũ lẫn kết quả mới."},{"id":"T6-B13-C14","prompt":"Gõ “Tổ 1 nộp thứ Sáu. Tổ 2 nộp thứ Sáu.” Đổi riêng hạn tổ 2 sang thứ Hai bằng lệnh thay thế.","type":"practice","rubric":["Dùng tìm/thay có chọn lọc.","Tổ 1 giữ thứ Sáu, tổ 2 là thứ Hai."]},{"id":"T6-B13-C15","prompt":"Trong một văn bản có ba lần viết “mượn sach”, dùng lệnh tìm và thay bằng “mượn sách”, rồi ghi số kết quả cũ còn lại.","type":"practice","rubric":["Sửa đủ ba chỗ.","Tìm lại mẫu cũ cho 0 kết quả."]}]},{"goal":"Phát hiện tác dụng ngoài ý muốn.","text":"Dò từ con, chỗ cần giữ và kiểm tra sau khi thay.","tasks":[{"id":"T6-B13-C16","prompt":"Đổi “Lan” thành “Mai” khiến “Lan Anh” thành “Mai Anh”, trong khi đó là người khác. Vì sao?","type":"choice","choices":["Vì định dạng đoạn thay tên","Lệnh in chọn sai trang","Vì Mai Anh và Lan Anh cùng một người","Mẫu khớp cả một phần của tên dài hơn"],"correct":[3],"why":"Cần xét tên trong ngữ cảnh."},{"id":"T6-B13-C17","prompt":"Sau khi thay tất cả sai phạm vi, nên làm gì trước nếu vừa thực hiện?","type":"choice","choices":["Xóa mọi chữ được tìm thấy","Lưu đè rồi đóng ngay","Hoàn tác và kiểm tra lại mẫu tìm","Tiếp tục thay thêm"],"correct":[2],"why":"Hoàn tác giúp trở về bản trước thay."},{"id":"T6-B13-C18","prompt":"Muốn đổi “lớp 6A” thành “lớp 6B” mà giữ mã “B6A”. Tìm gì an toàn hơn?","type":"choice","choices":["Chỉ “6”","Chỉ “A”","Cụm đầy đủ “lớp 6A”","Chỉ “6A”"],"correct":[2],"why":"Cụm cụ thể tránh khớp mã không liên quan."},{"id":"T6-B13-C19","prompt":"Nếu tìm chuỗi con và thay “sach” bằng “sách” trong cả “mượn sach” và mã “sach01”, lỗi gì xảy ra? Nêu cách tránh.","type":"practice","rubric":["Mã thành “sách01”.","Tìm cụm cụ thể hoặc thay từng chỗ, giữ nguyên mã."]},{"id":"T6-B13-C20","prompt":"Bạn vô tình điền từ mới vào ô Tìm và từ sai vào ô Thay bằng. Nêu hệ quả có thể xảy ra và trình tự sửa.","type":"practice","rubric":["Dạng đúng có thể bị đổi thành dạng sai.","Hoàn tác, đảo lại hai ô và kiểm tra kết quả trước khi thay."]}]},{"goal":"Thiết kế cách sửa nhiều lỗi cùng lúc.","text":"Tách các yêu cầu thành lượt thay với phạm vi riêng.","tasks":[{"id":"T6-B13-C21","prompt":"Sửa mọi “thông bao” và chỉ đổi ngày trong tiêu đề. Phương án nào phù hợp?","type":"choice","choices":["Thay mẫu lỗi đã kiểm tra hàng loạt, đổi ngày đúng một chỗ rồi rà lại","Xóa đoạn chứa ngày","Đổi ngày trong mọi tệp trước khi kiểm tra","Thay hàng loạt mọi ngày"],"correct":[0],"why":"Hai yêu cầu có phạm vi khác nhau."},{"id":"T6-B13-C22","prompt":"Cần giữ cả tệp gốc và tệp đã sửa để đối chiếu. Chọn cách nào?","type":"choice","choices":["Đổi tên nhưng ghi đè cùng đường dẫn","Lưu bản sửa dưới tên khác, rồi mở lại cả hai","Xóa tệp gốc","Lưu đè và đóng tệp"],"correct":[1],"why":"Hai tệp riêng giữ được hai phiên bản."},{"id":"T6-B13-C23","prompt":"Phát hiện còn một lỗi khác dạng sau khi thay hết mẫu đầu. Làm gì?","type":"choice","choices":["In mà không sửa","Tìm mẫu khác, kiểm tra rồi xử lí một lượt riêng","Thay toàn bộ chữ giống một phần của lỗi","Kết luận lệnh bị hỏng"],"correct":[1],"why":"Các dạng lỗi khác nhau có mẫu khác nhau."},{"id":"T6-B13-C24","prompt":"Tạo tệp chứa “Nhóm A mượn sach thứ Ba. Nhóm B mượn sach thứ Ba. Mã: sach01.” Sửa hai cụm chính tả và đổi riêng hạn Nhóm B sang thứ Tư; lưu bản sửa.","type":"practice","rubric":["Hai cụm “mượn sách”.","Chỉ đổi hạn Nhóm B.","Mã giữ nguyên và lưu bản sửa."]},{"id":"T6-B13-C25","prompt":"Đề xuất và thực hiện hai lượt sửa trong bản tin mẫu của em: một lỗi giống nhau ở mọi chỗ và một cụm chỉ đổi ở một chỗ. Báo cách kiểm tra.","type":"practice","rubric":["Thay hàng loạt sau khi đối chiếu.","Thay chọn lọc đúng vị trí.","Có kiểm tra cả chỗ sửa và chỗ giữ."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=13;
+const BANK={"13":{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60","stages":[{"goal":"Nhận ra lệnh tìm và thay thế.","study":{"points":["Tìm kiếm đánh dấu chỗ văn bản khớp mẫu mà không sửa. Thay thế từng chỗ chỉ sửa kết quả đã chọn.","Ô “Tìm” chứa chữ đang có. Ô “Thay bằng” chứa chữ mới. “Thay thế tất cả” sửa mọi kết quả khớp trong phạm vi đang tìm.","Hãy xem một số kết quả trước khi chọn thay hàng loạt. Từ quá ngắn dễ khớp cả một phần của từ khác."],"example":"Muốn biết từ “thư viện” xuất hiện ở đâu mà không sửa văn bản, dùng Tìm kiếm."},"tasks":[{"id":"T6-B13-C01","prompt":"Muốn biết từ “sách” xuất hiện ở đâu mà chưa sửa, dùng lệnh nào?","type":"choice","choices":["Tìm kiếm","Thay thế tất cả","Chèn bảng","In"],"correct":[0],"why":"Tìm kiếm chỉ định vị."},{"id":"T6-B13-C02","prompt":"Lệnh nào sửa một kết quả đang được chọn?","type":"choice","choices":["Căn giữa","Thay thế từng chỗ","Tìm tiếp","In trang"],"correct":[1],"why":"Thay thế tác động đến kết quả hiện tại."},{"id":"T6-B13-C03","prompt":"Trong hộp Thay thế, ô “Tìm” nhập gì?","type":"choice","choices":["Chữ mới cần chèn","Văn bản hiện có cần tìm","Số trang in","Tên tệp sẽ lưu"],"correct":[1],"why":"Ô Tìm chứa chuỗi đang có."},{"id":"T6-B13-C04","prompt":"Ô “Thay bằng” nhập gì?","type":"choice","choices":["Văn bản mới","Tên tệp đang mở","Chuỗi cũ","Vị trí con trỏ"],"correct":[0],"why":"Ô này chứa nội dung dùng để thay."},{"id":"T6-B13-C05","prompt":"Lệnh nào thay mọi chỗ khớp trong phạm vi đang tìm?","type":"choice","choices":["Thay một chỗ","Tìm tiếp","Xem trước khi in","Thay thế tất cả"],"correct":[3],"why":"Lệnh áp dụng cho tất cả kết quả khớp trong phạm vi."}]},{"goal":"Lựa chọn phạm vi thay.","study":{"points":["Khi chỉ sửa lời kể và giữ nguyên trích dẫn, duyệt từng kết quả. Chỉ bấm thay tại chỗ được phép sửa.","Nếu mọi kết quả khớp đều cần sửa, có thể thay tất cả sau khi kiểm tra mẫu tìm đủ cụ thể.","Khi dùng kiểu tìm chuỗi con, mẫu “an” có thể khớp một phần của “ban”. Nên lưu bản sao nếu sửa nhiều chỗ."],"example":"Tìm cụm “lớp 6A” rõ hơn tìm riêng “6A” nếu em cần giữ một mã có chứa “6A”."},"tasks":[{"id":"T6-B13-C06","prompt":"Cần xem các chỗ có “Hà” nhưng giữ nguyên văn bản. Chọn gì?","type":"choice","choices":["Thay tất cả bằng “Hoa”","Xóa các kết quả","Gõ đè từng đoạn","Tìm và duyệt kết quả"],"correct":[3],"why":"Chỉ tìm đáp ứng yêu cầu đọc."},{"id":"T6-B13-C07","prompt":"Cùng một cụm xuất hiện trong lời kể và trích dẫn; chỉ sửa lời kể. Chọn gì?","type":"choice","choices":["Đổi khổ giấy","Thay tất cả toàn tệp","Xem từng kết quả và thay có chọn lọc","Xóa trích dẫn"],"correct":[2],"why":"Cần xét ngữ cảnh."},{"id":"T6-B13-C08","prompt":"Mọi chỗ có mẫu đặc trưng “LỚP-CŨ” đều cần sửa. Lệnh nào tiết kiệm thời gian sau khi kiểm tra?","type":"choice","choices":["Tìm nhưng không sửa","Thay thế tất cả","In từng trang","Chọn toàn bộ rồi gõ đè"],"correct":[1],"why":"Mẫu đã xác minh đủ cụ thể."},{"id":"T6-B13-C09","prompt":"Vì sao tìm “an” có thể thấy cả “ban”? Giả sử tìm chuỗi con.","type":"choice","choices":["Công cụ chỉ tìm chữ đầu","Vì hai từ luôn đồng nghĩa","“ban” là từ viết tắt của “an”","“an” xuất hiện liền nhau trong “ban”"],"correct":[3],"why":"Tìm chuỗi con không yêu cầu khớp cả từ."},{"id":"T6-B13-C10","prompt":"Làm gì để giữ bản trước khi chỉnh nhiều chỗ?","type":"choice","choices":["In một trang rồi ghi đè tệp gốc","Xóa bản đang có","Lưu một bản sao rồi sửa trên bản sao","Chỉ đổi màu chữ"],"correct":[2],"why":"Bản sao cho phép so lại và phục hồi."}]},{"goal":"Thực hiện tìm và sửa có kiểm tra.","study":{"points":["Nhập cụm cũ vào “Tìm” và cụm mới vào “Thay bằng”. Duyệt đến kết quả cần sửa, rồi chọn thay một hoặc tất cả theo yêu cầu.","Nếu chỉ sửa lần đầu, dừng sau lần thay đó. Kiểm tra lại các chỗ cần giữ.","Sau thay hàng loạt, tìm lại mẫu cũ để phát hiện chỗ còn sót và đọc vài câu xung quanh cụm mới."],"example":"Muốn sửa “thư viẹn” thành “thư viện”, tìm đúng cụm sai trước, rồi thay bằng cụm đã sửa."},"tasks":[{"id":"T6-B13-C11","prompt":"Sửa “thư viẹn” thành “thư viện” ở mọi chỗ đã kiểm tra. Điền hai ô thế nào?","type":"choice","choices":["Tìm “thư viẹn”, thay bằng “thư viện”","Cả hai ô nhập “thư viện”","Ô Tìm để trống","Tìm “thư viện”, thay bằng “thư viẹn”"],"correct":[0],"why":"Tìm lỗi hiện có, thay bằng dạng đúng."},{"id":"T6-B13-C12","prompt":"Cần đổi lần đầu của “Tổ 2” thành “Tổ 3” và giữ lần sau. Thao tác nào đúng?","type":"choice","choices":["Chọn lần sau và thay","Thay tất cả","Đến lần đầu, thay một chỗ rồi dừng","Xóa cả hai lần"],"correct":[2],"why":"Yêu cầu giới hạn một kết quả."},{"id":"T6-B13-C13","prompt":"Đã thay hết “HỌC-KÌ-I” thành “HỌC-KÌ-II”. Kiểm tra trực tiếp gì?","type":"choice","choices":["Tìm lại mẫu cũ và đối chiếu vị trí mẫu mới","Chỉ nhìn màu cửa sổ","Chỉ đổi tên tệp","Chỉ đếm trang"],"correct":[0],"why":"Kiểm tra cả sót mẫu cũ lẫn kết quả mới."},{"id":"T6-B13-C14","prompt":"Gõ “Tổ 1 nộp thứ Sáu. Tổ 2 nộp thứ Sáu.” Đổi riêng hạn tổ 2 sang thứ Hai bằng lệnh thay thế.","type":"practice","rubric":["Dùng tìm/thay có chọn lọc.","Tổ 1 giữ thứ Sáu, tổ 2 là thứ Hai."]},{"id":"T6-B13-C15","prompt":"Trong một văn bản có ba lần viết “mượn sach”, dùng lệnh tìm và thay bằng “mượn sách”, rồi ghi số kết quả cũ còn lại.","type":"practice","rubric":["Sửa đủ ba chỗ.","Tìm lại mẫu cũ cho 0 kết quả."]}]},{"goal":"Phát hiện tác dụng ngoài ý muốn.","study":{"points":["Nếu thay nhầm chữ trong tên hoặc mã, hoàn tác ngay khi có thể. Sau đó dùng mẫu dài hơn hoặc thay từng chỗ.","Đọc lại cả ô Tìm và ô Thay bằng. Đảo hai ô có thể sửa chữ đúng thành chữ sai.","Thử trên một kết quả trước nếu chưa chắc phạm vi. Đối chiếu các chỗ phải sửa và các chỗ phải giữ."],"example":"Thay “Lan” bằng “Mai” có thể làm “Lan Anh” thành “Mai Anh” khi tìm chuỗi con. Hãy kiểm tra cách tìm hoặc chọn từng kết quả."},"tasks":[{"id":"T6-B13-C16","prompt":"Đổi “Lan” thành “Mai” khiến “Lan Anh” thành “Mai Anh”, trong khi đó là người khác. Vì sao?","type":"choice","choices":["Vì định dạng đoạn thay tên","Lệnh in chọn sai trang","Vì Mai Anh và Lan Anh cùng một người","Mẫu khớp cả một phần của tên dài hơn"],"correct":[3],"why":"Cần xét tên trong ngữ cảnh."},{"id":"T6-B13-C17","prompt":"Sau khi thay tất cả sai phạm vi, nên làm gì trước nếu vừa thực hiện?","type":"choice","choices":["Xóa mọi chữ được tìm thấy","Lưu đè rồi đóng ngay","Hoàn tác và kiểm tra lại mẫu tìm","Tiếp tục thay thêm"],"correct":[2],"why":"Hoàn tác giúp trở về bản trước thay."},{"id":"T6-B13-C18","prompt":"Muốn đổi “lớp 6A” thành “lớp 6B” mà giữ mã “B6A”. Tìm gì an toàn hơn?","type":"choice","choices":["Chỉ “6”","Chỉ “A”","Cụm đầy đủ “lớp 6A”","Chỉ “6A”"],"correct":[2],"why":"Cụm cụ thể tránh khớp mã không liên quan."},{"id":"T6-B13-C19","prompt":"Nếu tìm chuỗi con và thay “sach” bằng “sách” trong cả “mượn sach” và mã “sach01”, lỗi gì xảy ra? Nêu cách tránh.","type":"practice","rubric":["Mã thành “sách01”.","Tìm cụm cụ thể hoặc thay từng chỗ, giữ nguyên mã."]},{"id":"T6-B13-C20","prompt":"Bạn vô tình điền từ mới vào ô Tìm và từ sai vào ô Thay bằng. Nêu hệ quả có thể xảy ra và trình tự sửa.","type":"practice","rubric":["Dạng đúng có thể bị đổi thành dạng sai.","Hoàn tác, đảo lại hai ô và kiểm tra kết quả trước khi thay."]}]},{"goal":"Thiết kế cách sửa nhiều lỗi cùng lúc.","study":{"points":["Tách công việc thành hai lượt: sửa lỗi lặp lại và chỉnh riêng một chỗ có ngữ cảnh đặc biệt.","Lưu bản mới để giữ bản gốc. Kiểm tra các mã, tên và ngày phải giữ trước khi bàn giao.","Nếu còn lỗi khác, đặt mẫu tìm riêng cho lỗi đó. Không kéo dài phạm vi thay chỉ để tiết kiệm thao tác."],"example":"Trong bản tin có nhiều chữ “thông bao” và một tiêu đề sai ngày, sửa lỗi chính tả theo lượt, rồi đổi ngày đúng một chỗ."},"tasks":[{"id":"T6-B13-C21","prompt":"Sửa mọi “thông bao” và chỉ đổi ngày trong tiêu đề. Phương án nào phù hợp?","type":"choice","choices":["Thay mẫu lỗi đã kiểm tra hàng loạt, đổi ngày đúng một chỗ rồi rà lại","Xóa đoạn chứa ngày","Đổi ngày trong mọi tệp trước khi kiểm tra","Thay hàng loạt mọi ngày"],"correct":[0],"why":"Hai yêu cầu có phạm vi khác nhau."},{"id":"T6-B13-C22","prompt":"Cần giữ cả tệp gốc và tệp đã sửa để đối chiếu. Chọn cách nào?","type":"choice","choices":["Đổi tên nhưng ghi đè cùng đường dẫn","Lưu bản sửa dưới tên khác, rồi mở lại cả hai","Xóa tệp gốc","Lưu đè và đóng tệp"],"correct":[1],"why":"Hai tệp riêng giữ được hai phiên bản."},{"id":"T6-B13-C23","prompt":"Phát hiện còn một lỗi khác dạng sau khi thay hết mẫu đầu. Làm gì?","type":"choice","choices":["In mà không sửa","Tìm mẫu khác, kiểm tra rồi xử lí một lượt riêng","Thay toàn bộ chữ giống một phần của lỗi","Kết luận lệnh bị hỏng"],"correct":[1],"why":"Các dạng lỗi khác nhau có mẫu khác nhau."},{"id":"T6-B13-C24","prompt":"Tạo tệp chứa “Nhóm A mượn sach thứ Ba. Nhóm B mượn sach thứ Ba. Mã: sach01.” Sửa hai cụm chính tả và đổi riêng hạn Nhóm B sang thứ Tư; lưu bản sửa.","type":"practice","rubric":["Hai cụm “mượn sách”.","Chỉ đổi hạn Nhóm B.","Mã giữ nguyên và lưu bản sửa."]},{"id":"T6-B13-C25","prompt":"Đề xuất và thực hiện hai lượt sửa trong bản tin mẫu của em: một lỗi giống nhau ở mọi chỗ và một cụm chỉ đổi ở một chỗ. Báo cách kiểm tra.","type":"practice","rubric":["Thay hàng loạt sau khi đối chiếu.","Thay chọn lọc đúng vị trí.","Có kiểm tra cả chỗ sửa và chỗ giữ."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=13;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});

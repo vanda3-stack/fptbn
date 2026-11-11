@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"11":{"n":11,"title":"Định dạng văn bản","pages":"48–52","stages":[{"goal":"Nhận diện chức năng soạn thảo, định dạng và in.","text":"Xét phần được thay đổi: chữ, đoạn hoặc cả trang.","tasks":[{"id":"T6-B11-C01","prompt":"Phần mềm soạn thảo giúp làm gì?","type":"choice","choices":["Nhập, sửa, trình bày và in văn bản","Chỉ xem video","Chỉ vẽ tự do","Đo nhiệt độ"],"correct":[0],"why":"Soạn thảo hỗ trợ toàn bộ quá trình làm văn bản."},{"id":"T6-B11-C02","prompt":"Lệnh nào đặt tiêu đề vào giữa hai lề?","type":"choice","choices":["Căn giữa đoạn","Đổi hướng trang","Chèn ngắt dòng","Đổi phông chữ"],"correct":[0],"why":"Căn giữa tác động đến vị trí đoạn."},{"id":"T6-B11-C03","prompt":"Kiểu trang nào có chiều rộng lớn hơn chiều cao?","type":"choice","choices":["Trang ngang","Căn trái","Trang dọc","Lề hẹp"],"correct":[0],"why":"Hướng ngang làm trang rộng theo chiều ngang."},{"id":"T6-B11-C04","prompt":"Vùng trống quanh nội dung trang gọi là gì?","type":"choice","choices":["Đầu đề","Giãn dòng","Lề trang","Khoảng cách kí tự"],"correct":[2],"why":"Lề nằm giữa nội dung và mép trang."},{"id":"T6-B11-C05","prompt":"Trước khi in, dùng gì để nhìn bố cục các trang?","type":"choice","choices":["Xem trước khi in","Đếm từ","Đổi tên tệp","Tìm kiếm"],"correct":[0],"why":"Bản xem trước phản ánh cách nội dung lên giấy."}]},{"goal":"Phân biệt định dạng theo phạm vi.","text":"Kiểu chữ tác động đến kí tự; căn lề đoạn và thiết lập trang có phạm vi khác.","tasks":[{"id":"T6-B11-C06","prompt":"Đổi riêng hai từ sang chữ đậm thuộc loại nào?","type":"choice","choices":["Thay nội dung từ","Xóa đoạn","Định dạng trang","Định dạng kí tự"],"correct":[3],"why":"Đổi kiểu chữ mà không đổi từ."},{"id":"T6-B11-C07","prompt":"Giãn dòng trong một đoạn thuộc loại nào?","type":"choice","choices":["Định dạng trang","Đổi khổ giấy","Định dạng đoạn","Đổi tên tệp"],"correct":[2],"why":"Giãn dòng điều chỉnh khoảng cách các dòng của đoạn."},{"id":"T6-B11-C08","prompt":"Đặt lề trái 2 cm thuộc loại nào?","type":"choice","choices":["Chỉnh chủ đề tệp","Thiết lập trang","Định dạng kí tự","Đổi màu đoạn"],"correct":[1],"why":"Lề trái đo từ mép giấy đến vùng nội dung."},{"id":"T6-B11-C09","prompt":"Tiêu đề cần đậm và giữa trang. Cần hai thao tác nào?","type":"choice","choices":["Đổi tên tệp và in","Đổi lề trang và đổi khổ giấy","Chèn dấu cách và thu nhỏ trang","In đậm chữ và căn giữa đoạn"],"correct":[3],"why":"Đậm và căn giữa điều khiển hai thuộc tính riêng."},{"id":"T6-B11-C10","prompt":"Dòng bị xuống hàng khi lề trái và phải cùng tăng. Vì sao?","type":"choice","choices":["Mỗi chữ tự đổi màu","Chiều dài văn bản tăng","Vùng chứa chữ hẹp hơn","Tên tệp dài hơn"],"correct":[2],"why":"Lề rộng làm chiều rộng vùng nội dung nhỏ đi."}]},{"goal":"Thực hiện định dạng theo yêu cầu.","text":"Chọn đúng đối tượng, dùng lệnh và kiểm tra bản xem trước.","tasks":[{"id":"T6-B11-C11","prompt":"Chỉ cần in đậm cụm “Ngày hội đọc”. Bước đầu là gì?","type":"choice","choices":["Mở máy in","Đổi hướng giấy","Chọn toàn văn bản","Chọn đúng cụm từ"],"correct":[3],"why":"Cần khoanh đúng phạm vi."},{"id":"T6-B11-C12","prompt":"Một áp phích cần bố cục rộng hơn cao, giữ nguyên chữ. Chọn gì?","type":"choice","choices":["Tăng giãn dòng","Đặt hướng trang ngang","Kéo giãn từng chữ","Căn giữa mọi đoạn"],"correct":[1],"why":"Đổi hướng không yêu cầu sửa nội dung."},{"id":"T6-B11-C13","prompt":"Chỉ in trang 2 của tài liệu ba trang. Chọn gì trong phần in?","type":"choice","choices":["Đặt hai bản sao","Đổi lề trang 2","In tất cả","Chỉ định phạm vi trang 2"],"correct":[3],"why":"Phạm vi in chọn trang, không phải số bản."},{"id":"T6-B11-C14","prompt":"Tạo tài liệu có tiêu đề “Góc đọc lớp 6A” và hai đoạn tự viết. Đặt tiêu đề đậm, giữa; đoạn căn trái; trang dọc.","type":"practice","rubric":["Tiêu đề đúng cả hai thuộc tính.","Đoạn căn trái.","Trang dọc, xem trước và lưu."]},{"id":"T6-B11-C15","prompt":"Trên một tệp mẫu, đặt lề trái 2 cm, phải 2 cm, sau đó kiểm tra bản xem trước và ghi số trang.","type":"practice","rubric":["Hai lề đúng.","Đã xem trước và ghi đúng số trang tệp thực tế."]}]},{"goal":"Chẩn đoán lỗi trình bày và in.","text":"Sửa thuộc tính gây lỗi rồi kiểm tra lại.","tasks":[{"id":"T6-B11-C16","prompt":"Tiêu đề bị lệch khi đổi lề vì được căn bằng nhiều dấu cách. Sửa cách nào?","type":"choice","choices":["Tăng cỡ tất cả chữ","Xóa dấu cách thừa, dùng căn giữa đoạn","Chèn thêm khoảng trắng đến khi trông vừa","Đổi tên tệp"],"correct":[1],"why":"Lệnh căn giữa tính theo vùng nội dung."},{"id":"T6-B11-C17","prompt":"Đoạn một cách dòng rất xa; đoạn hai bình thường. Muốn sửa riêng đoạn một, kiểm tra gì?","type":"choice","choices":["Màu tiêu đề","Giãn dòng của đoạn một","Tên máy in","Hướng trang toàn tệp"],"correct":[1],"why":"Lỗi nằm trong khoảng cách dòng của một đoạn."},{"id":"T6-B11-C18","prompt":"Xem trước thấy dòng cuối sang trang mới sau khi tăng lề. Điều chỉnh nào giữ nguyên chữ?","type":"choice","choices":["Chỉ chọn trang 1 để in","Xóa dòng cuối","Kiểm tra và điều chỉnh lề hoặc khoảng cách đoạn trong giới hạn yêu cầu","Đổi tên tệp"],"correct":[2],"why":"Cần sửa bố cục rồi kiểm tra lại đủ nội dung."},{"id":"T6-B11-C19","prompt":"Bản xem trước còn một trang trắng do có nhiều dòng rỗng ở cuối. Nêu cách kiểm tra và sửa.","type":"practice","rubric":["Tìm đoạn trống cuối văn bản.","Bỏ phần trống thừa và xem lại trước khi in."]},{"id":"T6-B11-C20","prompt":"Cả bài chuyển sang chữ đậm trong khi yêu cầu chỉ đậm tiêu đề. Nêu lỗi phạm vi và trình tự sửa.","type":"practice","rubric":["Đã chọn phạm vi quá rộng.","Hoàn tác hoặc bỏ đậm phần bị ảnh hưởng, chọn đúng tiêu đề và định dạng."]}]},{"goal":"Hoàn thiện văn bản sẵn sàng in.","text":"Giữ đồng thời nội dung, bố cục và thiết lập in.","tasks":[{"id":"T6-B11-C21","prompt":"Bản tin cần một trang, tiêu đề ở giữa và nội dung dễ đọc. Bản nào đạt?","type":"choice","choices":["Hai trang với trang hai trắng","Một trang do bỏ đoạn cuối","Bản xem trước đủ nội dung trên một trang, tiêu đề căn giữa, chữ đọc rõ","Một trang nhưng chữ quá nhỏ"],"correct":[2],"why":"Mọi điều kiện đều phải được kiểm tra."},{"id":"T6-B11-C22","prompt":"Hai người dùng hai bản soạn khác nhau. Làm gì để in đúng bản đã thống nhất?","type":"choice","choices":["Mở bản cuối đã lưu, xem trước và kiểm tra phạm vi in","In ngay tệp mở gần nhất","Đổi tên mọi tệp giống nhau","Chọn tất cả bản nháp để in"],"correct":[0],"why":"Kiểm tra đúng tệp và đúng trang."},{"id":"T6-B11-C23","prompt":"Trang ngang là yêu cầu, nhưng ảnh và chữ vẫn bị sát mép. Thử gì trước?","type":"choice","choices":["Xóa tên tác giả","Kiểm tra lề và bố trí nội dung rồi xem trước lại","In nhiều bản hơn","Tự đổi sang dọc"],"correct":[1],"why":"Hướng trang đúng chưa đủ bảo đảm bố cục."},{"id":"T6-B11-C24","prompt":"Tạo thông báo ngày hội một trang có ngày, giờ, nơi; tiêu đề đậm và căn giữa, nội dung dễ đọc, trang dọc. Nộp tệp và bản xem trước.","type":"practice","rubric":["Đủ thông tin.","Đúng định dạng.","Bản xem trước một trang, không mất chữ."]},{"id":"T6-B11-C25","prompt":"Sửa một bản tin để in A4: tiêu đề giữa, thân bài căn trái, nội dung không bị cắt. Nêu hai điều đã kiểm tra khi xem trước.","type":"practice","rubric":["Thiết lập A4 và định dạng đúng.","Kiểm tra đủ chữ.","Kiểm tra số trang hoặc phần lề và nêu kết quả."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=11;
+const BANK={"11":{"n":11,"title":"Định dạng văn bản","pages":"48–52","stages":[{"goal":"Nhận diện chức năng soạn thảo, định dạng và in.","study":{"points":["Phần mềm soạn thảo dùng để nhập, sửa, trình bày và in văn bản. Trước khi in, mở bản xem trước.","Định dạng kí tự đổi dáng chữ. Định dạng đoạn đổi cách căn hoặc giãn dòng. Thiết lập trang đổi lề, khổ giấy và hướng trang.","Trang ngang có chiều rộng lớn hơn chiều cao. Lề là vùng trống giữa nội dung và mép giấy."],"example":"Muốn tiêu đề ở giữa hai lề, chọn đoạn tiêu đề và dùng căn giữa thay vì thêm dấu cách."},"tasks":[{"id":"T6-B11-C01","prompt":"Phần mềm soạn thảo giúp làm gì?","type":"choice","choices":["Nhập, sửa, trình bày và in văn bản","Chỉ xem video","Chỉ vẽ tự do","Đo nhiệt độ"],"correct":[0],"why":"Soạn thảo hỗ trợ toàn bộ quá trình làm văn bản."},{"id":"T6-B11-C02","prompt":"Lệnh nào đặt tiêu đề vào giữa hai lề?","type":"choice","choices":["Căn giữa đoạn","Đổi hướng trang","Chèn ngắt dòng","Đổi phông chữ"],"correct":[0],"why":"Căn giữa tác động đến vị trí đoạn."},{"id":"T6-B11-C03","prompt":"Kiểu trang nào có chiều rộng lớn hơn chiều cao?","type":"choice","choices":["Trang ngang","Căn trái","Trang dọc","Lề hẹp"],"correct":[0],"why":"Hướng ngang làm trang rộng theo chiều ngang."},{"id":"T6-B11-C04","prompt":"Vùng trống quanh nội dung trang gọi là gì?","type":"choice","choices":["Đầu đề","Giãn dòng","Lề trang","Khoảng cách kí tự"],"correct":[2],"why":"Lề nằm giữa nội dung và mép trang."},{"id":"T6-B11-C05","prompt":"Trước khi in, dùng gì để nhìn bố cục các trang?","type":"choice","choices":["Xem trước khi in","Đếm từ","Đổi tên tệp","Tìm kiếm"],"correct":[0],"why":"Bản xem trước phản ánh cách nội dung lên giấy."}]},{"goal":"Phân biệt định dạng theo phạm vi.","study":{"points":["Chữ đậm, cỡ chữ và kiểu chữ tác động lên kí tự đã chọn. Căn lề và giãn dòng tác động lên đoạn.","Thay lề hoặc hướng trang ảnh hưởng cả bố cục. Khi lề trái và phải lớn hơn, vùng chứa chữ hẹp đi.","Một yêu cầu có thể cần nhiều thao tác. Tiêu đề đậm và căn giữa cần định dạng cả kí tự lẫn đoạn."],"example":"Muốn chỉ làm đậm hai từ trong một đoạn, chọn đúng hai từ. Không cần đổi kiểu của toàn đoạn."},"tasks":[{"id":"T6-B11-C06","prompt":"Đổi riêng hai từ sang chữ đậm thuộc loại nào?","type":"choice","choices":["Thay nội dung từ","Xóa đoạn","Định dạng trang","Định dạng kí tự"],"correct":[3],"why":"Đổi kiểu chữ mà không đổi từ."},{"id":"T6-B11-C07","prompt":"Giãn dòng trong một đoạn thuộc loại nào?","type":"choice","choices":["Định dạng trang","Đổi khổ giấy","Định dạng đoạn","Đổi tên tệp"],"correct":[2],"why":"Giãn dòng điều chỉnh khoảng cách các dòng của đoạn."},{"id":"T6-B11-C08","prompt":"Đặt lề trái 2 cm thuộc loại nào?","type":"choice","choices":["Chỉnh chủ đề tệp","Thiết lập trang","Định dạng kí tự","Đổi màu đoạn"],"correct":[1],"why":"Lề trái đo từ mép giấy đến vùng nội dung."},{"id":"T6-B11-C09","prompt":"Tiêu đề cần đậm và giữa trang. Cần hai thao tác nào?","type":"choice","choices":["Đổi tên tệp và in","Đổi lề trang và đổi khổ giấy","Chèn dấu cách và thu nhỏ trang","In đậm chữ và căn giữa đoạn"],"correct":[3],"why":"Đậm và căn giữa điều khiển hai thuộc tính riêng."},{"id":"T6-B11-C10","prompt":"Dòng bị xuống hàng khi lề trái và phải cùng tăng. Vì sao?","type":"choice","choices":["Mỗi chữ tự đổi màu","Chiều dài văn bản tăng","Vùng chứa chữ hẹp hơn","Tên tệp dài hơn"],"correct":[2],"why":"Lề rộng làm chiều rộng vùng nội dung nhỏ đi."}]},{"goal":"Thực hiện định dạng theo yêu cầu.","study":{"points":["Chọn đúng phần văn bản trước khi định dạng. Muốn đổi cả trang sang ngang, dùng thiết lập hướng trang.","Xem trước để kiểm tra có mất chữ hay phát sinh trang thừa. Nếu chỉ in trang 2, chọn phạm vi trang 2 trong hộp in.","Lưu tệp đã chỉnh và mở lại đúng bản trước khi nộp hoặc in."],"example":"Tạo tiêu đề “Ngày hội đọc”. Chọn chữ để in đậm, căn giữa đoạn tiêu đề và xem trước trang."},"tasks":[{"id":"T6-B11-C11","prompt":"Chỉ cần in đậm cụm “Ngày hội đọc”. Bước đầu là gì?","type":"choice","choices":["Mở máy in","Đổi hướng giấy","Chọn toàn văn bản","Chọn đúng cụm từ"],"correct":[3],"why":"Cần khoanh đúng phạm vi."},{"id":"T6-B11-C12","prompt":"Một áp phích cần bố cục rộng hơn cao, giữ nguyên chữ. Chọn gì?","type":"choice","choices":["Tăng giãn dòng","Đặt hướng trang ngang","Kéo giãn từng chữ","Căn giữa mọi đoạn"],"correct":[1],"why":"Đổi hướng không yêu cầu sửa nội dung."},{"id":"T6-B11-C13","prompt":"Chỉ in trang 2 của tài liệu ba trang. Chọn gì trong phần in?","type":"choice","choices":["Đặt hai bản sao","Đổi lề trang 2","In tất cả","Chỉ định phạm vi trang 2"],"correct":[3],"why":"Phạm vi in chọn trang, không phải số bản."},{"id":"T6-B11-C14","prompt":"Tạo tài liệu có tiêu đề “Góc đọc lớp 6A” và hai đoạn tự viết. Đặt tiêu đề đậm, giữa; đoạn căn trái; trang dọc.","type":"practice","rubric":["Tiêu đề đúng cả hai thuộc tính.","Đoạn căn trái.","Trang dọc, xem trước và lưu."]},{"id":"T6-B11-C15","prompt":"Trên một tệp mẫu, đặt lề trái 2 cm, phải 2 cm, sau đó kiểm tra bản xem trước và ghi số trang.","type":"practice","rubric":["Hai lề đúng.","Đã xem trước và ghi đúng số trang tệp thực tế."]}]},{"goal":"Chẩn đoán lỗi trình bày và in.","study":{"points":["Khi tiêu đề lệch do nhiều dấu cách, xóa các dấu cách thừa rồi dùng căn giữa đoạn.","Nếu chỉ một đoạn bị giãn bất thường, kiểm tra giãn dòng hoặc khoảng cách đoạn của chính đoạn đó.","Nếu xuất hiện trang trống, kiểm tra đoạn rỗng, ngắt trang và lề. Xem trước sau mỗi lần chỉnh."],"example":"Tăng lề làm dòng cuối sang trang mới. Có thể giảm lề trong giới hạn yêu cầu hoặc điều chỉnh khoảng cách đoạn, rồi xem lại."},"tasks":[{"id":"T6-B11-C16","prompt":"Tiêu đề bị lệch khi đổi lề vì được căn bằng nhiều dấu cách. Sửa cách nào?","type":"choice","choices":["Tăng cỡ tất cả chữ","Xóa dấu cách thừa, dùng căn giữa đoạn","Chèn thêm khoảng trắng đến khi trông vừa","Đổi tên tệp"],"correct":[1],"why":"Lệnh căn giữa tính theo vùng nội dung."},{"id":"T6-B11-C17","prompt":"Đoạn một cách dòng rất xa; đoạn hai bình thường. Muốn sửa riêng đoạn một, kiểm tra gì?","type":"choice","choices":["Màu tiêu đề","Giãn dòng của đoạn một","Tên máy in","Hướng trang toàn tệp"],"correct":[1],"why":"Lỗi nằm trong khoảng cách dòng của một đoạn."},{"id":"T6-B11-C18","prompt":"Xem trước thấy dòng cuối sang trang mới sau khi tăng lề. Điều chỉnh nào giữ nguyên chữ?","type":"choice","choices":["Chỉ chọn trang 1 để in","Xóa dòng cuối","Kiểm tra và điều chỉnh lề hoặc khoảng cách đoạn trong giới hạn yêu cầu","Đổi tên tệp"],"correct":[2],"why":"Cần sửa bố cục rồi kiểm tra lại đủ nội dung."},{"id":"T6-B11-C19","prompt":"Bản xem trước còn một trang trắng do có nhiều dòng rỗng ở cuối. Nêu cách kiểm tra và sửa.","type":"practice","rubric":["Tìm đoạn trống cuối văn bản.","Bỏ phần trống thừa và xem lại trước khi in."]},{"id":"T6-B11-C20","prompt":"Cả bài chuyển sang chữ đậm trong khi yêu cầu chỉ đậm tiêu đề. Nêu lỗi phạm vi và trình tự sửa.","type":"practice","rubric":["Đã chọn phạm vi quá rộng.","Hoàn tác hoặc bỏ đậm phần bị ảnh hưởng, chọn đúng tiêu đề và định dạng."]}]},{"goal":"Hoàn thiện văn bản sẵn sàng in.","study":{"points":["Đọc yêu cầu trước khi làm: số trang, khổ giấy, hướng trang, cách căn tiêu đề và thân bài.","Kiểm tra cả nội dung và bố cục ở bản xem trước. Nếu chữ quá sát mép, kiểm tra lề và bố trí nội dung.","Mở bản cuối đã lưu trước khi in. Sau khi sửa, xem trước lần nữa để bảo đảm không mất chữ."],"example":"Với thông báo A4 một trang, hãy kiểm tra tiêu đề ở giữa, thân bài dễ đọc và toàn bộ ngày, giờ, địa điểm nằm trên trang."},"tasks":[{"id":"T6-B11-C21","prompt":"Bản tin cần một trang, tiêu đề ở giữa và nội dung dễ đọc. Bản nào đạt?","type":"choice","choices":["Hai trang với trang hai trắng","Một trang do bỏ đoạn cuối","Bản xem trước đủ nội dung trên một trang, tiêu đề căn giữa, chữ đọc rõ","Một trang nhưng chữ quá nhỏ"],"correct":[2],"why":"Mọi điều kiện đều phải được kiểm tra."},{"id":"T6-B11-C22","prompt":"Hai người dùng hai bản soạn khác nhau. Làm gì để in đúng bản đã thống nhất?","type":"choice","choices":["Mở bản cuối đã lưu, xem trước và kiểm tra phạm vi in","In ngay tệp mở gần nhất","Đổi tên mọi tệp giống nhau","Chọn tất cả bản nháp để in"],"correct":[0],"why":"Kiểm tra đúng tệp và đúng trang."},{"id":"T6-B11-C23","prompt":"Trang ngang là yêu cầu, nhưng ảnh và chữ vẫn bị sát mép. Thử gì trước?","type":"choice","choices":["Xóa tên tác giả","Kiểm tra lề và bố trí nội dung rồi xem trước lại","In nhiều bản hơn","Tự đổi sang dọc"],"correct":[1],"why":"Hướng trang đúng chưa đủ bảo đảm bố cục."},{"id":"T6-B11-C24","prompt":"Tạo thông báo ngày hội một trang có ngày, giờ, nơi; tiêu đề đậm và căn giữa, nội dung dễ đọc, trang dọc. Nộp tệp và bản xem trước.","type":"practice","rubric":["Đủ thông tin.","Đúng định dạng.","Bản xem trước một trang, không mất chữ."]},{"id":"T6-B11-C25","prompt":"Sửa một bản tin để in A4: tiêu đề giữa, thân bài căn trái, nội dung không bị cắt. Nêu hai điều đã kiểm tra khi xem trước.","type":"practice","rubric":["Thiết lập A4 và định dạng đúng.","Kiểm tra đủ chữ.","Kiểm tra số trang hoặc phần lề và nêu kết quả."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=11;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});

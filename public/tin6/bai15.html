@@ -98,23 +98,36 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
 .view-heading > .btn { justify-self: start }
 .view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
-.play-left, .review-stack, .question-card { display: grid; gap: .75rem }
+.review-stack, .question-card { display: grid; gap: .75rem }
 .progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .progress-dots span { height: 8px; background: #365570; border-radius: 8px }
 .progress-dots .done { background: var(--accent) }
 .progress-dots .current { background: var(--gold) }
 .study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
-.study { --read: 0deg; display: grid; gap: .45rem; position: relative; isolation: isolate; background: #23415c; border-color: #7893aa }
-.study h2 { color: var(--gold); font-size: 1.35rem }
-.study-body { color: var(--muted) }
-.study.reading::after {
-  position: absolute; content: ''; inset: -1px; border-radius: inherit; padding: 4px; pointer-events: none;
-  background: conic-gradient(#b5efe5 0deg, #43bbad var(--read), #57738b var(--read));
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude;
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
 }
-.read-gate { display: flex; align-items: center; gap: .65rem; font-size: .9rem }
-.gate-icon, .gate-time { color: var(--gold); font-size: 1.2rem }
-.gate-time { margin-left: auto; font-variant-numeric: tabular-nums }
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
 .question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
 .answer-area, .answer-options { display: grid; gap: .65rem }
 .answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
@@ -244,7 +257,6 @@ main { min-height: 65vh; padding-block: 20px 42px }
   .flow-track { grid-template-columns: repeat(2, 1fr) }
 }
 @media (prefers-reduced-motion: reduce) {
-  .study.reading::after { background: #74d1c2 }
   .award { animation: none }
 }
 
@@ -319,7 +331,7 @@ main { min-height: 65vh; padding-block: 20px 42px }
 <noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
 <script>
 'use strict';
-const BANK={"15":{"n":15,"title":"Thuật toán","pages":"63–66","stages":[{"goal":"Nhận biết thuật toán và cách mô tả.","text":"Thuật toán là dãy bước rõ ràng để giải quyết một nhiệm vụ.","tasks":[{"id":"T6-B15-C01","prompt":"Thuật toán là gì?","type":"choice","choices":["Bất kì danh sách đồ vật","Dãy bước rõ ràng để giải một nhiệm vụ","Chỉ dữ liệu được đưa vào","Chỉ kết quả cuối cùng"],"correct":[1],"why":"Cần có các bước thực hiện."},{"id":"T6-B15-C02","prompt":"Thông tin được cho trước khi chạy gọi là gì?","type":"choice","choices":["Bước in","Đầu vào","Kết thúc","Đầu ra"],"correct":[1],"why":"Đầu vào là dữ liệu ban đầu."},{"id":"T6-B15-C03","prompt":"Kết quả nhận được sau khi thực hiện gọi là gì?","type":"choice","choices":["Mũi tên","Bắt đầu","Đầu ra","Đầu vào"],"correct":[2],"why":"Đầu ra là kết quả."},{"id":"T6-B15-C04","prompt":"Trong sơ đồ khối, mũi tên dùng để làm gì?","type":"choice","choices":["Thay đầu vào bằng đầu ra","Chỉ hướng thực hiện tiếp","Chứa mọi kết quả","Đánh dấu lỗi chính tả"],"correct":[1],"why":"Mũi tên nối các bước theo thứ tự."},{"id":"T6-B15-C05","prompt":"Hình chữ nhật trong sơ đồ khối thường biểu diễn gì?","type":"choice","choices":["Bắt đầu hoặc kết thúc","Bước xử lí","Điều kiện đúng hay sai","Đầu vào hoặc đầu ra"],"correct":[1],"why":"Hình chữ nhật dùng cho bước thực hiện."}]},{"goal":"Phân biệt đầu vào, đầu ra và bước xử lí.","text":"Xét dữ liệu được cho, việc cần làm và kết quả thu được.","tasks":[{"id":"T6-B15-C06","prompt":"Tính chu vi hình vuông từ cạnh a. Đầu vào và đầu ra là gì?","type":"choice","choices":["Chu vi và độ dài a","Tên tệp và diện tích","Số 4 và tên hình","Độ dài a và chu vi"],"correct":[3],"why":"Cạnh được cho; chu vi cần tính."},{"id":"T6-B15-C07","prompt":"Nhiệm vụ đổi phút sang giây. Đâu là bước xử lí?","type":"choice","choices":["Kết thúc","Nhận số phút","Thông báo số giây","Nhân số phút với 60"],"correct":[3],"why":"Phép nhân tạo kết quả mới."},{"id":"T6-B15-C08","prompt":"Mô tả “Làm cho xong bài” chưa đủ vì sao?","type":"choice","choices":["Không nêu các bước rõ để thực hiện","Có quá nhiều đầu ra cụ thể","Vì dùng tiếng Việt","Chỉ vì không vẽ hình"],"correct":[0],"why":"Có thể dùng lời, nhưng phải rõ bước."},{"id":"T6-B15-C09","prompt":"Hình bình hành “Nhập a, b” có vai trò gì?","type":"choice","choices":["Đánh giá điều kiện","Đưa dữ liệu vào","Kết thúc","Tính tổng"],"correct":[1],"why":"Hình bình hành biểu diễn vào/ra; từ “Nhập” xác định vai trò vào."},{"id":"T6-B15-C10","prompt":"Hai mô tả bằng lời và sơ đồ có cùng thứ tự và phép tính. Nhận xét nào hợp lý?","type":"choice","choices":["Chỉ sơ đồ mới có đầu vào","Chỉ dạng lời mới có bước","Chắc chắn cho hai kết quả khác","Có thể mô tả cùng thuật toán"],"correct":[3],"why":"Cách trình bày có thể khác, ý nghĩa giống nhau."}]},{"goal":"Lần theo dãy bước hoặc sơ đồ.","text":"Thực hiện từng bước theo mũi tên rồi đọc kết quả.","tasks":[{"id":"T6-B15-C11","prompt":"Nhập 7 và 5; cộng hai số; xuất tổng. Kết quả là gì?","type":"choice","choices":["35","2","12","75"],"correct":[2],"why":"7 + 5 = 12."},{"id":"T6-B15-C12","prompt":"Nhập a = 4; nhân a với 4 để được p; xuất p. Đầu ra là gì?","type":"choice","choices":["16","4","8","12"],"correct":[0],"why":"Chu vi bằng 4 × 4."},{"id":"T6-B15-C13","prompt":"Cần tính tổng số sách của hai tổ. Thứ tự nào đúng?","type":"choice","choices":["Cộng, thông báo, nhập","Thông báo, cộng, nhập","Nhập hai số, cộng, thông báo tổng","Nhập, thông báo, cộng"],"correct":[2],"why":"Phải có dữ liệu trước khi tính và tính trước khi báo."},{"id":"T6-B15-C14","prompt":"Sơ đồ chạy lần lượt: nhập 4, cộng 3, nhân kết quả với 2, rồi xuất kết quả. Sau mỗi phép tính em nhận được số nào?","type":"practice","rubric":["Sau cộng là 7.","Sau nhân và khi xuất là 14."]},{"id":"T6-B15-C15","prompt":"Viết dãy bước đổi số giờ nguyên thành số phút. Chạy thử với 3 giờ.","type":"practice","rubric":["Nhập giờ, nhân 60, xuất phút.","180 phút."]}]},{"goal":"Phát hiện bước sai, thiếu hoặc sai thứ tự.","text":"Chạy thử một ví dụ để tìm chỗ kết quả lệch.","tasks":[{"id":"T6-B15-C16","prompt":"Sơ đồ xuất tổng trước bước cộng. Sửa thế nào?","type":"choice","choices":["Xóa bước cộng","Giữ thứ tự rồi đổi màu khối","Đưa bước nhập xuống cuối","Đưa bước xuất xuống sau bước cộng"],"correct":[3],"why":"Kết quả phải có trước khi xuất."},{"id":"T6-B15-C17","prompt":"Đổi phút sang giây bằng cách cộng 60. Với 2 phút, kết quả sai nào xuất hiện?","type":"choice","choices":["62 thay vì 120","120 thay vì 62","30 thay vì 120","2 thay vì 60"],"correct":[0],"why":"Sai phép tính làm 2 + 60 = 62."},{"id":"T6-B15-C18","prompt":"Tính chu vi từ chiều dài và rộng nhưng chỉ nhập chiều dài. Thiếu gì?","type":"choice","choices":["Dữ liệu chiều rộng","Một bước xuất thứ hai","Tên người vẽ","Số màu"],"correct":[0],"why":"Cả hai kích thước cần cho phép tính."},{"id":"T6-B15-C19","prompt":"Thuật toán diện tích hình chữ nhật nhập dài 5, rộng 3; cộng hai số; xuất 8. Tìm lỗi và sửa.","type":"practice","rubric":["Sai ở bước cộng.","Nhân 5 × 3, xuất 15."]},{"id":"T6-B15-C20","prompt":"Sơ đồ ghi “Nhập 2 số → chia cho 2 → xuất trung bình”. Nêu bước thiếu và kiểm tra với 6, 10.","type":"practice","rubric":["Cần tính tổng rồi chia tổng cho 2.","Kết quả 8."]}]},{"goal":"Mô tả thuật toán và thử với dữ liệu mới.","text":"Ghi đầu vào, đầu ra, bước rõ ràng và kiểm tra kết quả.","tasks":[{"id":"T6-B15-C21","prompt":"Cần biết số chỗ còn trống, có tổng chỗ và số đã đăng kí. Mô tả nào đủ?","type":"choice","choices":["Lấy đăng kí trừ tổng rồi xuất","Cộng hai số và xuất","Nhập hai số, lấy tổng chỗ trừ đã đăng kí, xuất chỗ trống","Chỉ nhập rồi xuất tổng chỗ"],"correct":[2],"why":"Cần số còn lại, không phải tổng hoặc hiệu đảo."},{"id":"T6-B15-C22","prompt":"Thuật toán tính tiền 3 quyển vở cùng giá p. Bộ thử nào kiểm tra được hai mức giá khác nhau?","type":"choice","choices":["Chỉ thử p = 5 và bỏ kết quả","p = 5 cho 15 hai lần","p = 5 cho 15; p = 7 cho 21","p = 5 cho 8; p = 7 cho 10"],"correct":[2],"why":"Hai giá và kết quả mong đợi cho phép đối chiếu."},{"id":"T6-B15-C23","prompt":"Tính tổng 2 chai mỗi bạn cho n bạn. Sơ đồ đúng cần thứ tự nào?","type":"choice","choices":["Nhập n → tính 2 × n → xuất tổng","Nhập n → xuất 2 → tính n","Nhập n → chia 2 → xuất tổng","Xuất n → nhập n → cộng 2"],"correct":[0],"why":"Mỗi bạn đóng góp hai chai."},{"id":"T6-B15-C24","prompt":"Vẽ sơ đồ tính số ghế trống từ số ghế và số người ngồi, giả sử số người không vượt số ghế. Thử (20, 13) và (20, 20).","type":"practice","rubric":["Sơ đồ đủ vào, xử lí, ra và mũi tên.","Phép trừ đúng.","7 và 0."]},{"id":"T6-B15-C25","prompt":"Viết thuật toán tính số trang cần đọc mỗi ngày khi số trang chia hết cho số ngày. Thử (60, 5) và (60, 3).","type":"practice","rubric":["Xác định vào và ra.","Chia số trang cho số ngày dương.","12 và 20."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=15;
+const BANK={"15":{"n":15,"title":"Thuật toán","pages":"63–66","stages":[{"goal":"Nhận biết thuật toán và cách mô tả.","study":{"points":["Thuật toán là dãy bước rõ ràng để giải một nhiệm vụ. Đầu vào là dữ liệu đã có, đầu ra là kết quả cần nhận.","Có thể mô tả bằng lời hoặc sơ đồ khối. Mũi tên chỉ thứ tự thực hiện.","Trong sơ đồ khối thông dụng, hình chữ nhật biểu diễn bước xử lí, hình bình hành biểu diễn nhập hoặc xuất dữ liệu."],"example":"Tính tổng hai số: nhập hai số, cộng chúng rồi xuất tổng. Hai số là đầu vào, tổng là đầu ra."},"tasks":[{"id":"T6-B15-C01","prompt":"Thuật toán là gì?","type":"choice","choices":["Bất kì danh sách đồ vật","Dãy bước rõ ràng để giải một nhiệm vụ","Chỉ dữ liệu được đưa vào","Chỉ kết quả cuối cùng"],"correct":[1],"why":"Cần có các bước thực hiện."},{"id":"T6-B15-C02","prompt":"Thông tin được cho trước khi chạy gọi là gì?","type":"choice","choices":["Bước in","Đầu vào","Kết thúc","Đầu ra"],"correct":[1],"why":"Đầu vào là dữ liệu ban đầu."},{"id":"T6-B15-C03","prompt":"Kết quả nhận được sau khi thực hiện gọi là gì?","type":"choice","choices":["Mũi tên","Bắt đầu","Đầu ra","Đầu vào"],"correct":[2],"why":"Đầu ra là kết quả."},{"id":"T6-B15-C04","prompt":"Trong sơ đồ khối, mũi tên dùng để làm gì?","type":"choice","choices":["Thay đầu vào bằng đầu ra","Chỉ hướng thực hiện tiếp","Chứa mọi kết quả","Đánh dấu lỗi chính tả"],"correct":[1],"why":"Mũi tên nối các bước theo thứ tự."},{"id":"T6-B15-C05","prompt":"Hình chữ nhật trong sơ đồ khối thường biểu diễn gì?","type":"choice","choices":["Bắt đầu hoặc kết thúc","Bước xử lí","Điều kiện đúng hay sai","Đầu vào hoặc đầu ra"],"correct":[1],"why":"Hình chữ nhật dùng cho bước thực hiện."}]},{"goal":"Phân biệt đầu vào, đầu ra và bước xử lí.","study":{"points":["Tách ba phần: nhập dữ liệu, xử lí và xuất kết quả. Viết đủ dữ liệu cần cho phép tính.","Một bước rõ ràng phải cho biết làm gì, với giá trị nào. “Làm cho xong” chưa đủ để người khác thực hiện giống em.","Cùng một thuật toán có thể được viết bằng câu hoặc vẽ thành sơ đồ nếu thứ tự và các phép xử lí tương ứng."],"example":"Đổi phút thành giây: đầu vào là số phút, xử lí bằng phép nhân 60, đầu ra là số giây."},"tasks":[{"id":"T6-B15-C06","prompt":"Tính chu vi hình vuông từ cạnh a. Đầu vào và đầu ra là gì?","type":"choice","choices":["Chu vi và độ dài a","Tên tệp và diện tích","Số 4 và tên hình","Độ dài a và chu vi"],"correct":[3],"why":"Cạnh được cho; chu vi cần tính."},{"id":"T6-B15-C07","prompt":"Nhiệm vụ đổi phút sang giây. Đâu là bước xử lí?","type":"choice","choices":["Kết thúc","Nhận số phút","Thông báo số giây","Nhân số phút với 60"],"correct":[3],"why":"Phép nhân tạo kết quả mới."},{"id":"T6-B15-C08","prompt":"Mô tả “Làm cho xong bài” chưa đủ vì sao?","type":"choice","choices":["Không nêu các bước rõ để thực hiện","Có quá nhiều đầu ra cụ thể","Vì dùng tiếng Việt","Chỉ vì không vẽ hình"],"correct":[0],"why":"Có thể dùng lời, nhưng phải rõ bước."},{"id":"T6-B15-C09","prompt":"Hình bình hành “Nhập a, b” có vai trò gì?","type":"choice","choices":["Đánh giá điều kiện","Đưa dữ liệu vào","Kết thúc","Tính tổng"],"correct":[1],"why":"Hình bình hành biểu diễn vào/ra; từ “Nhập” xác định vai trò vào."},{"id":"T6-B15-C10","prompt":"Hai mô tả bằng lời và sơ đồ có cùng thứ tự và phép tính. Nhận xét nào hợp lý?","type":"choice","choices":["Chỉ sơ đồ mới có đầu vào","Chỉ dạng lời mới có bước","Chắc chắn cho hai kết quả khác","Có thể mô tả cùng thuật toán"],"correct":[3],"why":"Cách trình bày có thể khác, ý nghĩa giống nhau."}]},{"goal":"Lần theo dãy bước hoặc sơ đồ.","study":{"points":["Lần theo thứ tự các bước. Ghi giá trị mới sau mỗi phép tính rồi mới chuyển sang bước tiếp theo.","Giữ tên biến nhất quán, chẳng hạn a là dữ liệu nhập và p là kết quả. Xuất giá trị của biến cần trả lời.","Chạy thử với một bộ số nhỏ mà em tính tay được để kiểm tra thứ tự."],"example":"Nhập 5, cộng 2 được 7, rồi nhân kết quả với 3 được 21. Giá trị xuất ra là 21."},"tasks":[{"id":"T6-B15-C11","prompt":"Nhập 7 và 5; cộng hai số; xuất tổng. Kết quả là gì?","type":"choice","choices":["35","2","12","75"],"correct":[2],"why":"7 + 5 = 12."},{"id":"T6-B15-C12","prompt":"Nhập a = 4; nhân a với 4 để được p; xuất p. Đầu ra là gì?","type":"choice","choices":["16","4","8","12"],"correct":[0],"why":"Chu vi bằng 4 × 4."},{"id":"T6-B15-C13","prompt":"Cần tính tổng số sách của hai tổ. Thứ tự nào đúng?","type":"choice","choices":["Cộng, thông báo, nhập","Thông báo, cộng, nhập","Nhập hai số, cộng, thông báo tổng","Nhập, thông báo, cộng"],"correct":[2],"why":"Phải có dữ liệu trước khi tính và tính trước khi báo."},{"id":"T6-B15-C14","prompt":"Sơ đồ chạy lần lượt: nhập 4, cộng 3, nhân kết quả với 2, rồi xuất kết quả. Sau mỗi phép tính em nhận được số nào?","type":"practice","rubric":["Sau cộng là 7.","Sau nhân và khi xuất là 14."]},{"id":"T6-B15-C15","prompt":"Viết dãy bước đổi số giờ nguyên thành số phút. Chạy thử với 3 giờ.","type":"practice","rubric":["Nhập giờ, nhân 60, xuất phút.","180 phút."]}]},{"goal":"Phát hiện bước sai, thiếu hoặc sai thứ tự.","study":{"points":["Nếu kết quả sai, tìm bước đầu tiên khác với phép tính tay. Kiểm tra thứ tự, dữ liệu còn thiếu và phép toán.","Không xuất biến trước khi tính nó. Không cộng khi bài toán cần nhân, và không chia trung bình trước khi có tổng.","Sau khi sửa, chạy lại ca đã sai và thử một ca khác để chắc đã sửa đúng nguyên nhân."],"example":"Muốn tính trung bình của 6 và 10, cộng thành 16 rồi chia 2 được 8. Nếu bỏ bước cộng, kết quả sẽ sai."},"tasks":[{"id":"T6-B15-C16","prompt":"Sơ đồ xuất tổng trước bước cộng. Sửa thế nào?","type":"choice","choices":["Xóa bước cộng","Giữ thứ tự rồi đổi màu khối","Đưa bước nhập xuống cuối","Đưa bước xuất xuống sau bước cộng"],"correct":[3],"why":"Kết quả phải có trước khi xuất."},{"id":"T6-B15-C17","prompt":"Đổi phút sang giây bằng cách cộng 60. Với 2 phút, kết quả sai nào xuất hiện?","type":"choice","choices":["62 thay vì 120","120 thay vì 62","30 thay vì 120","2 thay vì 60"],"correct":[0],"why":"Sai phép tính làm 2 + 60 = 62."},{"id":"T6-B15-C18","prompt":"Tính chu vi từ chiều dài và rộng nhưng chỉ nhập chiều dài. Thiếu gì?","type":"choice","choices":["Dữ liệu chiều rộng","Một bước xuất thứ hai","Tên người vẽ","Số màu"],"correct":[0],"why":"Cả hai kích thước cần cho phép tính."},{"id":"T6-B15-C19","prompt":"Thuật toán diện tích hình chữ nhật nhập dài 5, rộng 3; cộng hai số; xuất 8. Tìm lỗi và sửa.","type":"practice","rubric":["Sai ở bước cộng.","Nhân 5 × 3, xuất 15."]},{"id":"T6-B15-C20","prompt":"Sơ đồ ghi “Nhập 2 số → chia cho 2 → xuất trung bình”. Nêu bước thiếu và kiểm tra với 6, 10.","type":"practice","rubric":["Cần tính tổng rồi chia tổng cho 2.","Kết quả 8."]}]},{"goal":"Mô tả thuật toán và thử với dữ liệu mới.","study":{"points":["Từ đề bài, viết rõ đầu vào, đầu ra và cách tính. Chọn thứ tự xử lí rồi mới lập sơ đồ hoặc chạy thử.","Chọn ít nhất hai bộ số. Thêm trường hợp biên nếu có, như không còn chỗ trống hoặc hai giá trị bằng nhau.","So kết quả chạy với kết quả tính tay. Nếu khác, sửa phép xử lí hoặc thứ tự khối."],"example":"Có 20 ghế, 13 ghế đã có người thì còn 7. Nếu đủ 20 người thì còn 0. Hai ca giúp kiểm tra phép trừ."},"tasks":[{"id":"T6-B15-C21","prompt":"Cần biết số chỗ còn trống, có tổng chỗ và số đã đăng kí. Mô tả nào đủ?","type":"choice","choices":["Lấy đăng kí trừ tổng rồi xuất","Cộng hai số và xuất","Nhập hai số, lấy tổng chỗ trừ đã đăng kí, xuất chỗ trống","Chỉ nhập rồi xuất tổng chỗ"],"correct":[2],"why":"Cần số còn lại, không phải tổng hoặc hiệu đảo."},{"id":"T6-B15-C22","prompt":"Thuật toán tính tiền 3 quyển vở cùng giá p. Bộ thử nào kiểm tra được hai mức giá khác nhau?","type":"choice","choices":["Chỉ thử p = 5 và bỏ kết quả","p = 5 cho 15 hai lần","p = 5 cho 15; p = 7 cho 21","p = 5 cho 8; p = 7 cho 10"],"correct":[2],"why":"Hai giá và kết quả mong đợi cho phép đối chiếu."},{"id":"T6-B15-C23","prompt":"Tính tổng 2 chai mỗi bạn cho n bạn. Sơ đồ đúng cần thứ tự nào?","type":"choice","choices":["Nhập n → tính 2 × n → xuất tổng","Nhập n → xuất 2 → tính n","Nhập n → chia 2 → xuất tổng","Xuất n → nhập n → cộng 2"],"correct":[0],"why":"Mỗi bạn đóng góp hai chai."},{"id":"T6-B15-C24","prompt":"Vẽ sơ đồ tính số ghế trống từ số ghế và số người ngồi, giả sử số người không vượt số ghế. Thử (20, 13) và (20, 20).","type":"practice","rubric":["Sơ đồ đủ vào, xử lí, ra và mũi tên.","Phép trừ đúng.","7 và 0."]},{"id":"T6-B15-C25","prompt":"Viết thuật toán tính số trang cần đọc mỗi ngày khi số trang chia hết cho số ngày. Thử (60, 5) và (60, 3).","type":"practice","rubric":["Xác định vào và ra.","Chia số trang cho số ngày dương.","12 và 20."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thông tin và dữ liệu","pages":"5–7"},{"n":2,"title":"Xử lí thông tin","pages":"8–11"},{"n":3,"title":"Thông tin trong máy tính","pages":"12–15"},{"n":4,"title":"Mạng máy tính","pages":"16–19"},{"n":5,"title":"Internet","pages":"20–22"},{"n":6,"title":"Mạng thông tin toàn cầu","pages":"23–27"},{"n":7,"title":"Tìm kiếm thông tin trên Internet","pages":"28–31"},{"n":8,"title":"Thư điện tử","pages":"32–36"},{"n":9,"title":"An toàn thông tin trên Internet","pages":"37–41"},{"n":10,"title":"Sơ đồ tư duy","pages":"42–47"},{"n":11,"title":"Định dạng văn bản","pages":"48–52"},{"n":12,"title":"Trình bày thông tin ở dạng bảng","pages":"53–57"},{"n":13,"title":"Thực hành: Tìm kiếm và thay thế","pages":"58–60"},{"n":14,"title":"Thực hành tổng hợp: Hoàn thiện sổ lưu niệm","pages":"61–62"},{"n":15,"title":"Thuật toán","pages":"63–66"},{"n":16,"title":"Các cấu trúc điều khiển","pages":"67–70"},{"n":17,"title":"Chương trình máy tính","pages":"71–74"}], STANDALONE=15;
 const MISSIONS = [
  ["Máy tính và cộng đồng","📰","Phòng tin lớp 6","Tách dữ liệu khỏi điều người đọc hiểu để cả lớp nhận đúng thông báo.","Bàn phân loại tin","Phân loại bằng chứng","#006b64","#a8f0d6","sort",["Bắt tín hiệu","Giải nghĩa bản tin","Chuyển thông báo","Bắt lỗi ngữ cảnh","Xuất bản đúng tin"]],
  ["Máy tính và cộng đồng","🎛️","Xưởng xử lí tín hiệu","Biến những số liệu rời rạc thành báo cáo mà cả lớp có thể kiểm tra.","Dây chuyền thông tin","Lắp dây chuyền","#3659a7","#c1d1ff","flow",["Nhận tín hiệu","Tách công đoạn","Chạy dây chuyền","Tìm khâu lỗi","Bàn giao báo cáo"]],
@@ -832,9 +844,9 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const READ_MS=15000, TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
 const modes={choice:'Chọn một',multi:'Chọn nhiều',match:'Ghép trực tiếp',order:'Xếp từng bước',practice:'Tự đánh giá'};
-let timer=0,lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
 const mem=new Map();
 const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
@@ -936,7 +948,7 @@ function home(scroll){
  if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
- cancel();attempt=null;
+ attempt=null;
  setHeader(mission);
  const p=progress;
  const title=add(h('h1'),h('em','',mission.title));
@@ -991,9 +1003,8 @@ function resetLesson(){
  save(lesson.n);
  lessonPage();
 }
-function cancel(){cancelAnimationFrame(timer);timer=0}
 function route(){
- cancel();attempt=null;
+ attempt=null;
  const hash=location.hash;
  const match=hash.match(/^#bai-(\d+)$/);
  const n=STANDALONE||(match?+match[1]:0);
@@ -1016,7 +1027,7 @@ function basePanel(label,title,desc,back=()=>lessonPage()){
 function lab(){
  if(progress.count!==TOTAL){lessonPage();return}
  if(hasCertificate(progress)){certificate();return}
- cancel();attempt=null;
+ attempt=null;
  const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
  const box=h('div','lab-shell');
  const actions=h('div','final-actions');
@@ -1036,9 +1047,13 @@ function lab(){
  focusViewStart(title);
 }
 function drawStudy(stage){
- const panel=h('section','study');
- add(panel,h('h2','','Kiến thức cần nhớ'),h('p','study-body',stage.text),
-  h('p','tiny','SGK · trang '+lesson.pages));
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
  return panel;
 }
 function hint(q,stage){
@@ -1048,33 +1063,22 @@ function hint(q,stage){
  return stage.goal;
 }
 function play(index,retry=false){
- cancel();
  if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
  const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
  const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
- const grid=h('div','play-grid'),left=h('div','play-left'),study=drawStudy(stage);
  const dots=h('div','progress-dots');
- dots.setAttribute('aria-label','Câu '+(index%5+1)+' trên 5');
+ dots.setAttribute('aria-hidden','true');
  for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
- const gate=add(h('div','read-gate'),h('span','gate-icon','◷'),h('span','muted','Đọc trước khi trả lời'),h('span','gate-time','15s'));
- const status=h('span','sr-only');status.setAttribute('role','status');
- const pane=h('section','question-card');pane.hidden=!retry;
- add(left,dots,study,gate,status,pane);
- add(grid,left);main.replaceChildren(add(h('div','lesson-panel'),head,grid));
- attempt={index,q,stage,i,phase:retry?'answer':'read',pane,left,status};
- function unlock(){
-  if(attempt?.pane!==pane)return;
-  attempt.phase='answer';gate.hidden=true;pane.hidden=false;
-  drawQuestion(q,pane,stage,index);
-  status.textContent='Câu hỏi đã mở.';
- }
- if(retry){gate.hidden=true;unlock()}
- else{
-  const deadline=performance.now()+READ_MS;const time=gate.querySelector('.gate-time');
-  const tick=()=>{const remain=Math.max(0,deadline-performance.now());time.textContent=Math.ceil(remain/1000)+'s';study.style.setProperty('--read',360*(1-remain/READ_MS)+'deg');
-   if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
-  study.classList.add('reading');tick();
- }
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study,pane);
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
+ attempt={index,q,stage,i,phase:'answer',pane,study};
+ drawQuestion(q,pane,stage,index);
  focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
@@ -1152,7 +1156,15 @@ function complete(index,q,pane,self){
 function wrong(index,q,pane,stage){
  attempt.phase='retry';disable(pane);
  progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
- const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),h('p','',hint(q,stage)),h('p','',stage.text),h('span','tiny','SGK · trang '+lesson.pages));
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
  const e=h('input');e.type='checkbox';
  const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
  e.addEventListener('change',()=>retry.disabled=!e.checked);
@@ -1165,7 +1177,7 @@ function solution(q){
  return q.correct.map(i=>q.choices[i]).join(' · ');
 }
 function review(i){
- cancel();attempt=null;
+ attempt=null;
  const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
  const box=h('div','review-stack');box.append(drawStudy(s));
@@ -1178,7 +1190,7 @@ function review(i){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function extra(){
- cancel();attempt=null;
+ attempt=null;
  const q=lesson.extras[0];
  const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
  const box=add(h('section','question-card'),h('h2','',q.prompt));
@@ -1189,7 +1201,7 @@ function extra(){
  main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
 }
 function celebrateStage(i){
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
  const actions=add(h('div','tool-row'),
   b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
@@ -1203,7 +1215,7 @@ function celebrateStage(i){
 }
 function certificate(){
  if(!hasCertificate(progress)){lessonPage();return}
- cancel();attempt=null;
+ attempt=null;
  const title=h('h1','','Chứng nhận hoàn thành');
  const recipient=h('p','certificate-recipient');
  const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});
