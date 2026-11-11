@@ -118,12 +118,20 @@ main { min-height: 65vh; padding-block: 20px 42px }
 .play-panel .view-heading > :not(.btn) { grid-column: 1 }
 .play-panel .progress-dots { margin-bottom: 1rem }
 .play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-grid.study-only { grid-template-columns: 1fr }
+.study-wait { color: var(--muted); font-size: .9rem }
+.study-meter { height: 6px; margin-top: .55rem; overflow: hidden; background: #152e46; border-radius: 8px }
+.study-meter-fill { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: study-read var(--study-time) linear both }
+@keyframes study-read { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@media (prefers-reduced-motion: reduce) {
+  .study-meter { display: none }
+}
 .play-panel .answer-options { grid-template-columns: 1fr }
 .play-panel .question-card { scroll-margin-top: 1rem }
 .play-panel .study-jump { display: none }
 @media (max-width: 760px) {
   .play-grid { grid-template-columns: 1fr }
-  .play-panel .study-jump { display: inline-flex; margin-bottom: .45rem }
+  .play-panel .study-jump:not([hidden]) { display: inline-flex; margin-bottom: .45rem }
 }
 @media (max-width: 420px) {
   .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
@@ -845,6 +853,7 @@ const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
 const TOTAL=25, STORAGE='fptbn-t6-missions-v1:';
+const STUDY_SECONDS=15;
 const modes={choice:'Chọn một',multi:'Chọn tất cả đáp án đúng',match:'Ghép cặp',order:'Sắp xếp',practice:'Tự đánh giá'};
 let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
 let storageProblem=false;
@@ -1075,12 +1084,43 @@ function play(index,retry=false){
   pane.scrollIntoView({block:'start'});
   focus(pane.querySelector('h2'));
  },'btn text-btn study-jump');
- const grid=add(h('div','play-grid'),study,pane);
- main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid));
- attempt={index,q,stage,i,phase:'answer',pane,study};
- drawQuestion(q,pane,stage,index);
+ const grid=add(h('div','play-grid'),study);
+ const session={index,q,stage,i,phase:'study',pane,study};
+ attempt=session;
+ const mustRead=lesson.n>=2&&!retry;
+ jump.hidden=mustRead;
+ const status=h('p','sr-only');
+ status.setAttribute('role','status');
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid,status));
  focusViewStart(title);
- if(retry)focus(pane.querySelector('h2'));
+ if(!mustRead){
+  showQuestion();
+  if(retry)focus(pane.querySelector('h2'));
+  return;
+ }
+
+ grid.classList.add('study-only');
+ const fill=h('span','study-meter-fill');
+ fill.style.setProperty('--study-time',STUDY_SECONDS+'s');
+ const meter=add(h('div','study-meter'),fill);
+ meter.setAttribute('aria-hidden','true');
+ const notice=h('p','','Đọc kiến thức trong '+STUDY_SECONDS+' giây. Câu hỏi sẽ tự mở.');
+ const wait=add(h('div','study-wait'),notice,meter);
+ study.append(wait);
+ setTimeout(()=>{
+  if(attempt!==session)return;
+  wait.hidden=true;
+  grid.classList.remove('study-only');
+  showQuestion();
+  status.textContent='Câu hỏi đã mở.';
+ },STUDY_SECONDS*1000);
+
+ function showQuestion(){
+  session.phase='answer';
+  drawQuestion(q,pane,stage,index);
+  grid.append(pane);
+  jump.hidden=false;
+ }
 }
 function drawQuestion(q,pane,stage,index){
  const head=h('p','question-kind',q.grouping?'Phân loại':modes[q.type]);
