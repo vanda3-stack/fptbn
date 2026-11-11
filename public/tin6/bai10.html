@@ -558,7 +558,7 @@ function get(n){
 function save(n){try{localStorage.setItem(STORAGE+n,JSON.stringify(mem.get(n)))}catch{storageProblem=true}}
 function link(text,url,cls='text-link'){const e=h('a',cls,text);e.href=url;return e}
 function focus(e){if(e){if(!e.matches('button,a,input,textarea,select'))e.tabIndex=-1;e.focus({preventScroll:true})}}
-function top(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
+function focusViewStart(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
 function courseLink(text='Chương trình',cls='text-link'){return link(text,STANDALONE?'index.html#chuong-trinh':'#chuong-trinh',cls)}
 function lessonLink(n,text,cls){return link(text,'bai'+n+'.html',cls)}
 function setTheme(m){document.body.style.setProperty('--accent',m?.color||'#1e594c');document.body.style.setProperty('--tint',m?.tint||'#b3f2c4')}
@@ -616,7 +616,7 @@ function home(scroll){
  renderCards();add(lib,filters,cards);
  main.replaceChildren(hero,signals,lib);
  if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
- if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else top(title);
+ if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
 }
 function lessonPage(scroll=true){
  cancel();attempt=null;
@@ -660,7 +660,7 @@ function lessonPage(scroll=true){
  },'btn text-btn reset'));
  add(details,aside);main.replaceChildren(cr,hero,summary,details);
  if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
- if(scroll)top(title);
+ if(scroll)focusViewStart(title);
 }
 function weakStage(){
  const scores=[0,0,0,0,0];Object.entries(progress.tries).forEach(([k,v])=>scores[Math.floor(+k/5)]+=v);
@@ -694,7 +694,7 @@ function lab(){
  const box=h('div','lab-shell');
  main.replaceChildren(head,box);
  mountLab(box,mission,progress.lab,i=>{if(!progress.lab.includes(i)){progress.lab.push(i);progress.xp+=30;save(lesson.n)}});
- top(title);
+ focusViewStart(title);
 }
 function drawStudy(stage,i){
  const panel=h('section','study');
@@ -733,7 +733,7 @@ function play(index,retry=false){
    if(remain){timer=requestAnimationFrame(tick)}else{study.classList.remove('reading');unlock()}};
   study.classList.add('reading');tick();
  }
- top(title);
+ focusViewStart(title);
  if(retry)focus(pane.querySelector('h2'));
 }
 function drawQuestion(q,pane,stage,index){
@@ -831,7 +831,7 @@ function review(i){
   add(item,h('p','',solution(q)),q.why?h('p','muted',q.why):null);box.append(item);
  });
  if(!solved)box.append(h('p','muted','Lời giải sẽ xuất hiện ở đây sau khi em vượt qua từng câu.'));
- main.replaceChildren(head,box);top(title);
+ main.replaceChildren(head,box);focusViewStart(title);
 }
 function extra(){
  cancel();attempt=null;
@@ -842,14 +842,14 @@ function extra(){
   if(!progress.extras.includes(q.id)){progress.extras.push(q.id);save(lesson.n)}
   disable(box);const result=h('p','result-card success','✓ Đã ghi nhận tự đối chiếu.');box.append(result);focus(result);
  });
- main.replaceChildren(head,box);top(title);
+ main.replaceChildren(head,box);focusViewStart(title);
 }
 function summary(){
  cancel();attempt=null;
  const [head,title]=basePanel('BÀI '+number(lesson.n)+' · TỔNG KẾT','Hoàn thành '+mission.title,'Em đã vượt qua đủ 5 chặng.');
  const box=add(h('section','side-card summary-box'),stats(mission),h('p','muted',progress.lab.length+'/2 nhiệm vụ mô phỏng đã đạt.'),b('Mở khu mô phỏng',()=>lab(),'btn primary'),courseLink('Chọn bài khác →','btn subtle'));
  const weak=weakStage();if(weak!==null)box.append(b('Ôn lại '+mission.stages[weak],()=>review(weak)));
- main.replaceChildren(head,box);top(title);
+ main.replaceChildren(head,box);focusViewStart(title);
 }
 document.querySelector?.('.skip')?.addEventListener('click',e=>{e.preventDefault();main.scrollIntoView({block:'start'});focus(main)});
 window.addEventListener('hashchange',route);
