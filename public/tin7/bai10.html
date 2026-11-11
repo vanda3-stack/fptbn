@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07162a">
+<meta name="description" content="CodeQuest Tin học 7. Vượt thử thách để nhận chứng nhận hoàn thành bài.">
+<title>Bài 10 · Hoàn thiện bảng tính | Tin học 7</title>
+<style>:root {
+  color-scheme: dark;
+  --ink: #f2f8ff;
+  --muted: #b4cbe0;
+  --paper: #07162a;
+  --panel: #132c47;
+  --card: #17314d;
+  --line: #46617c;
+  --gold: #ffdb83;
+  --accent: #64ecc9;
+  --teal-ink: #102c32;
+  --input: #0a2940;
+}
+*, *::before, *::after { box-sizing: border-box }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: radial-gradient(ellipse at 50% -20%, #284b79, #091c35 53%, #071424);
+  font: 1rem/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+h1, h2, h3, h4, p { margin: 0 }
+h1 { font-size: clamp(2rem, 5vw, 3.56rem); line-height: 1.09 }
+h1 em { color: var(--accent); font-style: normal }
+h2 { font-size: clamp(1.4rem, 3vw, 2.2rem); line-height: 1.2 }
+h3 { font-size: 1.16rem; line-height: 1.4 }
+p { max-width: 67ch }
+a, button, input, textarea, select { color: inherit }
+button, input, textarea, select { font: inherit }
+button:not(:disabled), summary { cursor: pointer }
+button:disabled { opacity: .58 }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px }
+h1[tabindex="-1"]:focus-visible { outline: none }
+[hidden] { display: none !important }
+.muted, .tiny { color: var(--muted) }
+.tiny { font-size: .86rem }
+.sr-only, .skip:not(:focus) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap }
+.skip:focus { position: fixed; top: 8px; left: 8px; z-index: 10; padding: 10px 14px; background: var(--paper) }
+
+.header-inner, main, .site-footer > div { max-width: 1130px; margin-inline: auto; padding-inline: clamp(14px, 4vw, 40px) }
+.header-inner { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 15px; border-bottom: 1px solid #334b66 }
+.brand { display: grid; gap: .1rem }
+main { min-height: 65vh; padding-block: 20px 42px }
+.site-footer { border-top: 1px solid var(--line) }
+.site-footer > div { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; color: var(--muted); font-size: .82rem }
+.eyebrow { color: var(--accent); font-size: .7rem; font-weight: 900; letter-spacing: .12rem; text-transform: uppercase }
+.text-link, .nav-link { color: var(--accent); text-underline-offset: .2em }
+
+.hero { position: relative; background: linear-gradient(115deg,#1e446e,#0f2948); border: 1px solid #42668d; border-radius: 25px; overflow: hidden }
+.hero-copy { position: relative; z-index: 1; padding: clamp(22px, 4vw, 42px); display: grid; justify-items: start; gap: .85rem }
+.hero-desc { color: #d4e6f5; max-width: 60ch }
+.hero-actions, .tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem }
+.btn, .chip { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 46px; padding: .6rem .9rem; border: 1px solid var(--line); border-radius: 13px; background: var(--card); font-size: .92rem; font-weight: 750; line-height: 1.3; text-align: center; text-decoration: none; overflow-wrap: anywhere }
+.btn.primary { background: var(--accent); border-color: transparent; color: var(--teal-ink); font-weight: 800 }
+.btn.primary:hover:not(:disabled) { background: #a7f0de }
+.btn.subtle:hover:not(:disabled), .btn.outline:hover, .chip:hover:not(:disabled) { background: #284c65; border-color: var(--accent) }
+.btn.text-btn { border-color: transparent; background: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: .2em; padding-inline: 0 }
+.selected:not(.pixel-cell), .answer-choice:has(:checked) { border-color: var(--accent); background: #166b58 }
+.badge, .mechanic { display: inline-block; padding: .18rem .5rem; border-radius: 7px; background: #2c4e69; font-size: .82rem }
+
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 1.8rem 0 .8rem }
+.section-head .muted { max-width: 40ch }
+.signal-band { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-block: 1rem }
+.signal-stat, .stat-tile { display: grid; padding: .65rem .85rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
+.signal-stat strong, .stat-tile strong { color: var(--gold); font-size: 1.15rem }
+.signal-stat span, .stat-tile small { color: var(--muted); font-size: .84rem }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 1rem }
+.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+.course-card { display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; text-decoration: none }
+.course-card:hover { border-color: var(--accent) }
+.card-visual { display: flex; justify-content: space-between; align-items: center; padding: .6rem .8rem; background: var(--card-tint); color: var(--paper) }
+.card-icon { font-size: 2rem }
+.card-no { font-size: .8rem; font-weight: 850 }
+.card-copy { flex: 1; padding: .8rem }
+.card-copy p, .card-group, .card-progress { color: var(--muted); font-size: .84rem }
+.mechanic { margin-top: .45rem }
+.card-track { padding: 0 .8rem .8rem }
+.card-progress { display: flex; justify-content: space-between; margin-top: .35rem }
+.meter { height: 7px; overflow: hidden; border-radius: 8px; background: #365570 }
+.meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#55e9c7,#ffda81) }
+
+.stage-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0 0 1rem }
+.stage-row { display: grid; align-content: start; border-radius: 17px; overflow-wrap: anywhere }
+.stage-row.done .room-button { border-color: var(--accent) }
+.stage-row.locked .room-button { opacity: .68 }
+.side-card { display: grid; gap: .45rem; padding: 1rem; border: 1px solid var(--line); border-radius: 15px; background: var(--panel) }
+.side-card > .btn { justify-self: start }
+.side-card h2 { font-size: 1.4rem }
+
+.lesson-panel { max-width: 900px; margin-inline: auto; padding: clamp(16px, 4vw, 36px); background: var(--panel); border: 1px solid var(--line); border-radius: 22px }
+.view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
+.view-heading > .btn { justify-self: start }
+.view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
+.review-stack, .question-card { display: grid; gap: .75rem }
+.progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
+.progress-dots span { height: 8px; background: #365570; border-radius: 8px }
+.progress-dots .done { background: var(--accent) }
+.progress-dots .current { background: var(--gold) }
+.study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-grid.study-only { grid-template-columns: 1fr }
+.study-wait { color: var(--muted); font-size: .9rem }
+.study-meter { height: 6px; margin-top: .55rem; overflow: hidden; background: #152e46; border-radius: 8px }
+.study-meter-fill { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: study-read var(--study-time) linear both }
+@keyframes study-read { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@media (prefers-reduced-motion: reduce) {
+  .study-meter { display: none }
+}
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump:not([hidden]) { display: inline-flex; margin-bottom: .45rem }
+}
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
+.question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
+.answer-area, .answer-options { display: grid; gap: .65rem }
+.answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
+.answer-choice { min-height: 58px; display: flex; align-items: flex-start; gap: .65rem; padding: .7rem; border-radius: 13px; border: 1px solid var(--line); background: #244460; overflow-wrap: anywhere; cursor: pointer }
+.answer-choice:hover { border-color: var(--accent) }
+.answer-choice input, .rubric-item input { width: 1.15rem; height: 1.15rem; flex-shrink: 0; accent-color: var(--accent) }
+.letter { flex: 0 0 1.6rem; text-align: center; border-radius: 7px; background: #395d76; font-weight: 800 }
+.result-card, .notice, .lab-feedback { padding: .75rem 1rem; border: 1px solid var(--line); border-radius: 13px; background: var(--card); overflow-wrap: anywhere }
+.result-card p { margin-top: .3rem }
+.warning, .notice { background: #4c3e27; color: #ffebc5; border-color: #9d8864 }
+.success { background: #24574f; border-color: #79c6b3 }
+.rubric-item { display: flex; align-items: flex-start; gap: .55rem; margin-block: .4rem }
+.practice-rubric { padding: .75rem; background: var(--panel); border-radius: 10px }
+.review-item summary { font-weight: 800 }
+.review-item p, .review-item .table-wrap { margin-top: .6rem }
+.celebration { text-align: center; border-color: #bd9f64; padding-block: clamp(26px, 6vw, 58px) }
+.celebration p { margin: .75rem auto }
+.celebration .tool-row { justify-content: center }
+.award { display: grid; place-items: center; margin: 0 auto 1rem; width: 105px; aspect-ratio: 1; border-radius: 50%; background: #f6ce77; border: 3px solid #ffe7a8; font-size: 3.3rem; animation: award-in .35s ease-out }
+@keyframes award-in { from { transform: scale(.8); opacity: .4 } }
+
+.field { min-width: 0; display: grid; gap: .35rem }
+.field-label { color: var(--muted); font-size: .86rem; font-weight: 800 }
+.field input, .field textarea, .field select, .edit-table input { width: 100%; max-width: 100%; min-height: 44px; padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 9px; background: var(--input); color: var(--ink) }
+.field textarea { resize: vertical }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px }
+.table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: 9px }
+.data-table { border-collapse: collapse; width: 100%; font-size: .9rem }
+.data-table th, .data-table td { padding: .4rem .6rem; border-bottom: 1px solid var(--line); text-align: left }
+.data-table th { background: var(--input) }
+.data-table tr:last-child td { border-bottom: 0 }
+
+.lab-shell{display:grid;gap:12px}
+.lab-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.lab-tabs .chip{padding:8px 13px}
+.lab-stage{border-top:5px solid var(--accent);max-width:900px}
+.lab-stage h3{font-size:clamp(1.25rem,3vw,1.75rem);line-height:1.15}
+.lab-instruction{color:var(--muted);margin:7px 0 14px;max-width:66ch}
+.lab-play{display:grid;gap:12px}
+.lab-play>.btn{justify-self:start}
+.lab-feedback{margin-top:13px}
+.readout{padding:8px 11px;background:var(--input);border-radius:7px;font:.83rem ui-monospace,monospace;color:var(--ink);overflow-wrap:anywhere}
+.sort-board,.network-board,.mind-branches,.safety-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr));gap:8px}
+.sort-bin{display:grid;gap:5px;border:1px dashed var(--line);border-top:4px solid var(--accent);border-radius:9px;background:var(--input);padding:10px}
+.sort-bin ul{margin:0;padding-left:16px;font-size:.8rem}
+.flow-track{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.flow-track span{display:grid;place-items:center;text-align:center;min-height:45px;border:1px dashed var(--line);background:var(--input);border-radius:7px;font-size:.76rem;font-weight:790}
+.flow-track .filled{background:#285267;border-style:solid;border-color:var(--accent)}
+.ordered-tray{min-height:38px;display:grid;gap:5px;margin:0;padding-left:26px}
+.ordered-tray li{padding:6px 8px;background:var(--input);border:1px solid var(--line);border-radius:6px}
+.ordered-tray li::marker{font-weight:850;color:var(--accent)}
+.ordered-tray .empty-slot{border-style:dashed;color:var(--muted)}
+
+.pixel-pair{display:flex;gap:18px;flex-wrap:wrap}
+.pixel-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(36px,48px));gap:4px;margin-top:5px}
+.pixel-cell{height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;background:#f4f8ff;font:700 1rem ui-monospace,monospace;color:var(--teal-ink)}
+.pixel-cell.selected{background:#272247;color:#fff;border-color:#272247}
+.device,.safety-action,.result-title{border:1px solid var(--line);border-radius:9px;background:var(--input);padding:9px;min-height:47px;font-size:.86rem;font-weight:750;overflow-wrap:anywhere}
+.device{min-height:66px;background:var(--input)}
+.wire-list{margin:0;padding:9px 12px 9px 28px;border-radius:8px;border:1px solid var(--line);background:var(--input)}
+.dispatch,.search-results,.binder-stack{display:grid;gap:8px}
+.dispatch-row{display:grid;grid-template-columns:88px 1fr;gap:9px;align-items:center;background:var(--input);border-radius:8px;border:1px solid var(--line);padding:8px}
+.signal{font:800 .69rem ui-monospace,monospace;color:var(--accent);overflow-wrap:anywhere}
+.mock-browser,.mock-mail{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+.browser-bar,.search-bar{display:flex;align-items:end;flex-wrap:wrap;gap:7px;padding:8px;background:var(--input)}
+.browser-bar .field,.search-bar .field{flex:1;min-width:min(145px,100%)}
+.mock-page,.composer{padding:12px;display:grid;gap:8px}
+.mock-page h4{font-size:1.22rem}
+.mock-page .btn{justify-self:start}
+.mock-link{color:var(--accent);text-decoration:underline;border-color:var(--line)}
+.search-bar{border-radius:9px}
+.search-result{display:grid;gap:4px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--input)}
+.search-result button{text-align:left}
+.search-result small{padding-left:5px}
+.window-bar{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px;background:#285267;color:var(--ink)}
+.incident{display:grid;gap:5px;padding:11px;border-radius:9px;background:#4c3e27;border:1px solid #9d8864}
+.incident .badge{justify-self:start}
+.safety-actions{grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr))}
+.mind-tree{background:var(--input);border:1px solid var(--line);border-radius:9px;padding:10px}
+.mind-root{background:var(--accent);color:var(--teal-ink);padding:7px 13px;border-radius:8px;text-align:center;font-weight:820;max-width:330px;margin:0 auto 12px}
+.mind-branch{border-top:3px solid var(--accent);background:var(--panel);border-radius:6px;padding:7px}
+.mind-branch ul{padding-left:15px;margin:4px 0;font-size:.8rem}
+.paper{color:#17241f;max-width:410px;min-height:174px;margin-inline:auto;background:white;box-shadow:0 7px 24px #1e292821;border:1px solid var(--line);padding:9px var(--paper-margin,10%) 14px;width:100%}
+.paper.landscape{max-width:630px;min-height:123px}
+.paper.preview{outline:2px solid var(--accent);outline-offset:3px}
+.paper h4{font-size:1.18rem;margin-bottom:7px}
+.paper-watermark{font-size:.64rem;letter-spacing:.13em;color:#52615b;margin-bottom:9px}
+.edit-table input{min-width:58px;min-height:35px;padding:4px}
+.edit-table th,.edit-table td{padding:5px}
+.draft-text{color:#17241f;padding:13px;border:1px solid var(--line);border-radius:8px;background:#f8edcf;min-height:62px;font-family:Georgia,serif;font-size:1.08rem}
+.draft-text mark{background:#ffce63;padding:2px}
+.binder-shelf{display:flex;gap:6px;flex-wrap:wrap}
+.binder-page{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:7px;padding:8px;background:var(--input)}
+.page-number{display:grid;place-items:center;width:24px;height:26px;background:#285267;font-size:.78rem;font-weight:850;border-radius:4px}
+.robot-map{display:grid;gap:7px}
+.robot-track{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.track-cell{display:grid;place-items:center;min-height:43px;border:1px solid var(--line);border-radius:6px;background:var(--input);font-size:1.03rem}
+.track-cell.target{border-color:var(--accent);background:#285267}
+.scratch-stage{display:flex;gap:13px;align-items:center;min-height:91px;border-radius:10px;border:1px solid var(--line);background:repeating-linear-gradient(0deg,var(--input) 0 17px,var(--card) 18px 19px);padding:8px}
+.scratch-cat{font-size:2.55rem}
+.speech{color:#17241f;padding:8px;background:#fff;border:1px solid var(--line);border-radius:12px;font-weight:700;font-size:.9rem}
+.scratch-script{display:grid;gap:4px;max-width:640px}
+.scratch-hat,.scratch-block{border-radius:9px;padding:6px 9px}
+.scratch-hat{background:#f2c65a;color:#402d0c;font-weight:820}
+.scratch-block .field-label{color:#17241f}
+.scratch-block.sb0{background:#9ed5f1}
+.scratch-block.sb1{background:#ffc895}
+.scratch-block.sb2{background:#e1c4ff}
+@media (max-width: 850px) {
+  .stage-list { grid-template-columns: repeat(3, minmax(0,1fr)) }
+  .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}
+@media (max-width: 600px) {
+  .answer-options, .form-grid { grid-template-columns: 1fr }
+  .header-inner { align-items: flex-start; flex-direction: column; padding-block: 12px }
+  .stage-list { grid-template-columns: repeat(2, minmax(0,1fr)) }
+  .room-button { min-height: 138px }
+  .site-footer > div, .section-head { flex-direction: column; align-items: flex-start }
+  .signal-band { grid-template-columns: repeat(2, 1fr) }
+  .binder-page { grid-template-columns: auto 1fr }
+  .binder-page .tool-row { grid-column: 2 }
+}
+@media (max-width: 355px) {
+  .brand { font-size: .85rem }
+  .course-grid { grid-template-columns: 1fr }
+  .dispatch-row { grid-template-columns: 1fr }
+  .flow-track { grid-template-columns: repeat(2, 1fr) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .award { animation: none }
+}
+
+.logo { font-size: 1.45rem; font-weight: 950; letter-spacing: .025em; line-height: 1.2 }
+.logo em { color: var(--accent); font-style: normal }
+.brand-subtitle { color: var(--muted); font-size: .75rem }
+.header-stats { display: flex; gap: .5rem; flex-wrap: wrap }
+.stat-pill { padding: .42rem .7rem; border: 1px solid #466783; border-radius: 20px; background: #1a3857; font-size: .8rem; white-space: nowrap }
+.hero-watermark { position: absolute; right: 6%; top: 0; font-size: clamp(5rem, 15vw, 10rem); opacity: .16; pointer-events: none }
+.room-button {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: .4rem;
+  width: 100%;
+  min-height: 158px;
+  padding: 15px 12px;
+  border: 1px solid #466785;
+  border-radius: 17px;
+  background: linear-gradient(140deg,#204365,#122740);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.room-button:not(:disabled):hover { border-color: var(--accent) }
+.room-button small { color: var(--muted) }
+.room-icon { font-size: 2.35rem; line-height: 1.15 }
+.room-seal { position: absolute; right: 10px; top: 8px; color: var(--gold) }
+.stage-row > .btn { justify-self: start; margin-inline: .65rem }
+.question-kind { font-size: .8rem; color: var(--gold); font-weight: 800 }
+.lab-next { margin-top: 1rem }
+.final-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem }
+.certificate-view > .btn { margin-bottom: 1rem }
+.certificate-card {
+  display: grid;
+  justify-items: center;
+  gap: .8rem;
+  padding: clamp(1rem, 5vw, 3rem);
+  border: 5px double #c29a4c;
+  border-radius: 15px;
+  background: #fff8e7;
+  color: #142a43;
+  text-align: center;
+}
+.certificate-card .eyebrow { color: #1d6358 }
+.certificate-card h1 { font-size: clamp(1.5rem, 4vw, 2.4rem) }
+.certificate-icon { font-size: 3rem; line-height: 1 }
+.certificate-recipient { color: #155344; font-weight: 850; font-size: 1.4rem; overflow-wrap: anywhere }
+.certificate-recipient:empty { display: none }
+.certificate-date { color: #41546b }
+.certificate-actions { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; margin-top: 1rem }
+.certificate-actions .field { flex: 1 1 200px }
+@media print {
+  @page { size: A4 landscape; margin: 15mm }
+  :root { color-scheme: light }
+  body { background: #fff; color: #142a43 }
+  body > :not(main), .certificate-view > :not(.certificate-card) { display: none !important }
+  main, .certificate-view { max-width: none; margin: 0; padding: 0; border: 0; background: transparent }
+  .certificate-card { min-height: 155mm; align-content: center; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact }
+}
+
+.play-panel .progress-dots { grid-template-columns: repeat(4, 1fr) }
+.lab-preview { border: 1px solid var(--line); border-radius: 12px; padding: .9rem; background: var(--input); overflow-wrap: anywhere }
+.lab-preview p + p { margin-top: .5rem }
+.trace-board { display: flex; flex-wrap: wrap; gap: .5rem }
+.trace-board .btn { min-width: 3.1rem }
+.trace-board .selected { border-color: var(--accent) }
+.trace-board .outside { opacity: .6 }
+.form-grid select { max-width: 100% }
+.sheet-light th { font-weight: 500 }
+.sheet-borders :is(th,td) { border: 1px solid var(--line) }
+.mini-slide { position: relative; overflow: hidden; text-align: center; background: #142a46; color: #fff; padding: 1rem; border-radius: 8px }
+.mini-slide h3 { font-size: 1.4rem }
+.mini-slide .slide-small { font-size: .75rem }
+.slide-light { background: #fff7dc; color: #17263b }
+.slide-low { color: #8092a3; background: #71879d }
+.slide-photo { display: flex; justify-content: space-around; gap: .35rem; width: min(100%,12rem); margin: .55rem auto; padding: .65rem; background: #247263; border-radius: 8px }
+.slide-stretch { transform: scaleX(1.38) }
+.slide-overlay { position: absolute; inset: auto 0 0; margin-block: 0; height: 2.6rem }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung chính</a>
+<header id="site-header" class="site-header">
+ <div class="header-inner">
+  <div id="brand" class="brand">Tin học 7</div>
+  <nav id="header-links" aria-label="Điều hướng chính"></nav>
+ </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<footer class="site-footer"><div><span>FPTBN · TIN HỌC 7</span><span>Kết nối tri thức với cuộc sống</span></div></footer>
+<noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
+<script>
+'use strict';
+const BANK={"10":{"n":10,"title":"Hoàn thiện bảng tính","pages":"51–54","stages":[{"goal":"Nhận biết thao tác hàng, cột, trang tính và in.","study":{"points":["Thêm hoặc đổi tên trang tính để tách các nhóm dữ liệu.","Chèn hàng hoặc cột khi cần mở rộng bảng.","Xem trước để kiểm tra nội dung xuất hiện trên giấy."],"example":"Thêm cột Ghi chú mà không ghi đè cột Số lượng."},"tasks":[{"id":"T7-B10-C01","prompt":"Muốn thêm một trường Ghi chú cho mọi người, chèn gì?","type":"choice","choices":["Cột","Hàng","Tiêu đề trang","Vùng in mới"],"correct":[0],"why":"Mỗi trường nằm ở một cột."},{"id":"T7-B10-C02","prompt":"Việc nào giúp kiểm tra trước khi in?","type":"multi","choices":["Xem trước","Xác định vùng in","Chỉ đổi màu tên tệp","Kiểm tra hướng giấy"],"correct":[0,1,3],"why":"Ba việc liên quan nội dung và bố cục bản in."},{"id":"T7-B10-C03","prompt":"Ghép yêu cầu với thao tác.","type":"match","groups":["Tạo trang tính","Đổi tên trang tính","Kẻ đường viền"],"items":["Đặt tên Tháng 2 cho Sheet2","Giữ nét kẻ quanh bảng khi in","Thêm trang riêng cho dữ liệu tháng sau"],"assign":[1,2,0],"grouping":false,"why":"Trang riêng tách dữ liệu, tên rõ giúp tra cứu, đường viền xác định nét kẻ của bảng."},{"id":"T7-B10-C04","prompt":"Vì sao nên đặt tên trang tính rõ?","type":"choice","choices":["Dễ mở đúng phần dữ liệu","Công thức tự đúng hết","Bảng luôn vừa khổ giấy","Tệp tự tạo bản sao"],"correct":[0],"why":"Tên giúp phân biệt trang trong cùng tệp."}]},{"goal":"Giải thích vì sao bản in có thể thiếu dữ liệu.","study":{"points":["Vùng in quyết định ô nào được in.","Hướng ngang có thể phù hợp bảng rộng.","Cần đọc bản xem trước sau khi đổi."],"example":"Bảng rộng có thể chia sang hai trang nếu hướng dọc."},"tasks":[{"id":"T7-B10-C05","prompt":"Bảng phải in đủ cột A–G. Những việc nào hỗ trợ?","type":"multi","choices":["Chọn vùng bao phủ A–G","Thử hướng ngang","Chỉ chọn cột A–D","Xem cột cuối trong bản xem trước"],"correct":[0,1,3],"why":"Vùng phải chứa toàn bảng và bản xem trước phải cho thấy cột cuối."},{"id":"T7-B10-C06","prompt":"Chỉ muốn in bảng A1:D8, chọn gì?","type":"choice","choices":["Vùng in A1:D8","Toàn bộ trang tính trống","Chỉ ô D8","Cột A"],"correct":[0],"why":"Vùng in phải chứa cả hàng và cột cần nộp."},{"id":"T7-B10-C07","prompt":"Bảng quá rộng, thay hướng giấy nào để thử?","type":"choice","choices":["Ngang","Giữ dọc và xóa nửa bảng","Không đổi hướng, đổi tên tệp","Chuyển dữ liệu thành văn bản"],"correct":[0],"why":"Hướng ngang tăng chiều rộng khả dụng."},{"id":"T7-B10-C08","prompt":"Bản xem trước không thấy các nét lưới mờ quanh ô. Muốn in đường kẻ ổn định, làm gì?","type":"choice","choices":["Kẻ đường viền cho vùng bảng rồi xem trước","Tăng độ rộng cột","Đổi hướng trang","Đổi tên trang tính"],"correct":[0],"why":"Nét lưới mặc định và đường viền đã định dạng là hai thứ khác nhau."}]},{"goal":"Chèn dữ liệu, kiểm tra công thức và in.","study":{"points":["Chèn hàng trước khi nhập bản ghi mới.","Kiểm tra tổng đã tính cả hàng mới.","Xem trước sau khi hoàn thiện dữ liệu."],"example":"Thêm hàng Tổ 3 rồi kiểm tra công thức tổng bao phủ hàng đó."},"tasks":[{"id":"T7-B10-C09","prompt":"Xếp bước bàn giao bản in có thêm một bản ghi.","type":"order","steps":["Xem trước rồi in","Chèn và nhập bản ghi","Kiểm tra tổng và vùng in"],"sequence":[1,2,0],"why":"Cần hoàn tất số liệu trước khi chuẩn bị bản in."},{"id":"T7-B10-C10","prompt":"Thêm một nhóm mới vào bảng có tổng. Cần kiểm tra gì?","type":"multi","choices":["Dữ liệu nhóm ở đúng hàng","Công thức tổng có đọc hàng mới","Chỉ màu nền của biểu tượng","Vùng in đã bao gồm hàng mới"],"correct":[0,1,3],"why":"Kiểm tra cả nội dung tính và phần được in."},{"id":"T7-B10-C11","prompt":"Tổng cũ 15, nhóm mới góp 6. Tổng đúng là bao nhiêu?","type":"number","answer":21,"why":"15 cộng 6 bằng 21."},{"id":"T7-B10-C12","prompt":"Xóa một cột chỉ có ghi chú. Việc nào nên làm sau đó?","type":"choice","choices":["Kiểm tra các công thức và bản xem trước","Gõ lại toàn bộ bảng ngay","Xóa tiếp cột điểm","Chỉ đổi tên tệp"],"correct":[0],"why":"Thay cấu trúc có thể ảnh hưởng tham chiếu và bố cục."}]},{"goal":"Chẩn đoán thiếu hàng, cột và chữ nhỏ.","study":{"points":["Đổi tỉ lệ in có thể giúp vừa trang nhưng ảnh hưởng khả năng đọc.","Một cột thiếu có thể do nằm ngoài vùng in.","Kiểm tra nội dung ở mép phải và cuối trang."],"example":"Nếu vùng chỉ đến D nhưng bảng đến E, mở rộng vùng trước."},"tasks":[{"id":"T7-B10-C13","prompt":"Bản xem trước thiếu cột E dù dữ liệu vẫn có. Kiểm tra gì?","type":"multi","choices":["Vùng in đã đến E chưa","Cột E có bị sang trang sau không","Mật khẩu tài khoản","Màu biểu tượng Excel"],"correct":[0,1],"why":"Hai kiểm tra phân biệt thiếu phạm vi và ngắt trang."},{"id":"T7-B10-C14","prompt":"Đã ép bảng rất rộng vào một trang và chữ quá nhỏ. Cách thử phù hợp?","type":"choice","choices":["Thử hướng ngang hoặc chia qua các trang hợp lí","Xóa số liệu ngẫu nhiên","Tăng kích thước chữ nhưng không xem lại","Chỉ đổi tên tệp"],"correct":[0],"why":"Cần cân bằng số trang và khả năng đọc."},{"id":"T7-B10-C15","prompt":"Bản in mất hàng vừa thêm vì vùng dừng ở hàng 8. Bảng đến hàng 9. Sửa gì?","type":"choice","choices":["Mở rộng vùng in đến hàng 9","Đổi sang đen trắng","Đổi tên trang","Xóa hàng mới"],"correct":[0],"why":"Hàng mới cần nằm trong phạm vi in."},{"id":"T7-B10-C16","prompt":"Có 4 nhóm, một hàng tiêu đề và một hàng tổng. Vùng in cần bao nhiêu hàng nếu chúng liền nhau?","type":"number","answer":6,"why":"1 + 4 + 1 bằng 6."}]},{"goal":"Bàn giao đủ dữ liệu và bản xem ổn định.","study":{"points":["Tên trang và tệp cần phân biệt bản nguồn với bản nộp.","Rà tổng và vùng in trước khi xuất.","Giữ bản bảng tính để có thể sửa sau."],"example":"Lưu XLSX rồi xuất một PDF đã xem trước."},"tasks":[{"id":"T7-B10-C17","prompt":"Cần cô đọc báo cáo và nhóm tiếp tục cập nhật. Nên làm gì?","type":"multi","choices":["Giữ bản bảng tính có thể sửa","Xuất bản PDF đã rà trang","Chỉ giữ ảnh một phần bảng","Kiểm tra tổng mới sau khi thêm hàng"],"correct":[0,1,3],"why":"Giữ nguồn chỉnh được, kiểm tra và tạo bản đọc."},{"id":"T7-B10-C18","prompt":"Cần in duy nhất trang tính Chi tiêu. Chọn gì?","type":"choice","choices":["Đúng trang tính và vùng cần in","Mọi trang tính","Trang Tư liệu","Một ô không liên quan"],"correct":[0],"why":"Chọn đúng trang và phạm vi theo yêu cầu."},{"id":"T7-B10-C19","prompt":"Bản xem trước hiện cả cột nội bộ không cần chia sẻ. Nên làm gì?","type":"choice","choices":["Chọn vùng in chỉ chứa nội dung cần gửi","Xóa toàn bộ bản nguồn","Gửi nguyên rồi đề nghị bỏ qua","Chỉ đổi tên cột"],"correct":[0],"why":"Giới hạn nội dung bản in theo đối tượng."},{"id":"T7-B10-C20","prompt":"Hoàn thiện một bảng theo dõi nhóm để in.","type":"practice","rubric":["Thêm một bản ghi và đối chiếu tổng.","Chọn vùng in đúng và hướng giấy phù hợp.","Xem trước để kiểm tra cột cuối và khả năng đọc."]}]}],"extras":[]}}, CATALOG=[{"n":1,"title":"Thiết bị vào – ra","pages":"5–9"},{"n":2,"title":"Phần mềm máy tính","pages":"10–12"},{"n":3,"title":"Quản lí dữ liệu trong máy tính","pages":"13–17"},{"n":4,"title":"Mạng xã hội và một số kênh trao đổi thông tin trên Internet","pages":"18–22"},{"n":5,"title":"Ứng xử trên mạng","pages":"23–27"},{"n":6,"title":"Làm quen với phần mềm bảng tính","pages":"28–33"},{"n":7,"title":"Tính toán tự động trên bảng tính","pages":"34–38"},{"n":8,"title":"Công cụ hỗ trợ tính toán","pages":"39–44"},{"n":9,"title":"Trình bày bảng tính","pages":"45–50"},{"n":10,"title":"Hoàn thiện bảng tính","pages":"51–54"},{"n":11,"title":"Tạo bài trình chiếu","pages":"55–60"},{"n":12,"title":"Định dạng đối tượng trên trang chiếu","pages":"61–67"},{"n":13,"title":"Thực hành tổng hợp: Hoàn thiện bài trình chiếu","pages":"68–70"},{"n":14,"title":"Thuật toán tìm kiếm tuần tự","pages":"71–73"},{"n":15,"title":"Thuật toán tìm kiếm nhị phân","pages":"74–77"},{"n":16,"title":"Thuật toán sắp xếp","pages":"78–82"}], STANDALONE=10, STAGE_SIZE=4;
+const MISSIONS=[{"n":1,"group":"Máy tính và cộng đồng","icon":"🎧","title":"Trạm thu và phát","story":"Chọn thiết bị cho phòng học, rồi tìm đúng chỗ tín hiệu bị gián đoạn.","lab":"Bàn kết nối","mechanic":"Lắp bộ thu và phát","mode":"1","stages":["Nhận tín hiệu","Đọc đường tín hiệu","Lắp phòng học","Tìm chỗ hỏng","Bàn giao trạm"]},{"n":2,"group":"Máy tính và cộng đồng","icon":"🧰","title":"Bàn điều phối phần mềm","story":"Mở đúng công cụ và tìm nguyên nhân khi một tệp không chạy.","lab":"Máy trạm ảo","mechanic":"Ghép ứng dụng với tệp và thiết bị","mode":"2","stages":["Nhận diện công cụ","Đọc tên tệp","Mở đúng tệp","Chẩn đoán lỗi mở","Cấu hình máy học"]},{"n":3,"group":"Máy tính và cộng đồng","icon":"🗂️","title":"Kho dữ liệu lớp","story":"Sắp tệp theo cấu trúc dễ tìm và khôi phục từ bản sao.","lab":"Kho tệp mô phỏng","mechanic":"Sắp hồ sơ và thử khôi phục","mode":"3","stages":["Nhận hồ sơ","Tách thao tác","Tạo bản dự phòng","Dò tệp thất lạc","Bàn giao kho tệp"]},{"n":4,"group":"Trao đổi và ứng xử trên mạng","icon":"💬","title":"Trạm truyền tin lớp","story":"Chọn đúng kênh, đúng người xem và xác minh thông báo.","lab":"Bàn điều phối thông tin","mechanic":"Gửi thử theo nhóm người nhận","mode":"4","stages":["Nhận diện kênh","Đọc phạm vi chia sẻ","Gửi bản tin","Phát hiện tin sai","Điều phối nhiều kênh"]},{"n":5,"group":"Trao đổi và ứng xử trên mạng","icon":"🛡️","title":"Đội hỗ trợ bạn bè","story":"Xử lí lời nhắn khó chịu và chọn cách báo cáo an toàn.","lab":"Bàn tình huống số","mechanic":"Bảo vệ bạn và kiểm soát tương tác","mode":"5","stages":["Nhận diện tình huống","Giữ thông tin riêng","Phản ứng an toàn","Nhận ra lệ thuộc","Bảo vệ cộng đồng"]},{"n":6,"group":"Bảng tính","icon":"📋","title":"Kiến trúc sư lưới","story":"Định vị đúng ô và lập bảng theo dõi từ dữ liệu thô.","lab":"Trang tính mô phỏng","mechanic":"Chạm ô và nhập dữ liệu","mode":"6","stages":["Đọc tọa độ","Phân biệt dữ liệu","Nhập đúng bảng","Sửa ô nhập nhầm","Dựng bảng mới"]},{"n":7,"group":"Bảng tính","icon":"🧮","title":"Xưởng công thức","story":"Tạo công thức tự cập nhật khi thay số liệu đầu vào.","lab":"Bảng tính sống","mechanic":"Lắp, sao chép và chạy công thức","mode":"7","stages":["Viết công thức","Tham chiếu dữ liệu","Sao chép theo hàng","Gỡ lỗi phép tính","Tính cho dự án"]},{"n":8,"group":"Bảng tính","icon":"📊","title":"Bàn tổng hợp số liệu","story":"Dùng hàm đúng mục tiêu và chọn đủ vùng dữ liệu.","lab":"Bộ máy thống kê","mechanic":"Chọn hàm, vùng và đọc kết quả","mode":"8","stages":["Nhận ra các hàm","Xác định vùng","Chạy thống kê","Tìm nguyên nhân sai","So sánh nhóm"]},{"n":9,"group":"Bảng tính","icon":"🎨","title":"Xưởng trình bày bảng","story":"Giúp số liệu dễ đọc và giữ nguyên giá trị dùng để tính.","lab":"Bàn định dạng ô","mechanic":"Xem trước khi và sau khi định dạng","mode":"9","stages":["Nhận diện định dạng","Chọn phạm vi","Làm đẹp có kiểm tra","Gỡ lỗi hiển thị","Bàn giao bảng dễ đọc"]},{"n":10,"group":"Bảng tính","icon":"🖨️","title":"Trạm bàn giao bảng tính","story":"Bổ sung dữ liệu, giữ công thức và kiểm tra bản in.","lab":"Bản in thử","mechanic":"Chỉnh cấu trúc và xem trước","mode":"10","stages":["Nhận công cụ","Chọn phạm vi in","Hoàn thiện bảng","Sửa bản in","Xuất bản báo cáo"]},{"n":11,"group":"Trình chiếu","icon":"🎞️","title":"Đạo diễn bài chiếu","story":"Biến dàn ý thành các trang có thứ tự để kể một câu chuyện.","lab":"Bàn dựng trang chiếu","mechanic":"Xếp dàn ý và dựng bố cục","mode":"11","stages":["Nhận diện bài chiếu","Chọn cấu trúc phân cấp","Dựng bản trình chiếu","Dò trang khó hiểu","Kể chuyện bằng trang chiếu"]},{"n":12,"group":"Trình chiếu","icon":"🖼️","title":"Xưởng bố cục","story":"Chỉnh chữ và ảnh để người ngồi xa vẫn đọc được.","lab":"Khung xem trang chiếu","mechanic":"Định dạng đối tượng và kiểm tra tương phản","mode":"12","stages":["Nhận đối tượng","Chọn chữ và ảnh","Chỉnh trang mẫu","Tìm lỗi định dạng","Bàn giao trang chiếu"]},{"n":13,"group":"Trình chiếu","icon":"🎬","title":"Buổi chiếu tổng duyệt","story":"Ráp nội dung, chọn hiệu ứng đúng mục đích và chạy thử toàn bài.","lab":"Sân khấu trình chiếu","mechanic":"Kiểm tra thứ tự, hiệu ứng và bản bàn giao","mode":"13","stages":["Đọc hiệu ứng","Chọn nội dung và nhịp","Tổng duyệt","Sửa lỗi khi chạy","Bàn giao buổi chiếu"]},{"n":14,"group":"Thuật toán","icon":"🔦","title":"Đội dò danh sách","story":"Lần từng phần tử để tìm đúng vị trí và biết khi nào phải dừng.","lab":"Đường dò tuần tự","mechanic":"Chạm từng ô và đếm lần so sánh","mode":"14","stages":["Nhận đường dò","Đọc điều kiện dừng","Chạy tìm kiếm","Sửa đường dò","Kiểm chứng nhiều ca"]},{"n":15,"group":"Thuật toán","icon":"🎯","title":"Máy dò chia đôi","story":"Thu hẹp từng nửa của danh sách đã sắp xếp để tìm vị trí.","lab":"Bảng tìm nhị phân","mechanic":"Chọn ô giữa và theo dõi phạm vi","mode":"15","stages":["Chuẩn bị danh sách","Đọc phạm vi","Chạy ca mẫu","Sửa lỗi thu hẹp","So hai cách tìm"]},{"n":16,"group":"Thuật toán","icon":"🔃","title":"Đường đua hoán đổi","story":"Chạy từng phép so sánh của nổi bọt và sắp xếp chọn theo SGK.","lab":"Bàn sắp xếp tương tác","mechanic":"So cặp, hoán đổi và xem dãy đổi","mode":"16","stages":["Nhận diện thứ tự","Đọc cặp so sánh","Chạy vòng đầu","Sửa bước sai","Bàn giao dãy đã xếp"]}];
+const h=(tag,cls='',text='')=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e};
+function add(parent,...children){parent.append(...children.filter(x=>x!==null&&x!==undefined));return parent}
+function b(text,fn,cls='btn subtle'){const e=h('button',cls,text);e.type='button';e.addEventListener('click',fn);return e}
+function field(label,control){return add(h('label','field'),h('span','field-label',label),control)}
+function select(options,current,onChange){
+  const e=h('select');e.append(new Option('Chọn…',''));
+  options.forEach((x,i)=>e.append(new Option(x,String(i))));
+  e.value=current===null||current===undefined?'':String(current);
+  e.addEventListener('change',()=>onChange(e.value===''?null:Number(e.value)));return e
+}
+function input(value,onInput,opts={}){const e=h('input');Object.assign(e,{value,type:'text',...opts});e.addEventListener('input',()=>onInput(e.value));return e}
+function pressed(label,active,fn,cls='chip'){const e=b(label,fn,cls+(active?' selected':''));e.setAttribute('aria-pressed',String(active));return e}
+const same=(a,b)=>Array.isArray(a)&&a.length===b.length&&a.every((x,i)=>x===b[i]);
+const folded=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').trim();
+function stableOrder(n,key){
+  const arr=Array.from({length:n},(_,i)=>i);
+  let seed=[...key].reduce((a,c)=>Math.imul(a^c.charCodeAt(0),16777619)>>>0,2166136261);
+  for(let i=n-1;i>0;i--){seed=(Math.imul(1664525,seed)+1013904223)>>>0;const j=seed%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr
+}
+function checkTable(rows){
+ const box=h('div','table-wrap'),table=h('table','data-table');
+ rows.forEach((row,i)=>{const tr=h('tr');row.forEach(v=>{const td=h(i?'td':'th','',v);if(!i)td.scope='col';tr.append(td)});table.append(tr)});return add(box,table)
+}
+const LABS={};
+function mountLab(host,mission,initialDone,award){
+  const lab=LABS[mission.mode];let caseNo=initialDone.includes(0)&&!initialDone.includes(1)?1:0;
+  let state={},msg=null,done=[...initialDone];
+  const ui={
+    root:host,
+    nextRender(){render()},
+    verdict(ok,good,retry){msg={ok,text:ok?good:retry};if(ok&&!done.includes(caseNo)){done.push(caseNo);award(caseNo)}render();host.querySelector('.lab-feedback')?.focus()},
+    notify(text){msg={ok:null,text};render();host.querySelector('.lab-feedback')?.focus()},
+    change(fn){return()=>{fn();msg=null;render()}},
+    action(text,fn){return b(text,fn,'btn primary')}
+  };
+  function render(){
+    const current=lab[caseNo];
+    const tabs=h('div','lab-tabs');
+    function showCase(i){
+      if(caseNo===i)return;
+      caseNo=i;state={};msg=null;render();
+      host.querySelector('.lab-name')?.focus();
+    }
+    lab.forEach((_,i)=>{
+      const tab=pressed((done.includes(i)?'✓ ':'')+'Nhiệm vụ '+(i+1),i===caseNo,()=>showCase(i));
+      tab.disabled=i>0&&!done.includes(i-1);
+      tabs.append(tab);
+    });
+    const stage=h('section','lab-stage');
+    const name=h('h3','lab-name',current.title);name.tabIndex=-1;
+    add(stage,name,h('p','lab-instruction',current.prompt));
+    const play=h('div','lab-play');stage.append(play);
+    host.replaceChildren(tabs,stage);
+    const aria=h('div','sr-only');aria.id='lab-current';aria.textContent='Mô phỏng '+mission.lab;stage.prepend(aria);
+    current.draw(play,state,ui);
+    if(msg){
+      const out=h('p','lab-feedback '+(msg.ok===true?'success':msg.ok===false?'warning':'neutral'),msg.text);
+      out.tabIndex=-1;out.setAttribute('role','status');stage.append(out);
+      if(msg.ok&&caseNo===0&&!done.includes(1))stage.append(b('Sang nhiệm vụ 2',()=>showCase(1),'btn primary lab-next'));
+    }
+  }
+  render();
+}
+function tray(box,options,picked,onPick,onUndo,onClear,label='Các bước đã lắp'){
+ const src=h('div','tool-row'),out=h('ol','ordered-tray');out.tabIndex=-1;
+ options.forEach((x,i)=>{const e=b(x,()=>onPick(i),'btn chip');e.disabled=picked.includes(i);src.append(e)});
+ if(!picked.length)out.append(h('li','empty-slot','Chưa có bước nào.'));
+ else picked.forEach(i=>{const step=h('li','',options[i]);step.tabIndex=-1;out.append(step)});
+ const tools=h('div','tool-row');const undo=b('Bỏ bước cuối',onUndo),clear=b('Xếp lại',onClear);undo.disabled=clear.disabled=!picked.length;
+ add(box,src,h('p','field-label',label),out,add(tools,undo,clear));
+}
+// Mỗi bài có hai nhiệm vụ. Các mô phỏng dùng dữ liệu giả, chạy trong trình duyệt.
+function setupCase(title, prompt, fields, expected, preview, success){
+ return {title,prompt,draw(box,state,ui){
+  state.values??=fields.map(()=>null);
+  const form=h('div','form-grid');
+  const output=h('div','lab-preview');
+  const inspect=()=>{output.replaceChildren(preview(state.values.map((i,j)=>fields[j][1][i]??'—')))};
+  fields.forEach(([label,options],i)=>{
+   form.append(field(label,select(options,state.values[i],value=>{
+    state.values[i]=value;inspect();check.disabled=state.values.includes(null);
+   })));
+  });
+  const check=ui.action('Kiểm tra thiết lập',()=>ui.verdict(
+   same(state.values,expected),success,'Hãy đối chiếu từng phần trong bản xem thử với yêu cầu rồi sửa thiết lập.'));
+  check.disabled=state.values.includes(null);
+  inspect();
+  add(box,form,output,check);
+ }};
+}
+const rowsPreview=(...lines)=>add(h('div'),...lines.map(line=>h('p','',line)));
+const textPreview=(labels)=>values=>rowsPreview(...values.map((v,i)=>labels[i]+': '+v));
+const setup=(title,prompt,fields,expected,labels,success)=>
+ setupCase(title,prompt,fields,expected,textPreview(labels),success);
+
+LABS['1']=[
+ setup('Thu rồi phát','Lớp cần ghi giọng đọc, nghe lại và chiếu lời đọc lên bảng.',
+ [['Thu giọng',['Loa','Micro','Máy chiếu']],['Nghe bản ghi',['Máy quét','Loa','Bàn phím']],['Chiếu chữ',['Webcam','Chuột','Máy chiếu']]],
+ [1,1,2],['Tiếng vào máy','Tiếng ra người nghe','Chữ ra màn chiếu'],'Đã nối đủ ba đường tín hiệu.'),
+ setup('Sửa quầy cảm ứng','Quầy phải vừa hiện thực đơn vừa nhận thao tác chạm. Bản ghi thử có tiếng trên máy khác nhưng loa quầy im. Hoàn thiện quầy.',
+ [['Giao diện quầy',['Màn hình thường','Màn hình cảm ứng']],['Đường cần kiểm tra',['Thu âm','Phát âm']],['Bài thử cuối',['Chạm chọn món và phát bản ghi','Chỉ thử máy in']]],
+ [1,1,0],['Chọn món','Điểm lỗi','Bài thử'],'Quầy nhận chạm, hiển thị và kiểm tra đúng đường phát.')
+];
+LABS['2']=[
+ setup('Mở bộ hồ sơ','Gán công cụ để mở và chỉnh đúng loại tệp.',
+ [['ngan-sach.xlsx',['Trình xem ảnh','Bảng tính','Trình chiếu']],['gioi-thieu.pptx',['Trình chiếu','Bảng tính','Trình nghe nhạc']],['anh.png',['Bảng tính','Trình xem ảnh','Trình chiếu']]],
+ [1,0,1],['Bảng chi','Bài chiếu','Ảnh'],'Cả ba tệp được gán đúng ứng dụng.'),
+ setup('Tệp lỗi ở máy trạm','Một tệp PPTX báo lỗi nhưng tệp PPTX mẫu mở được. Kiểm tra tệp lỗi và chuẩn bị bản chỉnh lẫn bản đọc.',
+ [['Bước kiểm tra',['Cài lại hệ điều hành','Tải lại tệp từ nguồn đã biết']],['Bản có thể chỉnh',['PPTX','PNG']],['Bản tĩnh để đọc',['Đổi đuôi thành PDF','Xuất PDF từ ứng dụng']]],
+ [1,0,1],['Xử lí lỗi','Bản chỉnh','Bản đọc'],'Đã khoanh vùng tệp và tạo hai bản đúng mục đích.')
+];
+LABS['3']=[
+ setup('Sắp kho dự án','Đặt ảnh gốc, bản đang sửa và bản đã nộp vào đúng ngăn.',
+ [['anh-goc.jpg',['Nguon','DaNop','LamViec']],['bao-cao-nhap.docx',['Nguon','LamViec','DaNop']],['bao-cao-nop.pdf',['LamViec','Nguon','DaNop']]],
+ [0,1,2],['Nơi chứa ảnh','Nơi chứa bản nháp','Nơi chứa bản nộp'],'Đã tách nguồn, bản sửa và bản bàn giao.'),
+ setup('Khôi phục sau khi mất ổ','Ổ gốc đã hỏng. Bản v2 đã mở thử trên USB, bản v3 duy nhất nằm trên ổ hỏng. Khôi phục bản còn dùng được và giữ bản dự phòng.',
+ [['Bản phục hồi',['v3 trên ổ hỏng','v2 trên USB']],['Thao tác',['Di chuyển khỏi USB','Sao chép từ USB']],['Xác nhận',['Nhìn tên tệp','Mở tệp vừa phục hồi và so nội dung']]],
+ [1,1,1],['Nguồn','Thao tác','Đối chiếu'],'Phục hồi bản v2 và vẫn giữ bản dự phòng.')
+];
+LABS['4']=[
+ setup('Phát bản tin lớp','Đưa lịch đã xác nhận tới cả lớp và gửi tệp góp ý chỉ cho cô.',
+ [['Lịch đã chốt',['Nhóm lớp','Công khai toàn mạng','Tin nhắn người ngoài']],['Tệp góp ý',['Nhóm công khai','Thư gửi riêng cô']],['Kiểm tra trước khi gửi',['Lượt thích','Nhóm, địa chỉ và tệp']]],
+ [0,1,1],['Lịch','Góp ý','Rà soát'],'Thông tin đã đến đúng phạm vi trong mô phỏng.'),
+ setup('Đính chính giờ','Lịch cũ 7 giờ đã đăng trong nhóm. Thông báo mới của trường ghi 8 giờ cho đúng lớp. Bạn có ảnh lịch lộ số điện thoại.',
+ [['Nguồn để dùng',['Ảnh chuyển tiếp không ngày','Thông báo trường mới']],['Nơi đính chính',['Nhóm lớp đã nhận tin','Trang công khai không liên quan']],['Ảnh minh họa',['Đăng nguyên ảnh','Che thông tin cá nhân hoặc bỏ ảnh']]],
+ [1,0,1],['Căn cứ','Nơi gửi','Tư liệu'],'Đã đính chính đúng giờ, đúng nơi và tránh lộ dữ liệu.')
+];
+LABS['5']=[
+ setup('Giúp bạn trong nhóm','Một bạn liên tục bị gửi ảnh chế. Chọn cách hỗ trợ và báo cáo.',
+ [['Tương tác',['Trả đũa trong nhóm','Dừng lan truyền']],['Bằng chứng',['Lưu riêng ảnh chụp cần thiết','Chia sẻ công khai']],['Hỗ trợ',['Báo người lớn tin cậy','Hẹn gặp người gửi một mình']]],
+ [1,0,0],['Phản hồi','Bằng chứng','Người hỗ trợ'],'Đã chọn cách hỗ trợ mà không tiếp tục lan truyền nội dung.'),
+ setup('Gỡ bài và đặt giờ nghỉ','Quản lí nhóm cần xử lí bài trêu chọc. Một thành viên còn bị thức khuya vì thông báo.',
+ [['Bài gây hại',['Đăng lại','Ẩn và báo cáo khi phù hợp']],['Liên hệ bạn',['Hỏi riêng và đề nghị hỗ trợ','Công khai thông tin riêng']],['Giờ nghỉ',['Tắt thông báo trước giờ ngủ','Bật thêm âm báo']]],
+ [1,0,0],['Điều phối nhóm','Hỗ trợ riêng','Thói quen sử dụng'],'Đã xử lí cả tương tác và thói quen sử dụng.')
+];
+
+function gridCase(title,prompt,target){
+ return {title,prompt,draw(box,state,ui){
+  state.cells??={};state.cell??='A1';
+  const grid=h('div','trace-board');
+  const addresses=['A1','B1','C1','A2','B2','C2','A3','B3','C3'];
+  addresses.forEach(address=>grid.append(pressed(address+' · '+(state.cells[address]??'trống'),address===state.cell,
+   ui.change(()=>{state.cell=address}))));
+  const write=input(state.cells[state.cell]??'',()=>{},{maxLength:24});
+  const save=b('Ghi vào '+state.cell,ui.change(()=>{state.cells[state.cell]=write.value.trim()}));
+  const check=ui.action('Kiểm tra bảng',()=>{
+   const required=Object.entries(target);
+   const ok=required.every(([address,value])=>state.cells[address]===value)
+    && Object.keys(state.cells).every(address=>address in target||!state.cells[address]);
+   ui.verdict(ok,'Dữ liệu nằm đúng ô.','Đọc lại địa chỉ và kiểu dữ liệu. Chỉ ghi vào các ô được yêu cầu.');
+  });
+  add(box,grid,field('Nội dung ô '+state.cell,write),save,check);
+ }};
+}
+LABS['6']=[
+ gridCase('Nhập một bản ghi','Điền A1 là Tên, B1 là Sách; ghi Lan vào A2 và 4 vào B2.',
+ {'A1':'Tên','B1':'Sách','A2':'Lan','B2':'4'}),
+ gridCase('Dựng bảng theo dõi','Tạo hàng nhãn A1=Tổ, B1=Mượn, C1=Trả. Nhập hàng 2: 1, 5, 3 và hàng 3: 2, 8, 6.',
+ {'A1':'Tổ','B1':'Mượn','C1':'Trả','A2':'1','B2':'5','C2':'3','A3':'2','B3':'8','C3':'6'})
+];
+
+function calculate(expression,data){
+ const formula=expression.trim().toUpperCase().replace(/\s+/g,'');
+ const ref=operand=>/^\d+$/.test(operand)?Number(operand):data[operand];
+ const average=/^=\(([A-Z]\d+)\+([A-Z]\d+)\)\/2$/.exec(formula);
+ if(average)return (ref(average[1])+ref(average[2]))/2;
+ const pair=/^=([A-Z]\d+|\d+)([+*\/-])([A-Z]\d+|\d+)$/.exec(formula);
+ if(pair){
+  const a=ref(pair[1]),b=ref(pair[3]);
+  if(a===undefined||b===undefined)return NaN;
+  return {'+':()=>a+b,'-':()=>a-b,'*':()=>a*b,'/':()=>a/b}[pair[2]]();
+ }
+ const range=/^=(SUM|AVERAGE|MIN|MAX|COUNT)\(([A-Z])(\d+):\2(\d+)\)$/.exec(formula);
+ if(range){
+  const first=Number(range[3]),last=Number(range[4]);
+  if(first<1||last<first||last>20)return NaN;
+  const values=[];
+  for(let row=first;row<=last;row++){
+   const value=data[range[2]+row];
+   if(typeof value==='number')values.push(value);
+  }
+  const total=values.reduce((a,b)=>a+b,0);
+  return {SUM:()=>total,AVERAGE:()=>total/values.length,MIN:()=>values.length?Math.min(...values):0,
+   MAX:()=>values.length?Math.max(...values):0,COUNT:()=>values.length}[range[1]]();
+ }
+ return NaN;
+}
+function formulaCase(title,prompt,fields,datasets){
+ return {title,prompt,draw(box,state,ui){
+  state.formulas??=fields.map(()=>'');
+  const form=h('div','form-grid'),output=h('div','lab-preview');
+  fields.forEach(([label],i)=>form.append(field(label,input(state.formulas[i],value=>{state.formulas[i]=value},{maxLength:38,autocomplete:'off',spellcheck:false}))));
+  const rows=[['Ca thử','Ô đầu vào'],...datasets.map((set,i)=>['Ca '+(i+1),Object.entries(set).map(([key,v])=>key+'='+ (v??'trống')).join(', ')])];
+  const check=ui.action('Chạy công thức',()=>{
+   const expected=datasets.map(data=>fields.map(([,formula])=>calculate(formula,data)));
+   const actual=datasets.map(data=>state.formulas.map(value=>calculate(value,data)));
+   state.result=actual;
+   const right=state.formulas.every((formula,i)=>fields[i].slice(1).includes(formula.toUpperCase().replace(/\s+/g,'')));
+   ui.verdict(right&&actual.every((row,i)=>same(row,expected[i])),
+    'Công thức đúng và cho kết quả đúng trên cả hai ca.',
+    'Xem kết quả từng ca. Kiểm tra dấu bằng, phép tính, địa chỉ và vùng; công cụ mô phỏng hỗ trợ các công thức nêu trong bài.');
+  });
+  if(state.result){
+   output.append(checkTable([['Ca thử',...fields.map(([label])=>label)],
+    ...state.result.map((row,i)=>['Ca '+(i+1),...row.map(v=>Number.isFinite(v)?String(v):'Lỗi công thức')])]));
+  }else output.textContent='Kết quả sẽ hiện sau khi chạy.';
+  add(box,checkTable(rows),form,output,check);
+ }};
+}
+LABS['7']=[
+ formulaCase('Tính thành tiền','Viết công thức tại D2 nhân số lượng B2 với đơn giá C2. Giữ tham chiếu để ca đổi số vẫn chạy.',
+ [['D2','=B2*C2','=C2*B2']],[{B2:3,C2:8},{B2:5,C2:8}]),
+ formulaCase('Sao chép xuống hàng 3','Nhập công thức ở D2 và công thức tương ứng sau khi sao chép xuống D3. Mỗi dòng tính tích B và C của chính dòng đó.',
+ [['D2','=B2*C2','=C2*B2'],['D3','=B3*C3','=C3*B3']],[{B2:2,C2:5,B3:3,C3:7},{B2:2,C2:8,B3:4,C3:7}])
+];
+LABS['8']=[
+ formulaCase('Báo cáo tổng và cao nhất','Dùng SUM và MAX trên vùng B2:B4.',
+ [['Tổng','=SUM(B2:B4)'],['Cao nhất','=MAX(B2:B4)']],[{B2:4,B3:8,B4:5},{B2:9,B3:0,B4:6}]),
+ formulaCase('Trung bình khi có ô trống','Dùng COUNT và AVERAGE trên C2:C5. Thử trường hợp có số 0 và ô trống.',
+ [['Số ô có số','=COUNT(C2:C5)'],['Trung bình','=AVERAGE(C2:C5)']],[{C2:0,C3:null,C4:8,C5:10},{C2:3,C3:6,C4:9,C5:12}])
+];
+function formatPreview(values){
+ const [heading,rate,border]=values;
+ const shown=rate==='Phần trăm'?'25%':rate==='Một chữ số thập phân'?'0,3':'0,25';
+ const table=checkTable([['Tổ','Tỉ lệ'],['Tổ 1',shown]]);
+ table.classList.add(heading==='Tiêu đề đậm'?'sheet-bold':'sheet-light');
+ if(border==='Có đường viền')table.classList.add('sheet-borders');
+ return add(h('div'),table,h('p','muted','Giá trị gốc của tỉ lệ: 0,25'));
+}
+const formatFields=[['Hàng nhãn',['Tiêu đề thường','Tiêu đề đậm']],['Kiểu số',['Số gốc','Phần trăm','Một chữ số thập phân']],['Viền bảng',['Không kẻ','Có đường viền']]];
+LABS['9']=[
+ setupCase('Bảng tỉ lệ','Đặt tiêu đề đậm, hiện tỉ lệ dạng phần trăm và kẻ viền.',formatFields,[1,1,1],formatPreview,'Bảng hiện 25% mà vẫn giữ giá trị 0,25.'),
+ setupCase('Hiện số làm tròn','Đặt tiêu đề đậm, không kẻ viền và hiển thị tỉ lệ gốc 0,25 với một chữ số thập phân.',formatFields,[1,2,0],formatPreview,'Bảng hiện 0,3 và giữ 0,25 để tính.')
+];
+function printPreview(values){
+ const [orientation,scope,scale]=values;
+ const columns=scope==='A1:E4'?['Tổ','Tuần 1','Tuần 2','Tuần 3','Tổng']:['Tổ','Tuần 1','Tuần 2','Tuần 3'];
+ const rows=[['Tổ 1','3','4','5','12'],['Tổ 2','2','3','4','9'],['Tổng','5','7','9','21']];
+ const table=checkTable([columns,...rows.map(row=>row.slice(0,columns.length))]);
+ const cut=orientation==='Dọc'&&scope==='A1:E4'&&scale==='100%';
+ return add(h('div'),h('p','',orientation+' · '+scope+' · '+scale),table,
+  h('p','muted',cut?'Cột Tổng sẽ sang trang sau.':orientation==='—'||scope==='—'||scale==='—'?'Chọn đủ thiết lập để xem bản in.':'Các cột trong phạm vi nằm trên cùng trang.'));
+}
+const printFields=[['Hướng giấy',['Dọc','Ngang']],['Vùng in',['A1:D4','A1:E4']],['Tỉ lệ',['100%','Vừa theo chiều ngang']]];
+LABS['10']=[
+ setupCase('In đủ năm cột','Đưa cả cột Tổng lên cùng một trang. Dùng hướng ngang và giữ tỉ lệ 100%.',printFields,[1,1,0],printPreview,'Bản in ngang giữ tỉ lệ 100% và hiện đủ cột Tổng.'),
+ setupCase('Bản in dọc','Bàn giao bản dọc gồm đủ A1:E4. Điều chỉnh vừa chiều ngang để giữ cột Tổng trên cùng trang.',printFields,[0,1,1],printPreview,'Bản xem trước dọc giữ đủ vùng và cột Tổng.')
+];
+function storyboard(title,prompt,slides,required){
+ return {title,prompt,draw(box,state,ui){
+  state.sequence??=[];
+  tray(box,slides,state.sequence,i=>{state.sequence.push(i);ui.nextRender()},
+   ()=>{state.sequence.pop();ui.nextRender()},()=>{state.sequence=[];ui.nextRender()},'Dàn trang hiện tại');
+  add(box,ui.action('Chạy dàn ý',()=>ui.verdict(same(state.sequence,required),
+   'Mạch trình chiếu đã đúng yêu cầu.','Đọc lại mục tiêu và thứ tự; một số trang có thể không thuộc bài này.')));
+ }};
+}
+LABS['11']=[
+ storyboard('Giới thiệu hội sách','Dựng 3 trang: giới thiệu tên hoạt động, lịch chính, rồi hướng dẫn đăng kí.',
+ ['Lịch hoạt động · Tiêu đề và nội dung','Cách đăng kí · Danh sách','Hội sách · Trang tiêu đề','Bảng thu chi nội bộ'],[2,0,1]),
+ storyboard('Báo cáo khảo sát','Dựng 4 trang theo thứ tự: chủ đề, cách khảo sát, kết quả đặt hai tổ cạnh nhau, kết luận.',
+ ['Kết luận · Tiêu đề và nội dung','Kết quả · Hai cột','Đọc sách lớp 7 · Trang tiêu đề','Cách khảo sát · Danh sách','Kết quả · Một cột'],[2,3,1,0])
+];
+function slidePreview(values){
+ const [text,size,picture]=values;
+ const slide=h('div','mini-slide');
+ if(text==='Chữ tối trên nền sáng')slide.classList.add('slide-light');
+ if(text==='Chữ xám trên nền tối')slide.classList.add('slide-low');
+ const title=h('h3','','Vườn cây lớp em');
+ if(size==='Tiêu đề nhỏ')title.classList.add('slide-small');
+ const art=add(h('div','slide-photo'),h('span','','🌱'),h('span','','🌿'),h('span','','🌳'));
+ if(picture==='Kéo giãn ngang')art.classList.add('slide-stretch');
+ if(picture==='Che phần chú thích')art.classList.add('slide-overlay');
+ return add(slide,title,art,h('p','','Ảnh mô phỏng · buổi trồng cây'));
+}
+const slideFields=[['Tương phản',['Chữ xám trên nền tối','Chữ sáng trên nền tối','Chữ tối trên nền sáng']],
+ ['Tiêu đề',['Tiêu đề nhỏ','Tiêu đề lớn']],['Ảnh',['Kéo giãn ngang','Giữ tỉ lệ','Che phần chú thích']]];
+LABS['12']=[
+ setupCase('Đọc trên nền tối','Đặt chữ sáng, tiêu đề lớn, giữ tỉ lệ ảnh và để thấy chú thích.',slideFields,[1,1,1],slidePreview,'Tiêu đề dễ đọc, ảnh giữ tỉ lệ và chú thích còn rõ.'),
+ setupCase('Sửa ảnh và chữ','Bản mới cần nền sáng để đọc ở nơi nhiều ánh sáng. Đặt chữ tối, tiêu đề lớn và ảnh giữ tỉ lệ không che chú thích.',slideFields,[2,1,1],slidePreview,'Nền sáng có chữ tối, ảnh giữ tỉ lệ và không che chú thích.')
+];
+
+function rehearsalCase(title,prompt,requiresAnimation){
+ const options=[['Trang mở đầu',['Trang nội dung','Trang tiêu đề']],['Câu trả lời',['Hiện cùng câu hỏi','Hiện khi bấm']],
+  ['Chuyển trang',['Tự chuyển','Khi bấm']],['Tệp trình chiếu',['PDF','PPTX']]];
+ const expected=requiresAnimation?[1,1,1,1]:[1,0,1,0];
+ return {title,prompt,draw(box,state,ui){
+  state.values??=options.map(()=>null);
+  const form=h('div','form-grid');
+  options.forEach(([label,values],i)=>form.append(field(label,select(values,state.values[i],uiValue=>{
+   state.values[i]=uiValue;state.step=null;ui.nextRender();
+  }))));
+  const start=ui.action('Bắt đầu tổng duyệt',ui.change(()=>{state.step=0}));
+  start.disabled=state.values.includes(null);
+  const [cover,answer,transition,file]=state.values;
+  const visible=state.step>=2||(state.step===1&&(answer===0||file===0));
+  const view=h('div','lab-preview');
+  if(state.step===0)view.append(h('p','',cover===1?'Hội sách lớp 7 · Trang tiêu đề':'Kết quả khảo sát · Mở đầu'));
+  else if(state.step===1||state.step===2)view.append(h('p','','Câu hỏi: Hội sách mở lúc nào?'),visible?h('p','','Trả lời: 8 giờ.'):h('p','muted','Đáp án đang ẩn.'));
+  else if(state.step===3)view.append(h('p','','Trang kết · Hẹn gặp tại hội sách.'));
+  else view.textContent='Thiết lập xong rồi chạy thử từ đầu.';
+  add(box,form,start,view);
+  if(state.step===0||state.step===1||state.step===2){
+   box.append(b(transition===0?'Mô phỏng chuyển tự động':'Bấm tiếp',ui.change(()=>{
+    if(state.step===0)state.step=1;
+    else if(state.step===1&&!visible&&transition===1)state.step=2;
+    else state.step=3;
+   })));
+  }
+  if(state.step===3)box.append(ui.action('Kiểm tra buổi chiếu',()=>ui.verdict(same(state.values,expected),
+   'Đã chạy trọn kịch bản với đúng thứ tự, nhịp và loại tệp.','Xem lại trang mở đầu, lúc đáp án xuất hiện, cách chuyển trang và loại tệp.')));
+ }};
+}
+LABS['13']=[
+ rehearsalCase('Chiếu và hỏi đáp','Dùng bài PPTX. Mở bằng trang tiêu đề, đáp án chỉ hiện khi bấm và chuyển trang thủ công.',true),
+ rehearsalCase('Chạy phương án dự phòng','Dùng PDF. Mở bằng trang tiêu đề, câu hỏi và đáp án hiện cùng trang, chuyển trang bằng thao tác người trình bày.',false)
+];
+
+function searchLab(title,prompt,values,target,binary){
+ return {title,prompt,draw(box,state,ui){
+  state.left??=0;state.right??=values.length-1;state.steps??=[];
+  const board=h('div','trace-board');
+  const next=binary?Math.floor((state.left+state.right)/2):state.left;
+  const done=state.found!==undefined||state.left>state.right;
+  values.forEach((value,i)=>{
+   const enabled=i>=state.left&&i<=state.right&&!done;
+   const button=b((i+1)+': '+value,()=>{
+    if(i!==next){ui.notify(binary?'Chọn ô giữa của vùng còn lại, làm tròn xuống.':'So theo thứ tự từ ô đầu chưa xét.');return}
+    state.steps.push(value);
+    if(value===target)state.found=i+1;
+    else if(binary&&target<value)state.right=i-1;
+    else state.left=i+1;
+    ui.change(()=>{})();
+    box.parentElement?.querySelector?.('.trace-board button:not([disabled])')?.focus();
+   },'btn chip '+(enabled?'':'outside'));
+   button.disabled=!enabled;board.append(button);
+  });
+  add(box,h('p','field-label','Giá trị cần tìm: '+target),board,
+   h('p','lab-preview','Đã so ('+state.steps.length+'): '+(state.steps.join(' → ')||'chưa so')));
+  if(!done)box.append(h('p','muted',binary?'Vùng còn lại: vị trí '+(state.left+1)+'–'+(state.right+1)+'.':'So tiếp ô đầu chưa xét.'));
+  else box.append(h('p','lab-preview',state.found?'Tìm thấy ở vị trí '+state.found+'.':'Đã hết vùng. Không tìm thấy.'),
+    ui.action('Xác nhận kết quả',()=>ui.verdict(true,'Đã chạy đúng thứ tự và dừng đúng lúc.','')));
+ }};
+}
+LABS['14']=[
+ searchLab('Dò phiếu mượn','Tìm 8 trong danh sách chưa sắp. Dừng khi gặp lần đầu.',[5,2,8,3,8],8,false),
+ searchLab('Dò đến cuối','Tìm 9. Chỉ kết luận không thấy khi đã so đủ các phần tử.',[6,2,7,1,4],9,false)
+];
+LABS['15']=[
+ searchLab('Tìm trong dãy tăng','Tìm 12. Mỗi lượt chọn vị trí giữa, làm tròn xuống nếu cần.',[2,4,6,8,10,12,14],12,true),
+ searchLab('Thu hẹp đến vùng rỗng','Tìm 9. Theo dõi vì sao thuật toán có thể báo không thấy.',[1,4,6,8,10,13,17,20],9,true)
+];
+
+function sortingLab(title,prompt,values,bubble){
+ const pairs=[];
+ for(let fixed=0;fixed<values.length-1;fixed++){
+  if(bubble){
+   for(let right=values.length-1;right>fixed;right--)pairs.push([right-1,right]);
+  }else{
+   for(let right=fixed+1;right<values.length;right++)pairs.push([fixed,right]);
+  }
+ }
+ return {title,prompt,draw(box,state,ui){
+  state.values??=[...values];state.step??=0;
+  const pair=pairs[state.step];
+  const board=h('div','trace-board');
+  state.values.forEach((value,i)=>board.append(h('span','btn chip'+(pair?.includes(i)?' selected':''),(i+1)+': '+value)));
+  add(box,board);
+  if(!pair){
+   box.append(ui.action('Kiểm tra dãy đã xếp',()=>ui.verdict(same(state.values,[...values].sort((a,b)=>a-b)),
+    'Dãy đã tăng và đủ các giá trị ban đầu.','Đối chiếu lại từng phép so sánh.')));
+   return;
+  }
+  const [left,right]=pair;
+  function decide(swap){
+   const mustSwap=state.values[left]>state.values[right];
+   if(swap!==mustSwap){ui.notify('Xếp tăng: chỉ đổi khi giá trị bên trái của cặp lớn hơn giá trị bên phải.');return}
+   if(swap)[state.values[left],state.values[right]]=[state.values[right],state.values[left]];
+   state.step++;
+   ui.change(()=>{})();
+  }
+  add(box,h('p','lab-preview','Lượt so '+(state.step+1)+'/'+pairs.length+' · Vị trí '+(left+1)+' và '+(right+1)),
+   add(h('div','tool-row'),b('Đổi chỗ',()=>decide(true)),b('Giữ nguyên',()=>decide(false))));
+ }};
+}
+LABS['16']=[
+ sortingLab('Sắp xếp nổi bọt','Quét cặp liền kề từ phải sang trái theo SGK. Chọn đổi hoặc giữ ở mỗi phép so.',[4,2,3,1],true),
+ sortingLab('Sắp xếp chọn','Theo SGK, giữ vị trí đang xét và so lần lượt với từng ô phía sau, đổi ngay khi gặp số nhỏ hơn.',[5,2,4,1],false)
+];
+
+const main=document.getElementById('main');
+const nav=document.getElementById('header-links');
+const brand=document.getElementById('brand');
+const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
+const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
+const TOTAL=STAGE_SIZE*5, STORAGE='fptbn-t7-missions-v1:';
+const STUDY_SECONDS=15;
+const modes={choice:'Chọn một',multi:'Chọn tất cả đáp án đúng',match:'Ghép cặp',order:'Sắp xếp',number:'Nhập số nguyên',practice:'Tự đánh giá'};
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let storageProblem=false;
+const mem=new Map();
+const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
+const hasCertificate=p=>p.count===TOTAL&&p.finalCases.length===2&&p.certificateAt!==null;
+const roomsDone=p=>Math.min(4,Math.floor(p.count/STAGE_SIZE))+(hasCertificate(p)?1:0);
+function validAwardDate(date){
+ if(typeof date!=='string'||!/^\d{4}-\d\d-\d\dT/.test(date))return null;
+ const time=Date.parse(date);
+ return Number.isFinite(time)?new Date(time).toISOString():null;
+}
+function get(n){
+  if(mem.has(n))return mem.get(n);
+  let state=empty();
+  try{
+   const x=JSON.parse(localStorage.getItem(STORAGE+n)||'null');
+   if(x&&Number.isInteger(x.count)&&x.count>=0&&x.count<=TOTAL){
+    const ids=Object.fromEntries(Object.entries(x.tries&&typeof x.tries==='object'?x.tries:{}).filter(([k,v])=>/^([0-9]|1[0-9])$/.test(k)&&Number.isInteger(v)&&v>0&&v<1000));
+    const awardDate=validAwardDate(x.certificateAt);
+    const finalCases=x.count===TOTAL&&Array.isArray(x.finalCases)&&x.finalCases.includes(0)
+      ? (x.finalCases.includes(1)&&awardDate?[0,1]:[0]) : [];
+    state={...empty(),count:x.count,xp:Number.isInteger(x.xp)&&x.xp>=0?x.xp:0,tries:ids,
+      lab:[...new Set((Array.isArray(x.lab)?x.lab:[]).filter(v=>v===0||v===1))],
+      extras:[...new Set((Array.isArray(x.extras)?x.extras:[]).filter(v=>typeof v==='string'))],
+      finalCases,certificateAt:finalCases.length===2?awardDate:null};
+   }
+  }catch{storageProblem=true}
+  mem.set(n,state);return state;
+}
+function save(n){try{localStorage.setItem(STORAGE+n,JSON.stringify(mem.get(n)))}catch{storageProblem=true}}
+function link(text,url,cls='text-link'){const e=h('a',cls,text);e.href=url;return e}
+function focus(e){if(e){if(!e.matches('button,a,input,textarea,select'))e.tabIndex=-1;e.focus({preventScroll:true})}}
+function focusViewStart(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
+function courseLink(text='Chương trình',cls='text-link'){return link(text,STANDALONE?'index.html#chuong-trinh':'#chuong-trinh',cls)}
+function lessonLink(n,text,cls){return link(text,'bai'+n+'.html',cls)}
+function setHeader(m){
+ brand.replaceChildren(add(h('span','logo','⌘ CODE'),h('em','','QUEST')),
+  h('span','brand-subtitle',m?'TIN HỌC 7 · BÀI '+m.n+' · '+lesson.title.toUpperCase():'TIN HỌC 7'));
+ nav.replaceChildren();
+ if(m){
+  const retry=Object.values(progress.tries).reduce((sum,value)=>sum+value,0);
+  const metrics=h('div','header-stats');
+  for(const text of ['⚡ '+progress.xp+' XP','🏅 '+roomsDone(progress)+'/5','📖 '+retry+' ôn lại']){
+   metrics.append(h('span','stat-pill',text));
+  }
+  nav.append(metrics);
+ }else nav.append(courseLink('Danh sách bài','nav-link'));
+}
+function number(n){return String(n).padStart(2,'0')}
+function meter(val,max,caption){
+ const bar=h('div','meter');
+ bar.setAttribute('role','progressbar');
+ bar.setAttribute('aria-label',caption);
+ bar.setAttribute('aria-valuenow',String(val));
+ bar.setAttribute('aria-valuemin','0');
+ bar.setAttribute('aria-valuemax',String(max));
+ const fill=h('span');fill.style.width=(val/max*100)+'%';bar.append(fill);
+ return bar;
+}
+function art(icon){
+ const mark=h('span','hero-watermark',icon);
+ mark.setAttribute('aria-hidden','true');
+ return mark;
+}
+function home(scroll){
+ setHeader(null);
+ const complete=MISSIONS.filter(m=>hasCertificate(get(m.n))).length;
+ const recent=MISSIONS.find(m=>{const p=get(m.n);return p.count>0&&!hasCertificate(p)});
+ const hero=h('section','course-hero hero');
+ const copy=h('div','hero-copy'),title=add(h('h1'),h('em','','Tin học 7'));
+ const actions=h('div','hero-actions');actions.append(recent?lessonLink(recent.n,'Tiếp tục Bài '+recent.n+' →','btn primary'):lessonLink(1,'Bắt đầu với Bài 1 →','btn primary'),courseLink('Danh sách bài','btn outline'));
+ add(copy,h('p','eyebrow','CODEQUEST'),title,actions);
+ add(hero,copy,art('⚙️'));
+ const signals=h('section','signal-band');
+ [[CATALOG.length,'Bài học'],[complete+'/'+CATALOG.length,'Bài đã hoàn thành']].forEach(([num,label])=>signals.append(add(h('div','signal-stat'),h('strong','',String(num)),h('span','',label))));
+ const head=add(h('div','section-head'),h('h2','','Chọn bài học'));
+ const lib=add(h('section','library'),head);lib.id='chuong-trinh';
+ const groups=['Tất cả',...new Set(MISSIONS.map(m=>m.group))],filters=h('div','filter-row'),cards=h('div','course-grid');
+ function renderCards(keepFocus=false){
+  filters.replaceChildren(...groups.map(g=>pressed(g,filter===g,()=>{filter=g;renderCards(true)})));
+  cards.replaceChildren();
+  const shown=MISSIONS.filter(m=>filter==='Tất cả'||filter===m.group);
+  const status=h('p','sr-only',shown.length+' bài trong danh sách');status.setAttribute('role','status');cards.append(status);
+  shown.forEach(m=>{
+   const data=CATALOG[m.n-1],p=get(m.n),a=lessonLink(m.n,'','course-card');
+   a.style.setProperty('--card-tint',m.tint);a.style.setProperty('--card-accent',m.color);
+   const visual=add(h('div','card-visual'),h('span','card-no','BÀI '+number(m.n)),h('span','card-icon',m.icon),h('span','card-arrow','↗'));
+   visual.querySelector('.card-icon').setAttribute('aria-hidden','true');
+   visual.querySelector('.card-arrow').setAttribute('aria-hidden','true');
+   const body=add(h('div','card-copy'),h('span','card-group',m.group),h('h3','',m.title),h('p','',data.title),h('span','mechanic',m.mechanic));
+   const status=hasCertificate(p)?'Hoàn thành':p.count?'Đang làm':'Chưa bắt đầu';
+   const track=add(h('div','card-track'),meter(roomsDone(p),5,'Khu vực đã hoàn thành'),add(h('div','card-progress'),h('span','',status),h('span','',roomsDone(p)+'/5')));
+   add(a,visual,body,track);cards.append(a);
+  });
+  if(keepFocus)focus([...filters.children].find(x=>x.textContent===filter));
+ }
+ renderCards();add(lib,filters,cards);
+ main.replaceChildren(hero,signals,lib);
+ if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
+ if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
+}
+function lessonPage(scroll=true){
+ attempt=null;
+ setHeader(mission);
+ const p=progress;
+ const title=add(h('h1'),h('em','',mission.title));
+ const startLabel=hasCertificate(p)?'Xem chứng nhận':p.count===TOTAL?'Tiếp tục thực hành':p.count?'Tiếp tục':'🚀 Bắt đầu khám phá';
+ const actions=add(h('div','hero-actions'),b(startLabel,()=>{
+  if(hasCertificate(p))certificate();
+  else if(p.count===TOTAL)lab();
+  else play(p.count);
+ },'btn primary'));
+ if(p.count)actions.append(b('↻ Chơi lại',resetLesson));
+ const copy=add(h('div','hero-copy'),
+  h('p','eyebrow','NHIỆM VỤ '+number(lesson.n)+' · CODEQUEST'),
+  title,h('p','hero-desc',mission.story),actions);
+ const hero=add(h('section','hero mission-hero'),copy,art(mission.icon));
+ const titleRow=add(h('div','section-head'),
+  add(h('div'),h('p','eyebrow','BẢN ĐỒ NHIỆM VỤ'),h('h2','','5 cánh cửa tri thức')),
+  h('span','tiny',roomsDone(p)+'/5 khu vực đã hoàn thành'));
+ const list=h('ol','stage-list');
+ mission.stages.forEach((name,i)=>{
+  const final=i===4;
+  const solved=Math.max(0,Math.min(STAGE_SIZE,p.count-i*STAGE_SIZE));
+  const open=p.count>=i*STAGE_SIZE;
+  const done=final?hasCertificate(p):solved===STAGE_SIZE;
+  const roomName=final?'Thử thách cuối':name;
+  const state=done?'✓':open?'✨':'🔒';
+  const details=final?(solved===STAGE_SIZE?'Thực hành '+p.finalCases.length+'/2':STAGE_SIZE+' câu + thực hành'):STAGE_SIZE+' câu';
+  const row=h('li','stage-row'+(done?' done':'')+(!open?' locked':''));
+  const room=b('',()=>{
+   if(done){if(final)certificate();else review(i)}
+   else if(final&&solved===STAGE_SIZE)lab();
+   else play(p.count);
+  },'room-button');
+  room.disabled=!open;
+  const seal=h('span','room-seal',state);
+  seal.setAttribute('aria-hidden','true');
+  const icon=h('span','room-icon',ROOM_ICONS[i]);
+  icon.setAttribute('aria-hidden','true');
+  add(room,seal,icon,h('strong','',roomName),h('small','',details));
+  if(!open)room.setAttribute('aria-label',roomName+' · Chưa mở');
+  row.append(room);
+  if(solved&&(final||!done))row.append(b('Xem lời giải',()=>review(i),'btn text-btn'));
+  list.append(row);
+ });
+ main.replaceChildren(hero,titleRow,list);
+ if(storageProblem)main.append(h('p','notice','Tiến độ sẽ mất khi em đóng trang vì trình duyệt đang chặn lưu.'));
+ if(scroll)focusViewStart(title);
+}
+function resetLesson(){
+ if(!confirm('Chơi lại từ đầu? Tiến độ và chứng nhận của bài này sẽ bị xóa trên trình duyệt.'))return;
+ progress=empty();
+ mem.set(lesson.n,progress);
+ save(lesson.n);
+ lessonPage();
+}
+function route(){
+ attempt=null;
+ const hash=location.hash;
+ const match=hash.match(/^#bai-(\d+)$/);
+ const n=STANDALONE||(match?+match[1]:0);
+ if(BANK[n]){
+  lesson=BANK[n];mission=MISSIONS[n-1];progress=get(n);
+  document.title='Bài '+n+' · '+lesson.title+' | Tin học 7';
+  lessonPage();
+ }else{
+  lesson=mission=progress=null;
+  document.title='Tin học 7 · Phòng nhiệm vụ';
+  home(hash==='#chuong-trinh');
+ }
+}
+function basePanel(label,title,desc,back=()=>lessonPage()){
+ const head=h('div','view-heading');
+ const titleNode=h('h1','',title);
+ add(head,b('☰ Bản đồ bài này',back,'btn subtle'),h('p','eyebrow',label),titleNode,desc?h('p','muted',desc):null);
+ return [head,titleNode];
+}
+function lab(){
+ if(progress.count!==TOTAL){lessonPage();return}
+ if(hasCertificate(progress)){certificate();return}
+ attempt=null;
+ const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
+ const box=h('div','lab-shell');
+ const actions=h('div','final-actions');
+ main.replaceChildren(add(h('div','lesson-panel'),head,box,actions));
+ mountLab(box,mission,progress.finalCases,i=>{
+  if(progress.finalCases.includes(i))return;
+  progress.finalCases.push(i);
+  if(!progress.lab.includes(i)){progress.lab.push(i);progress.xp+=30}
+  if(progress.finalCases.length===2)progress.certificateAt=new Date().toISOString();
+  save(lesson.n);
+  setHeader(mission);
+  if(hasCertificate(progress)){
+   actions.replaceChildren(b('🏆 Nhận chứng nhận',()=>certificate(),'btn primary'));
+  }
+ });
+ if(lesson.extras.length)actions.append(b('Bài mở rộng',()=>extra(),'btn text-btn'));
+ focusViewStart(title);
+}
+function drawStudy(stage){
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
+ return panel;
+}
+function hint(q,stage){
+ if(q.type==='order')return 'Tìm việc phải làm trước khi có thể thực hiện bước kế tiếp.';
+ if(q.type==='match')return 'Đọc từng dòng và dựa vào vai trò hoặc dấu hiệu riêng để chọn.';
+ if(q.type==='multi')return 'Đối chiếu từng lựa chọn với câu hỏi. Có thể có hơn một ý đúng.';
+ return stage.goal;
+}
+function play(index,retry=false){
+ if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
+ const i=Math.floor(index/STAGE_SIZE),stage=lesson.stages[i],q=stage.tasks[index%STAGE_SIZE];
+ const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%STAGE_SIZE+1)+' / '+STAGE_SIZE);
+ const dots=h('div','progress-dots');
+ dots.setAttribute('aria-hidden','true');
+ for(let j=0;j<STAGE_SIZE;j++)dots.append(h('span',j<index%STAGE_SIZE?'done':j===index%STAGE_SIZE?'current':''));
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study);
+ const session={index,q,stage,i,phase:'study',pane,study};
+ attempt=session;
+ const mustRead=!retry;
+ jump.hidden=mustRead;
+ const status=h('p','sr-only');
+ status.setAttribute('role','status');
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid,status));
+ focusViewStart(title);
+ if(!mustRead){
+  showQuestion();
+  if(retry)focus(pane.querySelector('h2'));
+  return;
+ }
+
+ grid.classList.add('study-only');
+ const fill=h('span','study-meter-fill');
+ fill.style.setProperty('--study-time',STUDY_SECONDS+'s');
+ const meter=add(h('div','study-meter'),fill);
+ meter.setAttribute('aria-hidden','true');
+ const notice=h('p','','Đọc kiến thức trong '+STUDY_SECONDS+' giây. Câu hỏi sẽ tự mở.');
+ const wait=add(h('div','study-wait'),notice,meter);
+ study.append(wait);
+ setTimeout(()=>{
+  if(attempt!==session)return;
+  wait.hidden=true;
+  grid.classList.remove('study-only');
+  showQuestion();
+  status.textContent='Câu hỏi đã mở.';
+ },STUDY_SECONDS*1000);
+
+ function showQuestion(){
+  session.phase='answer';
+  drawQuestion(q,pane,stage,index);
+  grid.append(pane);
+  jump.hidden=false;
+ }
+}
+function drawQuestion(q,pane,stage,index){
+ const head=h('p','question-kind',q.grouping?'Phân loại':modes[q.type]);
+ const prompt=h('h2','question-prompt',q.prompt);
+ add(pane,head,prompt);
+ if(q.table)pane.append(checkTable(q.table));
+ if(q.type==='practice'){drawPractice(q,pane,()=>complete(index,q,pane,true));return}
+ const area=h('div','answer-area');pane.append(area);
+ const toolbar=h('div','tool-row');pane.append(toolbar);
+ const submit=b('Kiểm tra',grade,'btn primary');submit.disabled=true;toolbar.append(submit);
+ let valid=()=>false,correct=()=>false;
+ const update=()=>submit.disabled=!valid();
+ if(q.type==='number'){
+  const value=input('',update,{inputMode:'numeric'});
+  area.append(field('Kết quả',value));
+  valid=()=>/^[+-]?\d+$/.test(value.value.trim());
+  correct=()=>Number(value.value)===q.answer;
+ }else if(q.type==='order'){
+  const local=[];const order=stableOrder(q.steps.length,q.id);
+  function drawOrder(){
+   area.replaceChildren(h('p','muted','Bấm từng bước theo thứ tự. Có thể bỏ bước cuối hoặc xếp lại.'));
+   tray(area,order.map(i=>q.steps[i]),local,i=>{local.push(i);drawOrder();focus(area.querySelector('.ordered-tray li:last-child'))},()=>{local.pop();drawOrder();focus(area.querySelector('.ordered-tray'))},()=>{local.splice(0);drawOrder();focus(area.querySelector('.tool-row button'))},'Thứ tự của em');
+   update();
+  }
+  valid=()=>local.length===q.steps.length;
+  correct=()=>same(local.map(i=>order[i]),q.sequence);drawOrder();
+ }else if(q.type==='match'){
+  const chosen=Array(q.items.length).fill(null);
+  const order=stableOrder(q.groups.length,q.id);
+  q.items.forEach((x,i)=>area.append(field(x,select(order.map(k=>q.groups[k]),null,v=>{chosen[i]=v;update()}))));
+  valid=()=>chosen.every(x=>x!==null);correct=()=>same(chosen.map(i=>order[i]),q.assign);
+ }else{
+  const ids=stableOrder(q.choices.length,q.id),set=new Set(),fields=h('fieldset','answer-options');
+  const legend=h('legend','sr-only',q.type==='multi'?'Chọn tất cả phương án đúng':'Chọn một phương án đúng');fields.append(legend);
+  ids.forEach((idx,i)=>{
+   const f=h('input');f.type=q.type==='multi'?'checkbox':'radio';f.name=q.id;f.value=String(idx);
+   f.addEventListener('change',()=>{if(q.type==='choice')set.clear();if(f.checked)set.add(idx);else set.delete(idx);update()});
+   fields.append(add(h('label','answer-choice'),f,h('span','letter',String.fromCharCode(65+i)),h('span','',q.choices[idx])));
+  });
+  area.append(fields);
+  valid=()=>set.size>0;correct=()=>same([...set].sort(),[...q.correct].sort());
+ }
+ function grade(){
+  if(attempt?.phase!=='answer'||!valid()||pane!==attempt.pane)return;
+  if(correct())complete(index,q,pane,false);
+  else wrong(index,q,pane,stage);
+ }
+}
+function drawPractice(q,pane,finish){
+ const intro=h('p','muted','Làm bài rồi tự đối chiếu kết quả.');
+ const holder=h('div','practice-rubric');holder.hidden=true;
+ const checks=[];
+ const submit=b('Ghi nhận đã tự đối chiếu',()=>{if(checks.every(x=>x.checked))finish()},'btn primary');submit.disabled=true;
+ q.rubric.forEach(line=>{const e=h('input');e.type='checkbox';e.addEventListener('change',()=>submit.disabled=!checks.every(x=>x.checked));checks.push(e);
+  holder.append(add(h('label','rubric-item'),e,h('span','',line)))});
+ holder.append(submit);
+ const show=b('Mở tiêu chí tự kiểm tra',()=>{holder.hidden=false;show.hidden=true;focus(checks[0])});
+ add(pane,intro,show,holder);
+}
+function disable(pane){pane.querySelectorAll('button,input,select,textarea').forEach(x=>x.disabled=true)}
+function complete(index,q,pane,self){
+ if(attempt?.phase!=='answer'||index!==progress.count)return;
+ attempt.phase='complete';disable(pane);
+ progress.count++;
+ if(!self)progress.xp+=progress.tries[index]?10:20;
+ if(progress.count%STAGE_SIZE===0)progress.xp+=30;
+ save(lesson.n);
+ setHeader(mission);
+ const end=progress.count%STAGE_SIZE===0;
+ const result=add(h('div','result-card success'),h('strong','',self?'✓ Đã ghi nhận tự đối chiếu':'✓ Chính xác!'),h('p','',self?'Em đã tự kiểm tra bài theo tiêu chí.':q.why));
+ result.setAttribute('role','status');
+ const stageIndex=Math.floor(index/STAGE_SIZE);
+ if(end&&stageIndex<4)result.append(h('p','medal',MEDALS[stageIndex]+' Huy hiệu khu vực '+(stageIndex+1)));
+ const next=b(progress.count===TOTAL?'Vào thử thách thực hành':end?'Nhận huy chương':'Sang câu tiếp theo',
+  ()=>end?(progress.count===TOTAL?lab():celebrateStage(stageIndex)):play(progress.count),'btn primary');
+ add(pane,result,next);focus(next);
+}
+function wrong(index,q,pane,stage){
+ attempt.phase='retry';disable(pane);
+ progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
+ const e=h('input');e.type='checkbox';
+ const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
+ e.addEventListener('change',()=>retry.disabled=!e.checked);
+ add(read,add(h('label','rubric-item'),e,h('span','','Em đã đọc lại tư liệu')),retry);pane.append(read);focus(e);
+}
+function solution(q){
+ if(q.type==='practice')return q.rubric.join(' ');
+ if(q.type==='number')return String(q.answer);
+ if(q.type==='order')return q.sequence.map(i=>q.steps[i]).join(' → ');
+ if(q.type==='match')return q.items.map((t,i)=>t+' → '+q.groups[q.assign[i]]).join(' · ');
+ return q.correct.map(i=>q.choices[i]).join(' · ');
+}
+function review(i){
+ attempt=null;
+ const s=lesson.stages[i],solved=Math.max(0,Math.min(STAGE_SIZE,progress.count-STAGE_SIZE*i));
+ const [head,title]=basePanel('BÀI '+number(lesson.n)+' · ÔN TẬP',mission.stages[i],solved+'/'+STAGE_SIZE+' câu đã hoàn thành.');
+ const box=h('div','review-stack');box.append(drawStudy(s));
+ s.tasks.slice(0,solved).forEach(q=>{
+  const item=add(h('details','review-item'),h('summary','',q.prompt));
+  if(q.table)item.append(checkTable(q.table));
+  add(item,h('p','',solution(q)),q.why?h('p','muted',q.why):null);box.append(item);
+ });
+ if(!solved)box.append(h('p','muted','Lời giải sẽ xuất hiện ở đây sau khi em vượt qua từng câu.'));
+ main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
+}
+function extra(){
+ attempt=null;
+ const q=lesson.extras[0];
+ const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
+ const box=add(h('section','question-card'),h('h2','',q.prompt));
+ drawPractice(q,box,()=>{
+  if(!progress.extras.includes(q.id)){progress.extras.push(q.id);save(lesson.n)}
+  disable(box);const result=h('p','result-card success','✓ Đã ghi nhận tự đối chiếu.');box.append(result);focus(result);
+ });
+ main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
+}
+function celebrateStage(i){
+ attempt=null;
+ const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
+ const actions=add(h('div','tool-row'),
+  b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
+  b('Xem lời giải',()=>review(i)),
+  b('Bản đồ bài này',()=>lessonPage()));
+ const panel=add(h('section','lesson-panel celebration'),
+  h('span','award',MEDALS[i]),title,
+  h('p','muted',mission.stages[i]),actions);
+ main.replaceChildren(panel);
+ focusViewStart(title);
+}
+function certificate(){
+ if(!hasCertificate(progress)){lessonPage();return}
+ attempt=null;
+ const title=h('h1','','Chứng nhận hoàn thành');
+ const recipient=h('p','certificate-recipient');
+ const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});
+ const date=new Intl.DateTimeFormat('vi-VN',{
+  day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'
+ }).format(new Date(progress.certificateAt));
+ const card=add(h('section','certificate-card'),
+  h('span','certificate-icon','🏆'),
+  h('p','eyebrow','CODEQUEST · TIN HỌC 7'),
+  title,recipient,
+  h('h3','','Bài '+lesson.n+' · '+lesson.title),
+  h('p','',TOTAL+' câu luyện tập · 2 nhiệm vụ thực hành'),
+  h('p','certificate-date','Ngày hoàn thành: '+date));
+ const actions=add(h('div','certificate-actions'),
+  field('Tên trên chứng nhận (tùy chọn)',name),
+  b('In / lưu PDF',()=>window.print(),'btn primary'));
+ if(lesson.extras.length)actions.append(b('Bài mở rộng',()=>extra()));
+ main.replaceChildren(add(h('div','lesson-panel certificate-view'),
+  b('☰ Bản đồ bài này',()=>lessonPage()),card,actions));
+ focusViewStart(title);
+}
+document.querySelector?.('.skip')?.addEventListener('click',e=>{e.preventDefault();main.scrollIntoView({block:'start'});focus(main)});
+window.addEventListener('hashchange',route);
+route();
+
+</script>
+</body>
+</html>
