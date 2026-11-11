@@ -57,6 +57,8 @@ test('PH shows fixed timestamps and retained evidence, with no local countdown',
     handlers['study-status']({enabled: true, mode: 'away', level: 'warning', since, historySaved: true,
         history: [{kind: 'away', startedAt: since, endedAt: null, durationMs: null}]});
     assert.equal(elements.screenSharingStatus.hidden,true);
+    assert.equal(elements.demoAttention.dataset.level,'active');
+    assert.match(elements.demoAttentionMessage.textContent,/Phiên học vẫn được giữ/);
     handlers['study-status']({enabled:true,mode:'away',level:'warning',since,screen:{state:'stopped',since},history:[]});
     assert.equal(elements.screenSharingStatus.hidden,false);
     assert.match(elements.screenSharingMessage.textContent,/Đã dừng chia sẻ/);

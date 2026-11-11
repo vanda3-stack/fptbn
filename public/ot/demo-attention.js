@@ -25,7 +25,7 @@
         el('demoHistorySave').textContent = data.historySaved === false ? 'Chưa lưu được nhật ký.' : `Phiên theo dõi từ ${stamp(data.historyCapturedAt)}`;
         for (const row of rows) {
             const tr = document.createElement('tr');
-            const kind = {away:'Rời tab ôn tập',left:'Thoát / đóng trang', 'screen-stopped':'Dừng chia sẻ màn hình',disconnected:'Mất kết nối (chưa rõ nguyên nhân)'}[row.kind] || 'Gián đoạn theo dõi';
+            const kind = {away:'Tab ôn tập ở chế độ nền',left:'Thoát phiên ôn tập', 'screen-stopped':'Dừng chia sẻ màn hình',disconnected:'Mất kết nối (chưa rõ nguyên nhân)'}[row.kind] || 'Gián đoạn theo dõi';
             const ended = row.endReason === 'returned' ? stamp(row.endedAt)
                 : row.endReason === 'state-change' ? 'Đổi trạng thái lúc ' + stamp(row.endedAt)
                 : row.endReason === 'server-restart' ? 'Chưa xác định (máy chủ khởi động lại)' : row.kind === 'screen-stopped' ? 'Chưa chia sẻ lại' : 'Chưa ghi nhận quay lại';
@@ -43,17 +43,19 @@
         const activityOnly = (tablet || phone) && data.mode !== 'paused';
         if(el('tabletNotice')) {
             el('tabletNotice').hidden = !activityOnly;
-            el('tabletNotice').textContent = activityOnly ? `Con đang ôn tập bằng ${phone ? 'điện thoại' : 'máy tính bảng'}. Hệ thống chỉ ghi nhận khi con rời trang ôn tập.` : '';
+            el('tabletNotice').textContent = activityOnly ? `Con đang ôn tập bằng ${phone ? 'điện thoại' : 'máy tính bảng'}. Đổi tab sẽ không kết thúc phiên ôn tập.` : '';
             el('parentMonitor').dataset.device = activityOnly ? (phone ? 'phone' : 'tablet') : '';
             el('parentFloating').hidden = activityOnly;
             if(activityOnly)window.OTParentFloating?.close();
         }
         const screen = activityOnly ? null : data.screen;
-        const box = el('demoAttention'); box.hidden = false; box.dataset.level = !['paused','waiting'].includes(data.mode) && (['left','disconnected'].includes(data.mode) || data.connected === false || screen?.state === 'stopped') ? 'urgent' : data.mode === 'away' ? (data.level === 'urgent' ? 'urgent' : 'warning') : data.level;
+        const box = el('demoAttention'); box.hidden = false; box.dataset.level = data.mode === 'left' || (!['paused','waiting'].includes(data.mode) && screen?.state === 'stopped') ? 'urgent' : data.mode === 'away' ? 'active' : data.connected === false ? 'waiting' : data.level;
         const message = data.mode === 'paused' ? 'Con đang học trên lớp.'
             : data.mode === 'waiting' ? 'Con chưa đăng nhập.'
-            : data.connected === false && data.mode !== 'left' ? 'Mất kết nối — chưa rõ nguyên nhân.' : data.mode === 'active' ? 'Con đang ở trang ôn tập.'
-            : data.mode === 'left' ? 'Con đã thoát / đóng trang.' : data.mode === 'disconnected' ? 'Mất kết nối — chưa rõ nguyên nhân.' : 'Con đã rời tab ôn tập.';
+            : data.mode === 'left' ? 'Con đã thoát phiên ôn tập.'
+            : data.mode === 'away' ? 'Tab ôn tập đang ở chế độ nền. Phiên học vẫn được giữ.'
+            : data.connected === false || data.mode === 'disconnected' ? 'Chưa nhận được tín hiệu kết nối. Chưa xác nhận con đã thoát.'
+            : 'Con đang ở trang ôn tập.';
         el('demoAttentionMessage').textContent = message;
         el('demoAttentionClock').textContent = data.connected === false && data.mode !== 'left' && data.disconnectedAt != null ? `Từ ${clock(data.disconnectedAt)}` : data.mode === 'active' && data.returnedAt
             ? `Quay lại ${clock(data.returnedAt)}`
@@ -67,7 +69,7 @@
         }
         renderHistory(data);
         const key = [data.mode, data.level, data.since, data.returnedAt, screen?.state, screen?.since].join(':');
-        if (key !== lastSound && (['warning', 'urgent'].includes(data.level) || data.mode === 'left' || screen?.state === 'stopped')) beep();
+        if (key !== lastSound && (data.mode === 'left' || screen?.state === 'stopped')) beep();
         lastSound = key;
     }
     function reset() {state = null; lastSound = ''; el('demoAttention').hidden = true; el('demoHistory').hidden = true;if(el('tabletNotice')){el('tabletNotice').hidden=true;el('parentMonitor').dataset.device='';el('parentFloating').hidden=false;} el('demoHistoryRows').replaceChildren();if(el('screenSharingStatus'))el('screenSharingStatus').hidden=true;}

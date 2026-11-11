@@ -206,6 +206,17 @@ function examStudentLabel(student) {
 // DANH SÁCH HS HIỆN TẠI
 // =====================================================
 
+function markStudentConnectionPaused(id) {
+    clearStudentRetry(id);
+    clearConnectTimeout(id);
+    closeStudentPeer(id);
+    closeTeacherPeer(id);
+    setStudentStatus(id, "🟡 Tạm mất kết nối · vẫn giữ phiên học", false);
+}
+
+socket.on("student-connection-paused", ({id}) => markStudentConnectionPaused(id));
+socket.on("student-removed", ({id}) => removeStudent(id));
+
 socket.on(
     "student-list",
     list => {
@@ -215,6 +226,11 @@ socket.on(
             list
         );
 
+
+        const present = new Set(list.map(student => student.id));
+        for (const id of studentNames.keys()) {
+            if (!present.has(id)) removeStudent(id);
+        }
 
         list.forEach(
             student => {
@@ -230,6 +246,11 @@ socket.on(
                     examStudentLabel(student)
                 );
 
+
+                if (student.connectionPaused) {
+                    markStudentConnectionPaused(student.id);
+                    return;
+                }
 
                 // =====================================
                 // HS ĐÃ SHARE
@@ -284,6 +305,8 @@ socket.on(
             data
         );
 
+
+        if (data.replacesId) removeStudent(data.replacesId);
 
         studentNames.set(
             data.id,

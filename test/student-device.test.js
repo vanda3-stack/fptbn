@@ -25,22 +25,25 @@ function roster({exam = false, token = 'valid'} = {}) {
     let handler, result, code = 200;
     const context = {app: {get: (_path, fn) => handler = fn},
         teacherLoginTokens: new Map([['valid', {}]]), normalizeClassCode: value => value,
-        students: new Map([['session', {studentId: 1, studentCode: 'FBN12345', name: 'HS', classCode: 'EXAM', device: 'iPad'}]]),
+        students: new Map([
+            ['exam', {studentId: 1, studentCode: 'FBN12345', name: 'HS', classCode: 'EXAM', device: 'iPad'}],
+            ['class', {studentId: 1, classCode: '9A3', device: 'iPad', connectionPaused: true}],
+            ['other', {studentId: 2, classCode: '9A4', device: 'iPhone'}],
+        ]),
         db: {execute: async sql => sql.startsWith('SELECT c.id') ? [[{id: 1}]] : [[{id: 1, full_name: 'HS'}, {id: 2, full_name: 'HS ngoại tuyến'}]]},
-        getClassRoom: code => code,
-        io: {in: () => ({fetchSockets: async () => [
-            {data: {role: 'student', classCode: '9A3', studentId: 1, device: 'iPad'}},
-            {data: {role: 'student', classCode: '9A4', studentId: 2, device: 'iPhone'}},
-        ]})}, console};
-    vm.runInNewContext(source.slice(start, end), context);
+        console};
+    const listStart = source.indexOf('function getStudentList(');
+    const listEnd = source.indexOf('// =====================================================\n// SOCKET.IO', listStart);
+    vm.runInNewContext(source.slice(listStart, listEnd) + source.slice(start, end), context);
     const response = {status(value) {code = value; return this;}, json(value) {result = value;}};
     return handler({headers: {'x-teacher-token': token}, query: {classCode: exam ? 'EXAM' : '9A3'}}, response).then(() => ({result, code}));
 }
 
-test('class roster attaches only current class devices to online students and clears offline labels', async () => {
+test('class roster retains the paused iPad session and excludes devices from other classes', async () => {
     const {result} = await roster();
     assert.equal(result.students[0].device, 'iPad');
     assert.equal(result.students[0].online, true);
+    assert.equal(result.students[0].connectionPaused, true);
     assert.equal(result.students[1].device, '');
     assert.equal(result.students[1].online, false);
 });

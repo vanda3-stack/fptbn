@@ -4732,7 +4732,7 @@ app.get("/api/teacher/class-roster", async (req, res) => {
         if (classCode === "EXAM" || classCode === "CLB") {
             const roomStudents = Array.from(students.values())
                 .filter(x => x.classCode === classCode)
-                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true,device:x.device || ""}));
+                .map(x => ({id:x.studentId,student_code:x.studentCode,full_name:x.name,original_class:x.originalClassCode || "",online:true,connectionPaused:x.connectionPaused === true,device:x.device || ""}));
             return res.json({success:true,students:roomStudents});
         }
 
@@ -4745,10 +4745,11 @@ app.get("/api/teacher/class-roster", async (req, res) => {
             "SELECT s.id, s.student_code, s.full_name FROM students s INNER JOIN student_enrollments se ON se.student_id=s.id WHERE se.class_id=? AND s.is_active=1 ORDER BY s.full_name",
             [classes[0].id]
         );
-        const room = getClassRoom(classCode);
-        const sockets = await io.in(room).fetchSockets();
-        const onlineDevices = new Map(sockets.filter(x=>x.data.role==="student" && x.data.classCode===classCode).map(x=>[Number(x.data.studentId),x.data.device || ""]));
-        res.json({success:true,students:rosterStudents.map(x=>({...x,online:onlineDevices.has(Number(x.id)),device:onlineDevices.get(Number(x.id)) || ""}))});
+        const classSessions = new Map(getStudentList(classCode).map(x => [Number(x.studentId), x]));
+        res.json({success:true,students:rosterStudents.map(x => {
+            const session = classSessions.get(Number(x.id));
+            return {...x, online: Boolean(session), connectionPaused: session?.connectionPaused === true, device: session?.device || ""};
+        })});
     } catch (error) {
         console.error("CLASS ROSTER ERROR:",error);
         res.status(500).json({success:false,message:"Không tải được sĩ số"});
@@ -4966,6 +4967,10 @@ const resourceModule = require("./lib/class-resources");
 const resourceStore = resourceModule.createStore(path.join(__dirname, "data", "class-resources.json"));
 
 const students = new Map();
+const classroomPresence = require("./lib/classroom-presence")(students, (event, id, student) => {
+    io.to(getClassRoom(student.classCode)).emit(event, {id, ...student});
+    revisionModule.refreshFamilyAccess();
+});
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
@@ -5027,6 +5032,8 @@ function getStudentList(classCode) {
                 schoolYear:
                     student.schoolYear,
 
+                device: student.device,
+                connectionPaused: student.connectionPaused === true,
                 screenReady:
                     student.screenReady
 
@@ -5378,6 +5385,8 @@ io.on(
                     }
 
 
+                    if (!socket.connected) return;
+
                     const dbStudent =
                         rows[0];
 
@@ -5395,6 +5404,7 @@ io.on(
                             socketId !== socket.id &&
                             Number(entry.studentId) === Number(dbStudent.student_id)
                     );
+                    let replacesId;
                     if (existingSession) {
                         const oldSocket = io.sockets.sockets.get(existingSession[0]);
                         if (oldSocket && oldSocket.connected) {
@@ -5403,7 +5413,10 @@ io.on(
                             });
                             return;
                         }
-                        students.delete(existingSession[0]);
+                        const [oldId, oldStudent] = existingSession;
+                        classroomPresence.remove(oldId);
+                        if (oldStudent.classCode === classCode) replacesId = oldId;
+                        else io.to(getClassRoom(oldStudent.classCode)).emit("student-removed", {id: oldId});
                     }
 
                     const room =
@@ -5482,6 +5495,7 @@ io.on(
                     ).emit(
                         "student-joined",
                         {
+                            replacesId,
                             id:
                                 socket.id,
 
@@ -6050,9 +6064,7 @@ io.on(
                         classCode
                     ) {
 
-                        students.delete(
-                            id
-                        );
+                        classroomPresence.remove(id);
 
                     }
 
@@ -6083,61 +6095,8 @@ io.on(
                 );
 
 
-                if (
-                    socket.data.role ===
-                    "student"
-                ) {
-
-                    const student =
-                        students.get(
-                            socket.id
-                        );
-
-
-                    if (student) {
-
-                        students.delete(
-                            socket.id
-                        );
-                        revisionModule.refreshFamilyAccess();
-
-
-                        socket.to(
-                            getClassRoom(
-                                student.classCode
-                            )
-                        ).emit(
-                            "student-left",
-                            {
-                                id:
-                                    socket.id,
-
-                                studentId:
-                                    student.studentId,
-
-                                studentCode:
-                                    student.studentCode,
-
-                                name:
-                                    student.name,
-
-                                classCode:
-                                    student.classCode,
-
-                                reason
-                            }
-                        );
-
-
-                        console.log(
-                            "Student left:",
-                            student.name,
-                            student.classCode,
-                            socket.id
-                        );
-
-                    }
-
+                if (socket.data.role === "student") {
+                    classroomPresence.disconnect(socket.id, reason);
                 }
 
 

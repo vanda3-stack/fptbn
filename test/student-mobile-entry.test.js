@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 
 function setup({capture = 'unsupported', duplicate = false} = {}) {
-    const elements = {}, handlers = {}, sent = [], events = [], alerts = [];
+    const elements = {}, handlers = {}, sent = [], events = [], alerts = [], lifecycle = {};
     const element = id => elements[id] ||= {value: '', textContent: '', disabled: false, style: {},
         addEventListener(type, fn) {this[type] = fn;}, focus() {}};
     let captures = 0;
@@ -13,15 +13,15 @@ function setup({capture = 'unsupported', duplicate = false} = {}) {
     const socket = {connected: true, on(name, fn) {handlers[name] = fn;}, emit(name, data) {sent.push({name, data});}};
     const context = {io: () => socket, navigator: capture === 'unsupported' ? {maxTouchPoints: 5} : {mediaDevices: {getDisplayMedia() {}}},
         FPTBNScreenCapture: {async capture() {captures++; if (capture === 'not-supported') throw Object.assign(new Error('Unsupported'), {name: 'NotSupportedError'}); if (capture === 'denied') throw Object.assign(new Error('Permission denied'), {name: 'NotAllowedError'}); return stream;}},
-        document: {getElementById: element},
-        window: {addEventListener() {}, dispatchEvent(event) {events.push(event);}},
+        document: {getElementById: element, addEventListener(name, fn) {lifecycle[name] = fn;}},
+        window: {addEventListener(name, fn) {lifecycle[name] = fn;}, dispatchEvent(event) {events.push(event);}},
         CustomEvent: class {constructor(type, options) {this.type = type; this.detail = options.detail;}},
         console: {log() {}, error() {}, warn() {}}, alert(message) {alerts.push(message);},
         fetch: async url => ({ok: true, json: async () => url.endsWith('/session-check') ? {success: true, alreadyActive: duplicate} : {success: true, student: {id: 1, student_code: 'FBN12345', full_name: 'HS', class_id: 1, class_code: '9A3', school_year: '2026-2027'}}})};
     vm.createContext(context);
     vm.runInContext(fs.readFileSync('public/js/student.js', 'utf8'), context);
     element('studentCode').value = 'FBN12345';
-    return {context, element, handlers, sent, events, alerts, get captures() {return captures;}};
+    return {context, element, handlers, sent, events, alerts, lifecycle, socket, get captures() {return captures;}};
 }
 
 test('unsupported mobile browser enters class and gets tabs without advertising a live student screen', async () => {
@@ -100,4 +100,22 @@ test('a delayed desktop login requests a fresh click before capture when activat
  assert.equal(h.captures,0);assert(h.context.continueCapture);
  h.context.continueCapture.onclick();await pending;
  assert.equal(h.captures,1);assert(h.sent.some(e=>e.name==='student-join'));assert.equal(h.alerts.length,0);
+});
+
+test('iPad returns to the existing classroom and reconnects on visibility restore', async () => {
+    const h = setup();
+    await h.element('shareButton').click();
+    h.socket.connected = false;
+    h.handlers.disconnect('ping timeout');
+    let attempts = 0;
+    h.socket.connect = () => {attempts++;h.socket.connected = true;h.handlers.connect();};
+    h.context.document.hidden = true;
+    h.lifecycle.visibilitychange();
+    assert.equal(attempts, 0);
+    h.context.document.hidden = false;
+    h.lifecycle.visibilitychange();
+    assert.equal(attempts, 1);
+    assert.equal(h.sent.filter(event => event.name === 'student-join').length, 2);
+    assert.equal(h.element('classroom').style.display, 'block');
+    assert.equal(h.alerts.length, 0);
 });

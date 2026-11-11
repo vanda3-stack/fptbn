@@ -2,9 +2,9 @@
 (()=>{
  let socket=null,currentToken='',stream=null,config=null,peers=new Map(),panel=null,starting=false,generation=0,announced=false,waitTimer=null,previewTimer=null,currentShare=null,onSharingChange=null,earlyIce=new Map(),connectionEpoch=0,streamOwned=true,externalEndedCleanup=null,accessBlocked=false;
  let attentionEnabled=false,attentionTimer=null,attentionSequence=0;
- function reportVisibility(durable=false, departure=null){
+ function reportVisibility(durable=false){
   if(!attentionEnabled||!socket?.connected)return;
-  const visibility=departure || (document.visibilityState==='hidden'?'hidden':'visible');
+  const visibility=document.visibilityState==='hidden'?'hidden':'visible';
   const report={visibility,sequence:++attentionSequence};
   socket.emit('study-visibility',report);
   // Flush the last mobile visibility transition before the browser suspends us.
@@ -14,8 +14,14 @@
    try{fetch('/api/ot/demo-attention',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{})}catch{}
   }
  }
- document.addEventListener?.('visibilitychange',()=>reportVisibility(true));
- window.addEventListener('pageshow',()=>reportVisibility());
+ function resume(){
+  if(document.visibilityState==='hidden')return;
+  if(socket?.active&&!socket.connected)socket.connect();
+  reportVisibility();
+ }
+ document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='hidden')reportVisibility(true);else resume()});
+ window.addEventListener('pageshow',resume);
+ window.addEventListener('online',resume);
  const el=id=>document.getElementById(id);
  const captureState=(state,text)=>{const node=el('familyCaptureState');if(node){node.dataset.state=state;node.textContent=text}};
  const message=text=>{if(el('familyMessage'))el('familyMessage').textContent=text;if(el('studyCaptureHelp'))el('studyCaptureHelp').textContent=text};
@@ -115,5 +121,4 @@
   announce();return true;
  }
  window.OTFamily={connect,disconnect,start,attachStream,isSharing:()=>Boolean(stream&&currentShare)};
- window.addEventListener('pagehide',event=>{reportVisibility(true,event.persisted?'hidden':'left');stop(false)});
 })();

@@ -1269,7 +1269,7 @@
     =========================================== -->
 
     <script
-        src="/js/teacher.js?v=20261109-clb1"
+        src="/js/teacher.js?v=presence1"
     ></script>
 
     <script
@@ -1321,7 +1321,7 @@ function render(){
         details.textContent=[s.student_code||"",exam&&s.original_class?"Lớp "+s.original_class:"",s.online&&s.device?s.device:""].filter(Boolean).join(" · ");
         if(details.textContent)name.append(details);
         const state=document.createElement("small");state.className=s.online?"online":"missing";
-        state.textContent=s.online?(exam?"● Đang tham gia":"● Đã vào"):"○ Chưa vào";
+        state.textContent=s.connectionPaused?"● Tạm mất kết nối":s.online?(exam?"● Đang tham gia":"● Đã vào"):"○ Chưa vào";
         item.append(name,state);list.append(item);
     }
     if(!visible.length){
@@ -1357,6 +1357,8 @@ if(typeof socket!=="undefined"){
     socket.on("teacher-ready",()=>{lastClass="";setTimeout(refresh,250)});
     socket.on("student-joined",refresh);
     socket.on("student-left",refresh);
+    socket.on("student-removed",refresh);
+    socket.on("student-connection-paused",refresh);
     socket.on("student-list",refresh);
 }
 })();

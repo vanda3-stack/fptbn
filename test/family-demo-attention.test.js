@@ -16,19 +16,18 @@ function harness() {
     return {tracker, socket, advance: ms => {time += ms; tracker.tick();}, block: value => {denied = value; tracker.refresh();}};
 }
 
-test('parents receive thresholds while late logins and other children stay isolated', () => {
-    const h = harness(), student = h.socket('student'), parents = Array.from({length: 12}, (_, i) => h.socket('p' + i, 'parent'));
+test('a background tab stays in the study session without an alert, even after signals stop', () => {
+    const h = harness(), student = h.socket('student'), parents = Array.from({length: 2}, (_, i) => h.socket('p' + i, 'parent'));
     const other = h.socket('other', 'parent', {id: 2, student_code: 'FBN12345'});
     student.fire('study-visibility', {visibility: 'hidden', sequence: 1});
-    assert(parents.every(p => p.last.level === 'pending'));
-    h.advance(9999); assert.equal(parents[0].last.level, 'pending');
-    h.advance(1); assert(parents.every(p => p.last.level === 'warning' && p.last.since === 100000));
+    assert(parents.every(p => p.last.level === 'active' && p.last.mode === 'away'));
+    h.advance(30000);
+    assert(parents.every(p => p.last.level === 'active' && p.last.mode === 'away' && p.last.connected === false));
     const late = h.socket('late', 'parent'); assert.equal(late.last.since, null);assert.equal(late.last.priorToLogin, true);assert.equal(late.last.history.length, 0);
     const count = parents[0].received.length;
     h.advance(1000); assert.equal(parents[0].received.length, count, 'no per-second notification flooding');
-    h.advance(19000); assert(parents.every(p => p.last.level === 'urgent'));
     student.fire('study-visibility', {visibility: 'visible', sequence: 2});
-    assert(parents.every(p => p.last.mode === 'active' && p.last.lastDuration === 30000));
+    assert(parents.every(p => p.last.mode === 'active' && p.last.lastDuration === 31000));
     assert.equal(other.received.length, 1);assert.equal(other.last.mode, 'waiting');assert.equal(other.last.history.length, 0);
 });
 
@@ -38,7 +37,7 @@ test('mobile suspension and disconnect stay distinct from known hidden-page even
     student.fire('study-visibility', {visibility: 'visible', sequence: 1}); assert.equal(parent.last.mode, 'active');
     student.fire('study-visibility', {visibility: 'hidden', sequence: 2});
     h.advance(5000); student.fire('disconnect'); h.advance(5000);
-    assert.equal(parent.last.mode, 'away'); assert.equal(parent.last.level, 'warning');assert.equal(parent.last.connected,false);
+    assert.equal(parent.last.mode, 'away'); assert.equal(parent.last.level, 'active');assert.equal(parent.last.connected,false);
     const next = h.socket('new');
     next.fire('study-visibility', {visibility: 'hidden', sequence: 1});
     assert.equal(parent.last.since, 120000, 'reconnection in the background keeps the original departure');
@@ -55,7 +54,7 @@ test('HTTP fallback authenticates ownership, ignores delayed duplicates, and res
     assert.equal(p.last.mode, 'active');
     assert.doesNotThrow(() => {s.fire('study-visibility', null);s.fire('study-visibility', 'hidden');s.fire('study-visibility', {visibility: 'hidden', sequence: Infinity});});
     h.block(true); s.fire('study-visibility', {visibility: 'hidden', sequence: 3}); h.advance(30000);
-    assert.equal(p.last.mode, 'paused'); h.block(false); assert.equal(p.last.level, 'urgent');
+    assert.equal(p.last.mode, 'paused'); h.block(false); assert.equal(p.last.level, 'active');
 });
 
 test('demo tablet establishes the family connection without requesting screen capture', async () => {
@@ -89,9 +88,10 @@ test('mobile visibility adapter sends ordered events and a durable hidden-page b
     const previous = emitted.at(-1)[1].sequence;
     context.document.visibilityState = 'visible'; events.visibilitychange();
     assert(emitted.at(-1)[1].sequence > previous);
-    windowEvents.pagehide({persisted:false});
-    assert.equal(emitted.at(-1)[1].visibility,'left');assert.equal(beacons.length,3);
-    windowEvents.pagehide({persisted:true});assert.equal(emitted.at(-1)[1].visibility,'hidden');
+    assert.equal(windowEvents.pagehide, undefined, 'a reload, navigation or close is not an authenticated exit');
+    socket.active = true; socket.connected = false;
+    let reconnects = 0; socket.connect = () => reconnects++;
+    windowEvents.pageshow();assert.equal(reconnects, 1);
     assert(!emitted.some(([name]) => name === 'stop'), 'leaving the page is not reported as an intentional screen stop');
     assert(!emitted.some(([name]) => name === 'start'), 'no nonexistent mobile video share');
 });
@@ -131,7 +131,8 @@ test('real Socket.IO broadcasts state to two parents and HTTP fallback rejects i
         assert.equal((await post('invalid')).status, 403);assert.equal((await post('valid')).status, 204);
         await Promise.all(returned);
         const left=parents.map(s=>event(s,'study-status',d=>d.mode==='left'));
-        assert.equal((await post('valid','left',3)).status,204);await Promise.all(left);
+        mounted.revokeStudent('valid');
+        assert((await Promise.all(left)).every(d=>d.level==='urgent'));
     } finally {for (const s of sockets) s.disconnect();mounted.close();await new Promise(r => io.close(r));server.close();}
 });
 
@@ -164,12 +165,15 @@ test('screen stop has its own timestamp, stays separate from tab status, and ign
  h.block(true);assert.equal(p.last.mode,'paused');assert.equal(p.last.screen,undefined);
 });
 
-test('page departure has a distinct event and timestamp; an unannounced disconnect is never claimed to be a tab closure',()=>{
+test('only logout of the current session reports an exit, including after the transport disconnects',()=>{
  const h=harness(),s=h.socket('s'),p=h.socket('p','parent');
  s.fire('study-visibility',{visibility:'hidden',sequence:1});h.advance(5000);
  assert.equal(h.tracker.reportHttp({token:s.data.token,socketId:s.id,visibility:'left',sequence:2}),true);
+ assert.equal(p.last.mode,'away', 'old client pagehide events cannot confirm exit');
+ s.fire('disconnect');assert.equal(p.last.mode,'away');
+ h.tracker.logout('wrong-token');assert.equal(p.last.mode,'away');
+ h.tracker.logout(s.data.token);
  assert.equal(p.last.mode,'left');assert.equal(p.last.since,105000);assert.equal(p.last.history[0].kind,'left');
- s.fire('disconnect');assert.equal(p.last.mode,'left');
  const next=h.socket('next');next.fire('study-visibility',{visibility:'visible',sequence:1});assert.equal(p.last.mode,'active');
- next.fire('disconnect');assert.equal(p.last.mode,'disconnected');
+ next.fire('disconnect');assert.equal(p.last.mode,'disconnected');assert.equal(p.last.level,'waiting');
 });

@@ -196,8 +196,7 @@ socket.on(
 
         if (
             joinedClass &&
-            studentName &&
-            (classroomViewOnly || screenStream)
+            studentName
         ) {
 
             console.log(
@@ -299,6 +298,15 @@ socket.on(
 
     }
 );
+
+
+// Safari can suspend reconnect timers while another tab is active.
+function resumeClassConnection() {
+    if (joinedClass && !document.hidden && !socket.connected) socket.connect();
+}
+document.addEventListener("visibilitychange", resumeClassConnection);
+window.addEventListener("pageshow", resumeClassConnection);
+window.addEventListener("online", resumeClassConnection);
 
 
 // =====================================================
