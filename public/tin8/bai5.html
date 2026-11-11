@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07162a">
+<meta name="description" content="CodeQuest Tin học 8. Vượt thử thách để nhận chứng nhận hoàn thành bài.">
+<title>Bài 5 · Sử dụng bảng tính giải quyết bài toán thực tế | Tin học 8</title>
+<style>:root {
+  color-scheme: dark;
+  --ink: #f2f8ff;
+  --muted: #b4cbe0;
+  --paper: #07162a;
+  --panel: #132c47;
+  --card: #17314d;
+  --line: #46617c;
+  --gold: #ffdb83;
+  --accent: #64ecc9;
+  --teal-ink: #102c32;
+  --input: #0a2940;
+}
+*, *::before, *::after { box-sizing: border-box }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: radial-gradient(ellipse at 50% -20%, #284b79, #091c35 53%, #071424);
+  font: 1rem/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+h1, h2, h3, h4, p { margin: 0 }
+h1 { font-size: clamp(2rem, 5vw, 3.56rem); line-height: 1.09 }
+h1 em { color: var(--accent); font-style: normal }
+h2 { font-size: clamp(1.4rem, 3vw, 2.2rem); line-height: 1.2 }
+h3 { font-size: 1.16rem; line-height: 1.4 }
+p { max-width: 67ch }
+a, button, input, textarea, select { color: inherit }
+button, input, textarea, select { font: inherit }
+button:not(:disabled), summary { cursor: pointer }
+button:disabled { opacity: .58 }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px }
+h1[tabindex="-1"]:focus-visible { outline: none }
+[hidden] { display: none !important }
+.muted, .tiny { color: var(--muted) }
+.tiny { font-size: .86rem }
+.sr-only, .skip:not(:focus) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap }
+.skip:focus { position: fixed; top: 8px; left: 8px; z-index: 10; padding: 10px 14px; background: var(--paper) }
+
+.header-inner, main, .site-footer > div { max-width: 1130px; margin-inline: auto; padding-inline: clamp(14px, 4vw, 40px) }
+.header-inner { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 15px; border-bottom: 1px solid #334b66 }
+.brand { display: grid; gap: .1rem }
+main { min-height: 65vh; padding-block: 20px 42px }
+.site-footer { border-top: 1px solid var(--line) }
+.site-footer > div { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; color: var(--muted); font-size: .82rem }
+.eyebrow { color: var(--accent); font-size: .7rem; font-weight: 900; letter-spacing: .12rem; text-transform: uppercase }
+.text-link, .nav-link { color: var(--accent); text-underline-offset: .2em }
+
+.hero { position: relative; background: linear-gradient(115deg,#1e446e,#0f2948); border: 1px solid #42668d; border-radius: 25px; overflow: hidden }
+.hero-copy { position: relative; z-index: 1; padding: clamp(22px, 4vw, 42px); display: grid; justify-items: start; gap: .85rem }
+.hero-desc { color: #d4e6f5; max-width: 60ch }
+.hero-actions, .tool-row { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem }
+.btn, .chip { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 46px; padding: .6rem .9rem; border: 1px solid var(--line); border-radius: 13px; background: var(--card); font-size: .92rem; font-weight: 750; line-height: 1.3; text-align: center; text-decoration: none; overflow-wrap: anywhere }
+.btn.primary { background: var(--accent); border-color: transparent; color: var(--teal-ink); font-weight: 800 }
+.btn.primary:hover:not(:disabled) { background: #a7f0de }
+.btn.subtle:hover:not(:disabled), .btn.outline:hover, .chip:hover:not(:disabled) { background: #284c65; border-color: var(--accent) }
+.btn.text-btn { border-color: transparent; background: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: .2em; padding-inline: 0 }
+.selected:not(.pixel-cell), .answer-choice:has(:checked) { border-color: var(--accent); background: #166b58 }
+.badge, .mechanic { display: inline-block; padding: .18rem .5rem; border-radius: 7px; background: #2c4e69; font-size: .82rem }
+
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 1.8rem 0 .8rem }
+.section-head .muted { max-width: 40ch }
+.signal-band { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-block: 1rem }
+.signal-stat, .stat-tile { display: grid; padding: .65rem .85rem; background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
+.signal-stat strong, .stat-tile strong { color: var(--gold); font-size: 1.15rem }
+.signal-stat span, .stat-tile small { color: var(--muted); font-size: .84rem }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 1rem }
+.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+.course-card { display: flex; flex-direction: column; min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; text-decoration: none }
+.course-card:hover { border-color: var(--accent) }
+.card-visual { display: flex; justify-content: space-between; align-items: center; padding: .6rem .8rem; background: var(--card-tint); color: var(--paper) }
+.card-icon { font-size: 2rem }
+.card-no { font-size: .8rem; font-weight: 850 }
+.card-copy { flex: 1; padding: .8rem }
+.card-copy p, .card-group, .card-progress { color: var(--muted); font-size: .84rem }
+.mechanic { margin-top: .45rem }
+.card-track { padding: 0 .8rem .8rem }
+.card-progress { display: flex; justify-content: space-between; margin-top: .35rem }
+.meter { height: 7px; overflow: hidden; border-radius: 8px; background: #365570 }
+.meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#55e9c7,#ffda81) }
+
+.stage-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0 0 1rem }
+.stage-row { display: grid; align-content: start; border-radius: 17px; overflow-wrap: anywhere }
+.stage-row.done .room-button { border-color: var(--accent) }
+.stage-row.locked .room-button { opacity: .68 }
+.side-card { display: grid; gap: .45rem; padding: 1rem; border: 1px solid var(--line); border-radius: 15px; background: var(--panel) }
+.side-card > .btn { justify-self: start }
+.side-card h2 { font-size: 1.4rem }
+
+.lesson-panel { max-width: 900px; margin-inline: auto; padding: clamp(16px, 4vw, 36px); background: var(--panel); border: 1px solid var(--line); border-radius: 22px }
+.view-heading { display: grid; gap: .4rem; margin-bottom: 1rem }
+.view-heading > .btn { justify-self: start }
+.view-heading h1, .celebration h1 { font-size: clamp(1.55rem, 5vw, 2.45rem); line-height: 1.2 }
+.review-stack, .question-card { display: grid; gap: .75rem }
+.progress-dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
+.progress-dots span { height: 8px; background: #365570; border-radius: 8px }
+.progress-dots .done { background: var(--accent) }
+.progress-dots .current { background: var(--gold) }
+.study, .question-card, .lab-stage, .review-item { min-width: 0; padding: clamp(14px, 3vw, 25px); background: var(--card); border: 1px solid var(--line); border-radius: 17px }
+.study { display: grid; align-content: start; gap: .85rem; background: #23415c; border-color: #7893aa; scroll-margin-top: 1rem }
+.study h2 { color: var(--gold); font-size: 1.3rem }
+.study-points { display: grid; gap: .65rem; margin: 0; padding-left: 1.3rem; color: #e0ebf8 }
+.study-points li::marker { color: var(--accent) }
+.study-example { display: grid; gap: .25rem; padding: .7rem .85rem; background: #152e46; border-left: 3px solid var(--accent); border-radius: 8px }
+.study-example strong { color: var(--accent) }
+.study-source { color: var(--muted); font-size: .8rem }
+
+.play-panel { max-width: 1130px; padding: clamp(14px, 3vw, 28px) }
+.play-panel .view-heading { grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem }
+.play-panel .view-heading > .btn { grid-column: 2; grid-row: 1 / span 3; align-self: start }
+.play-panel .view-heading > :not(.btn) { grid-column: 1 }
+.play-panel .progress-dots { margin-bottom: 1rem }
+.play-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; gap: 1rem }
+.play-grid.study-only { grid-template-columns: 1fr }
+.study-wait { color: var(--muted); font-size: .9rem }
+.study-meter { height: 6px; margin-top: .55rem; overflow: hidden; background: #152e46; border-radius: 8px }
+.study-meter-fill { display: block; height: 100%; background: var(--accent); transform-origin: left; animation: study-read var(--study-time) linear both }
+@keyframes study-read { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@media (prefers-reduced-motion: reduce) {
+  .study-meter { display: none }
+}
+.play-panel .answer-options { grid-template-columns: 1fr }
+.play-panel .question-card { scroll-margin-top: 1rem }
+.play-panel .study-jump { display: none }
+@media (max-width: 760px) {
+  .play-grid { grid-template-columns: 1fr }
+  .play-panel .study-jump:not([hidden]) { display: inline-flex; margin-bottom: .45rem }
+}
+@media (max-width: 420px) {
+  .play-panel .view-heading { display: flex; flex-direction: column; align-items: flex-start }
+}
+.question-card h2 { font-size: 1.35rem; overflow-wrap: anywhere }
+.answer-area, .answer-options { display: grid; gap: .65rem }
+.answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0; border: 0; min-width: 0 }
+.answer-choice { min-height: 58px; display: flex; align-items: flex-start; gap: .65rem; padding: .7rem; border-radius: 13px; border: 1px solid var(--line); background: #244460; overflow-wrap: anywhere; cursor: pointer }
+.answer-choice:hover { border-color: var(--accent) }
+.answer-choice input, .rubric-item input { width: 1.15rem; height: 1.15rem; flex-shrink: 0; accent-color: var(--accent) }
+.letter { flex: 0 0 1.6rem; text-align: center; border-radius: 7px; background: #395d76; font-weight: 800 }
+.result-card, .notice, .lab-feedback { padding: .75rem 1rem; border: 1px solid var(--line); border-radius: 13px; background: var(--card); overflow-wrap: anywhere }
+.result-card p { margin-top: .3rem }
+.warning, .notice { background: #4c3e27; color: #ffebc5; border-color: #9d8864 }
+.success { background: #24574f; border-color: #79c6b3 }
+.rubric-item { display: flex; align-items: flex-start; gap: .55rem; margin-block: .4rem }
+.practice-rubric { padding: .75rem; background: var(--panel); border-radius: 10px }
+.review-item summary { font-weight: 800 }
+.review-item p, .review-item .table-wrap { margin-top: .6rem }
+.celebration { text-align: center; border-color: #bd9f64; padding-block: clamp(26px, 6vw, 58px) }
+.celebration p { margin: .75rem auto }
+.celebration .tool-row { justify-content: center }
+.award { display: grid; place-items: center; margin: 0 auto 1rem; width: 105px; aspect-ratio: 1; border-radius: 50%; background: #f6ce77; border: 3px solid #ffe7a8; font-size: 3.3rem; animation: award-in .35s ease-out }
+@keyframes award-in { from { transform: scale(.8); opacity: .4 } }
+
+.field { min-width: 0; display: grid; gap: .35rem }
+.field-label { color: var(--muted); font-size: .86rem; font-weight: 800 }
+.field input, .field textarea, .field select, .edit-table input { width: 100%; max-width: 100%; min-height: 44px; padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 9px; background: var(--input); color: var(--ink) }
+.field textarea { resize: vertical }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px }
+.table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: 9px }
+.data-table { border-collapse: collapse; width: 100%; font-size: .9rem }
+.data-table th, .data-table td { padding: .4rem .6rem; border-bottom: 1px solid var(--line); text-align: left }
+.data-table th { background: var(--input) }
+.data-table tr:last-child td { border-bottom: 0 }
+
+.lab-shell{display:grid;gap:12px}
+.lab-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.lab-tabs .chip{padding:8px 13px}
+.lab-stage{border-top:5px solid var(--accent);max-width:900px}
+.lab-stage h3{font-size:clamp(1.25rem,3vw,1.75rem);line-height:1.15}
+.lab-instruction{color:var(--muted);margin:7px 0 14px;max-width:66ch}
+.lab-play{display:grid;gap:12px}
+.lab-play>.btn{justify-self:start}
+.lab-feedback{margin-top:13px}
+.readout{padding:8px 11px;background:var(--input);border-radius:7px;font:.83rem ui-monospace,monospace;color:var(--ink);overflow-wrap:anywhere}
+.sort-board,.network-board,.mind-branches,.safety-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr));gap:8px}
+.sort-bin{display:grid;gap:5px;border:1px dashed var(--line);border-top:4px solid var(--accent);border-radius:9px;background:var(--input);padding:10px}
+.sort-bin ul{margin:0;padding-left:16px;font-size:.8rem}
+.flow-track{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.flow-track span{display:grid;place-items:center;text-align:center;min-height:45px;border:1px dashed var(--line);background:var(--input);border-radius:7px;font-size:.76rem;font-weight:790}
+.flow-track .filled{background:#285267;border-style:solid;border-color:var(--accent)}
+.ordered-tray{min-height:38px;display:grid;gap:5px;margin:0;padding-left:26px}
+.ordered-tray li{padding:6px 8px;background:var(--input);border:1px solid var(--line);border-radius:6px}
+.ordered-tray li::marker{font-weight:850;color:var(--accent)}
+.ordered-tray .empty-slot{border-style:dashed;color:var(--muted)}
+
+.pixel-pair{display:flex;gap:18px;flex-wrap:wrap}
+.pixel-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(36px,48px));gap:4px;margin-top:5px}
+.pixel-cell{height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;background:#f4f8ff;font:700 1rem ui-monospace,monospace;color:var(--teal-ink)}
+.pixel-cell.selected{background:#272247;color:#fff;border-color:#272247}
+.device,.safety-action,.result-title{border:1px solid var(--line);border-radius:9px;background:var(--input);padding:9px;min-height:47px;font-size:.86rem;font-weight:750;overflow-wrap:anywhere}
+.device{min-height:66px;background:var(--input)}
+.wire-list{margin:0;padding:9px 12px 9px 28px;border-radius:8px;border:1px solid var(--line);background:var(--input)}
+.dispatch,.search-results,.binder-stack{display:grid;gap:8px}
+.dispatch-row{display:grid;grid-template-columns:88px 1fr;gap:9px;align-items:center;background:var(--input);border-radius:8px;border:1px solid var(--line);padding:8px}
+.signal{font:800 .69rem ui-monospace,monospace;color:var(--accent);overflow-wrap:anywhere}
+.mock-browser,.mock-mail{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+.browser-bar,.search-bar{display:flex;align-items:end;flex-wrap:wrap;gap:7px;padding:8px;background:var(--input)}
+.browser-bar .field,.search-bar .field{flex:1;min-width:min(145px,100%)}
+.mock-page,.composer{padding:12px;display:grid;gap:8px}
+.mock-page h4{font-size:1.22rem}
+.mock-page .btn{justify-self:start}
+.mock-link{color:var(--accent);text-decoration:underline;border-color:var(--line)}
+.search-bar{border-radius:9px}
+.search-result{display:grid;gap:4px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--input)}
+.search-result button{text-align:left}
+.search-result small{padding-left:5px}
+.window-bar{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px;background:#285267;color:var(--ink)}
+.incident{display:grid;gap:5px;padding:11px;border-radius:9px;background:#4c3e27;border:1px solid #9d8864}
+.incident .badge{justify-self:start}
+.safety-actions{grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr))}
+.mind-tree{background:var(--input);border:1px solid var(--line);border-radius:9px;padding:10px}
+.mind-root{background:var(--accent);color:var(--teal-ink);padding:7px 13px;border-radius:8px;text-align:center;font-weight:820;max-width:330px;margin:0 auto 12px}
+.mind-branch{border-top:3px solid var(--accent);background:var(--panel);border-radius:6px;padding:7px}
+.mind-branch ul{padding-left:15px;margin:4px 0;font-size:.8rem}
+.paper{color:#17241f;max-width:410px;min-height:174px;margin-inline:auto;background:white;box-shadow:0 7px 24px #1e292821;border:1px solid var(--line);padding:9px var(--paper-margin,10%) 14px;width:100%}
+.paper.landscape{max-width:630px;min-height:123px}
+.paper.preview{outline:2px solid var(--accent);outline-offset:3px}
+.paper h4{font-size:1.18rem;margin-bottom:7px}
+.paper-watermark{font-size:.64rem;letter-spacing:.13em;color:#52615b;margin-bottom:9px}
+.edit-table input{min-width:58px;min-height:35px;padding:4px}
+.edit-table th,.edit-table td{padding:5px}
+.draft-text{color:#17241f;padding:13px;border:1px solid var(--line);border-radius:8px;background:#f8edcf;min-height:62px;font-family:Georgia,serif;font-size:1.08rem}
+.draft-text mark{background:#ffce63;padding:2px}
+.binder-shelf{display:flex;gap:6px;flex-wrap:wrap}
+.binder-page{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:7px;padding:8px;background:var(--input)}
+.page-number{display:grid;place-items:center;width:24px;height:26px;background:#285267;font-size:.78rem;font-weight:850;border-radius:4px}
+.robot-map{display:grid;gap:7px}
+.robot-track{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.track-cell{display:grid;place-items:center;min-height:43px;border:1px solid var(--line);border-radius:6px;background:var(--input);font-size:1.03rem}
+.track-cell.target{border-color:var(--accent);background:#285267}
+.scratch-stage{display:flex;gap:13px;align-items:center;min-height:91px;border-radius:10px;border:1px solid var(--line);background:repeating-linear-gradient(0deg,var(--input) 0 17px,var(--card) 18px 19px);padding:8px}
+.scratch-cat{font-size:2.55rem}
+.speech{color:#17241f;padding:8px;background:#fff;border:1px solid var(--line);border-radius:12px;font-weight:700;font-size:.9rem}
+.scratch-script{display:grid;gap:4px;max-width:640px}
+.scratch-hat,.scratch-block{border-radius:9px;padding:6px 9px}
+.scratch-hat{background:#f2c65a;color:#402d0c;font-weight:820}
+.scratch-block .field-label{color:#17241f}
+.scratch-block.sb0{background:#9ed5f1}
+.scratch-block.sb1{background:#ffc895}
+.scratch-block.sb2{background:#e1c4ff}
+@media (max-width: 850px) {
+  .stage-list { grid-template-columns: repeat(3, minmax(0,1fr)) }
+  .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}
+@media (max-width: 600px) {
+  .answer-options, .form-grid { grid-template-columns: 1fr }
+  .header-inner { align-items: flex-start; flex-direction: column; padding-block: 12px }
+  .stage-list { grid-template-columns: repeat(2, minmax(0,1fr)) }
+  .room-button { min-height: 138px }
+  .site-footer > div, .section-head { flex-direction: column; align-items: flex-start }
+  .signal-band { grid-template-columns: repeat(2, 1fr) }
+  .binder-page { grid-template-columns: auto 1fr }
+  .binder-page .tool-row { grid-column: 2 }
+}
+@media (max-width: 355px) {
+  .brand { font-size: .85rem }
+  .course-grid { grid-template-columns: 1fr }
+  .dispatch-row { grid-template-columns: 1fr }
+  .flow-track { grid-template-columns: repeat(2, 1fr) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .award { animation: none }
+}
+
+.logo { font-size: 1.45rem; font-weight: 950; letter-spacing: .025em; line-height: 1.2 }
+.logo em { color: var(--accent); font-style: normal }
+.brand-subtitle { color: var(--muted); font-size: .75rem }
+.header-stats { display: flex; gap: .5rem; flex-wrap: wrap }
+.stat-pill { padding: .42rem .7rem; border: 1px solid #466783; border-radius: 20px; background: #1a3857; font-size: .8rem; white-space: nowrap }
+.hero-watermark { position: absolute; right: 6%; top: 0; font-size: clamp(5rem, 15vw, 10rem); opacity: .16; pointer-events: none }
+.room-button {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: .4rem;
+  width: 100%;
+  min-height: 158px;
+  padding: 15px 12px;
+  border: 1px solid #466785;
+  border-radius: 17px;
+  background: linear-gradient(140deg,#204365,#122740);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.room-button:not(:disabled):hover { border-color: var(--accent) }
+.room-button small { color: var(--muted) }
+.room-icon { font-size: 2.35rem; line-height: 1.15 }
+.room-seal { position: absolute; right: 10px; top: 8px; color: var(--gold) }
+.stage-row > .btn { justify-self: start; margin-inline: .65rem }
+.question-kind { font-size: .8rem; color: var(--gold); font-weight: 800 }
+.lab-next { margin-top: 1rem }
+.final-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem }
+.certificate-view > .btn { margin-bottom: 1rem }
+.certificate-card {
+  display: grid;
+  justify-items: center;
+  gap: .8rem;
+  padding: clamp(1rem, 5vw, 3rem);
+  border: 5px double #c29a4c;
+  border-radius: 15px;
+  background: #fff8e7;
+  color: #142a43;
+  text-align: center;
+}
+.certificate-card .eyebrow { color: #1d6358 }
+.certificate-card h1 { font-size: clamp(1.5rem, 4vw, 2.4rem) }
+.certificate-icon { font-size: 3rem; line-height: 1 }
+.certificate-recipient { color: #155344; font-weight: 850; font-size: 1.4rem; overflow-wrap: anywhere }
+.certificate-recipient:empty { display: none }
+.certificate-date { color: #41546b }
+.certificate-actions { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; margin-top: 1rem }
+.certificate-actions .field { flex: 1 1 200px }
+@media print {
+  @page { size: A4 landscape; margin: 15mm }
+  :root { color-scheme: light }
+  body { background: #fff; color: #142a43 }
+  body > :not(main), .certificate-view > :not(.certificate-card) { display: none !important }
+  main, .certificate-view { max-width: none; margin: 0; padding: 0; border: 0; background: transparent }
+  .certificate-card { min-height: 155mm; align-content: center; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact }
+}
+
+.lab-preview { border: 1px solid var(--line); border-radius: 12px; padding: .8rem; background: var(--input); overflow-wrap: anywhere }
+.lab-play select { max-width: 100% }
+.chart-bars { display: flex; gap: .6rem; align-items: end; min-height: 8rem; margin: .5rem 0 }
+.chart-column { display: flex; flex: 1; flex-direction: column; justify-content: end; height: 8rem; text-align: center; gap: .25rem }
+.chart-bar { background: var(--accent); border-radius: .35rem .35rem 0 0 }
+.chart-pie { width: min(10rem,100%); aspect-ratio: 1; border-radius: 50%; margin: .6rem auto }
+.chart-line, .scratch-path { position: relative; overflow: hidden; background: #122b43; border: 1px solid var(--line); border-radius: 10px; margin: .5rem auto; width: min(100%,24rem) }
+.chart-line { aspect-ratio: 2.4 }
+.scratch-path { aspect-ratio: 1 }
+.plot-edge { position: absolute; display: block; height: 3px; background: var(--accent); transform-origin: left center }
+.plot-dot { position: absolute; width: .65rem; height: .65rem; border-radius: 50%; background: var(--gold); transform: translate(-50%,-50%); z-index: 1 }
+.mock-pages { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 auto }
+.mock-page { flex: 1 1 8rem; position: relative; background: #fff5df; color: #192a3a; min-height: 8rem; padding: .6rem .8rem; border-radius: .4rem; display: grid; gap: .5rem }
+.mock-page :is(ul,ol) { margin: 0; padding-left: 1.3rem }
+.mock-dark { background: #173954; color: #fff }
+.mock-low { color: #788fa3 }
+.mock-header, .mock-footer { display: block; min-height: .9rem; font-size: .75rem }
+.mock-footer { text-align: right }
+.mock-line { display: block; width: 85%; height: .2rem; background: #c3c6b9 }
+.mock-document-picture { background: #b6e9dc; border-radius: .3rem; padding: .35rem; text-align: center }
+.mock-cover { position: absolute; inset: 25% 10% auto }
+.mock-photo { max-width: 22rem; margin: .25rem auto; aspect-ratio: 3 / 2; background: #9ed1e4; border-radius: .6rem; overflow: hidden; position: relative; isolation: isolate }
+.mock-landscape { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(#86c7e1 0 64%,#6fa761 64%); transition: transform .2s,filter .2s }
+.mock-sun { position: absolute; top: 14%; left: 66%; width: 16%; aspect-ratio: 1; border-radius: 100%; background: #ffdf80 }
+.mock-hill { position: absolute; width: 65%; height: 48%; bottom: 10%; left: -8%; border-radius: 55% 60% 0 0; background: #52935c }
+.mock-hill.back { width: 75%; left: 40%; height: 41%; background: #3d7b55 }
+.mock-tree { position: absolute; bottom: 10%; left: 24%; font-size: clamp(2.4rem,12vw,5rem) }
+.mock-caption { position: absolute; right: .6rem; bottom: .5rem; color: #fff; background: #142a42; border-radius: .25rem; padding: .2rem .55rem; font-weight: 700 }
+.mock-caption-center { inset: 38% auto auto 20% }
+.mock-caption-low { background: #cbd5cc; color: #aab9aa }
+.mock-tilt { transform: rotate(-8deg) scale(.92) }
+.mock-cropped { max-width: 15rem; aspect-ratio: 1 }
+.mock-stretched { transform: scaleX(1.35) }
+.mock-framed::after, .mock-covered::after { content: ''; position: absolute; inset: 0; border: .6rem solid #ffda77; pointer-events: none }
+.mock-covered::after { background: #ffda77 }
+@media (prefers-reduced-motion: reduce) { .mock-landscape { transition: none } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung chính</a>
+<header id="site-header" class="site-header">
+ <div class="header-inner">
+  <div id="brand" class="brand">Tin học 8</div>
+  <nav id="header-links" aria-label="Điều hướng chính"></nav>
+ </div>
+</header>
+<main id="main" tabindex="-1"></main>
+<footer class="site-footer"><div><span>FPTBN · TIN HỌC 8</span><span>Kết nối tri thức với cuộc sống</span></div></footer>
+<noscript>Hãy bật JavaScript để mở nhiệm vụ và lưu tiến độ.</noscript>
+<script>
+'use strict';
+const BANK={"5":{"n":5,"code":"5","title":"Sử dụng bảng tính giải quyết bài toán thực tế","pages":"21–26","stages":[{"goal":"Nhận biết tham chiếu tương đối và tuyệt đối.","study":{"points":["A1 là tương đối.","$A$1 giữ cột và hàng.","Công thức bắt đầu bằng dấu bằng."],"example":"=$B$1*C2 giữ B1 khi sao chép."},"tasks":[{"id":"T8-B05-C01","prompt":"Địa chỉ nào giữ cả hàng và cột khi sao chép?","type":"choice","choices":["$B$3","B3","B$3","$B3"],"correct":[0],"why":"Hai dấu đô la giữ hai thành phần."},{"id":"T8-B05-C02","prompt":"Địa chỉ nào là tuyệt đối hoàn toàn?","type":"multi","choices":["$A$1","$C$7","C7","C$7"],"correct":[0,1],"why":"Cần cố định cả cột và hàng."},{"id":"T8-B05-C03","prompt":"Ghép địa chỉ với phần được cố định.","type":"match","groups":["Không cố định","Cả cột và hàng","Chỉ hàng"],"items":["C$4","C4","$C$4"],"assign":[2,0,1],"grouping":false,"why":"Dấu đô la đứng ngay trước phần cần giữ."},{"id":"T8-B05-C04","prompt":"Công thức nào nhân số lượng B2 với giá C2?","type":"choice","choices":["=B2*C2","B2*C2","=B2+C2","=B2:C2"],"correct":[0],"why":"Dấu bằng mở công thức, dấu sao dùng nhân."},{"id":"T8-B05-C05","prompt":"Trong =$F$1*B2, ô nào vẫn được tham chiếu khi kéo xuống?","type":"choice","choices":["F1","F2","F3","B2 luôn giữ"],"correct":[0],"why":"Hai dấu đô la giữ F1."}]},{"goal":"Đọc độ dịch hàng và cột khi sao chép.","study":{"points":["Tham chiếu tương đối dịch theo vị trí đích.","Tham chiếu tuyệt đối giữ nguyên.","Có thể cố định riêng hàng hoặc cột."],"example":"Sao chép =B2 từ C2 sang D3 thành =C3."},"tasks":[{"id":"T8-B05-C06","prompt":"Sao chép =B2*$F$1 xuống một hàng. Điều gì đúng?","type":"multi","choices":["B2 thành B3","$F$1 giữ nguyên","B2 thành C2","Chỉ số hàng tương đối tăng 1"],"correct":[0,1,3],"why":"Dịch dọc làm đổi hàng tương đối, không làm đổi cột."},{"id":"T8-B05-C07","prompt":"Sao chép =A2 từ B2 sang C2 cho công thức nào?","type":"choice","choices":["=B2","=A3","=A2","=C2"],"correct":[0],"why":"Dịch phải một cột."},{"id":"T8-B05-C08","prompt":"Sao chép =$A2 từ B2 xuống B4 cho gì?","type":"choice","choices":["=$A4","=$A2","=$B4","=A2"],"correct":[0],"why":"Cột A cố định, hàng dịch 2."},{"id":"T8-B05-C09","prompt":"Ô D1 chứa một tỉ lệ chung cho nhiều dòng. Dùng địa chỉ nào?","type":"choice","choices":["$D$1","D2","$D2","D1 nếu sẽ sao chép theo hàng"],"correct":[0],"why":"Cần giữ cùng ô tỉ lệ."},{"id":"T8-B05-C10","prompt":"Sao chép =B2 xuống ba hàng. Số hàng mới trong tham chiếu là bao nhiêu?","type":"number","answer":5,"why":"2 cộng 3 bằng 5."}]},{"goal":"Áp dụng địa chỉ vào dự toán.","study":{"points":["Tách dữ liệu riêng theo dòng và hệ số chung.","Viết công thức cho hàng đầu.","Sao chép rồi kiểm tra hàng cuối."],"example":"Thành tiền từng dòng là số lượng nhân đơn giá cố định."},"tasks":[{"id":"T8-B05-C11","prompt":"Xếp cách tính cả cột thành tiền.","type":"order","steps":["Đối chiếu công thức ở dòng cuối","Viết công thức đúng tại dòng đầu","Sao chép xuống vùng dữ liệu"],"sequence":[1,2,0],"why":"Làm mẫu đúng rồi kiểm tra sau khi sao."},{"id":"T8-B05-C12","prompt":"Đơn giá chung ở F1 và số lượng từng hàng ở B. Công thức hàng 2 nào đúng?","type":"multi","choices":["=B2*$F$1","=$F$1*B2","=B2*F2","=B2+$F$1"],"correct":[0,1],"why":"Tích của số lượng và giá chung cho thành tiền."},{"id":"T8-B05-C13","prompt":"Sao chép =B2*$F$1 xuống hàng 5. Kết quả công thức?","type":"choice","choices":["=B5*$F$1","=B2*$F$1","=B5*F4","=B2*F1"],"correct":[0],"why":"B đổi hàng, F1 được cố định."},{"id":"T8-B05-C14","prompt":"F1 bằng 12, B3 bằng 7. Thành tiền hàng 3 là bao nhiêu?","type":"number","answer":84,"why":"7 nhân 12 bằng 84."},{"id":"T8-B05-C15","prompt":"C2 là tiền gốc, G1 là tỉ lệ giảm chung. Công thức tiền sau giảm?","type":"choice","choices":["=C2*(1-$G$1)","=C2*$G$1","=C2-$G$1","=C2*(1-G2)"],"correct":[0],"why":"Nhân giá gốc với phần tỉ lệ còn lại."}]},{"goal":"Xác định lỗi cố định sai hoặc lấy nhầm dòng.","study":{"points":["Hàng đầu đúng không bảo đảm hàng sao đúng.","So địa chỉ trước khi sửa số.","Thử đổi hệ số chung để kiểm tra toàn bảng."],"example":"Nếu F1 trượt thành F2, cần cố định địa chỉ."},"tasks":[{"id":"T8-B05-C16","prompt":"Công thức hàng 3 là =B3*F2, nhưng giá chung ở F1. Cần làm gì?","type":"multi","choices":["Sửa tham chiếu thành $F$1","Kiểm tra lại công thức ở các hàng dưới","Chép giá sang mọi ô F để che lỗi","Đổi B3 thành B2"],"correct":[0,1],"why":"Sửa nguồn lỗi rồi kiểm tra bản sao."},{"id":"T8-B05-C17","prompt":"Mọi hàng đều cho cùng kết quả vì B2 bị cố định. Sửa phần nào?","type":"choice","choices":["Dùng B2 tương đối cho số lượng","Cố định thêm tệp","Đổi giá chung thành tương đối","Xóa tất cả công thức"],"correct":[0],"why":"Số lượng phải đọc theo từng dòng."},{"id":"T8-B05-C18","prompt":"Thử nào phát hiện công thức ghi cứng giá?","type":"choice","choices":["Đổi giá chung rồi kiểm tra kết quả có cập nhật","Đổi màu ô","Đổi tên trang tính","Ẩn cột giá"],"correct":[0],"why":"Đầu vào đổi phải làm kết quả liên quan đổi."},{"id":"T8-B05-C19","prompt":"B2 bằng 3, giá chung tăng từ 10 lên 12. Thành tiền tăng bao nhiêu?","type":"number","answer":6,"why":"Mỗi đơn vị tăng 2, có ba đơn vị."},{"id":"T8-B05-C20","prompt":"Ghép lỗi với cách sửa.","type":"match","groups":["Giá chung trượt","Số lượng bị khóa","Nhầm toán tử"],"items":["Bỏ khóa tham chiếu số lượng","Dùng dấu nhân","Khóa địa chỉ giá chung"],"assign":[1,2,0],"grouping":false,"why":"Mỗi lỗi nằm ở một thành phần công thức."}]},{"goal":"Chọn công thức và kiểm tra bằng nhiều ca.","study":{"points":["Thử hàng có số lượng bằng 0.","Thử đổi giá chung.","So một hàng bằng tính tay."],"example":"Ba ca giúp phát hiện lỗi địa chỉ và phép tính."},"tasks":[{"id":"T8-B05-C21","prompt":"Ca nào hữu ích để kiểm tra bảng tiền?","type":"multi","choices":["Một dòng số lượng bằng 0","Hai dòng số lượng khác nhau","Đổi giá chung","Chỉ đổi màu một ô"],"correct":[0,1,2],"why":"Các ca này kiểm tra giá trị biên và phụ thuộc dữ liệu."},{"id":"T8-B05-C22","prompt":"F1 là đơn giá chung và C2 là số lượng. Cần tính tiền hàng 2 rồi kéo xuống. Chọn gì?","type":"choice","choices":["=C2*$F$1","=$C$2*F1","=$C$2*$F$1","=C2*F2"],"correct":[0],"why":"Số lượng thay theo hàng, giá giữ nguyên."},{"id":"T8-B05-C23","prompt":"Hai dòng có số lượng 4 và 6, giá chung 9. Tổng tiền là bao nhiêu?","type":"number","answer":90,"why":"4×9 cộng 6×9 bằng 90."},{"id":"T8-B05-C24","prompt":"Tính đúng một dòng nhưng sai các dòng sau. Nên đối chiếu gì?","type":"choice","choices":["Địa chỉ trong công thức sau khi sao chép","Màu nền của ô","Tên tệp và phông","Chỉ vị trí con trỏ"],"correct":[0],"why":"Lỗi sao chép thường thể hiện ở địa chỉ bị dịch."},{"id":"T8-B05-C25","prompt":"Thiết kế bảng tính chi phí với hai dòng và một phí chung.","type":"practice","rubric":["Dùng địa chỉ tương đối và tuyệt đối đúng chỗ.","Kiểm tra một lần đổi phí và đối chiếu bằng tay."]}]}],"extras":[]}}, CATALOG=[{"n":1,"code":"1","title":"Lược sử công cụ tính toán","pages":"5–9"},{"n":2,"code":"2","title":"Thông tin trong môi trường số","pages":"10–13"},{"n":3,"code":"3","title":"Thực hành: Khai thác thông tin số","pages":"14–17"},{"n":4,"code":"4","title":"Đạo đức và văn hóa trong sử dụng công nghệ kĩ thuật số","pages":"18–20"},{"n":5,"code":"5","title":"Sử dụng bảng tính giải quyết bài toán thực tế","pages":"21–26"},{"n":6,"code":"6","title":"Sắp xếp và lọc dữ liệu","pages":"27–31"},{"n":7,"code":"7","title":"Trực quan hoá dữ liệu","pages":"32–35"},{"n":8,"code":"8a","title":"Làm việc với danh sách dạng liệt kê và hình ảnh trong văn bản","pages":"36–41"},{"n":9,"code":"9a","title":"Tạo đầu trang, chân trang cho văn bản","pages":"42–45"},{"n":10,"code":"10a","title":"Định dạng nâng cao cho trang chiếu","pages":"46–50"},{"n":11,"code":"11a","title":"Sử dụng bản mẫu tạo bài trình chiếu","pages":"51–55"},{"n":12,"code":"8b","title":"Phần mềm chỉnh sửa ảnh","pages":"56–61"},{"n":13,"code":"9b","title":"Thay đổi khung hình, kích thước ảnh","pages":"62–65"},{"n":14,"code":"10b","title":"Thêm văn bản, tạo hiệu ứng cho ảnh","pages":"66–69"},{"n":15,"code":"11b","title":"Thực hành tổng hợp","pages":"70–72"},{"n":16,"code":"12","title":"Từ thuật toán đến chương trình","pages":"73–75"},{"n":17,"code":"13","title":"Biểu diễn dữ liệu","pages":"76–79"},{"n":18,"code":"14","title":"Cấu trúc điều khiển","pages":"80–85"},{"n":19,"code":"15","title":"Gỡ lỗi","pages":"86–90"},{"n":20,"code":"16","title":"Tin học với nghề nghiệp","pages":"91–94"}], STANDALONE=5;
+const MISSIONS=[{"n":1,"code":"1","group":"Máy tính và cộng đồng","icon":"🧮","title":"Bảo tàng máy tính","story":"Xếp hiện vật theo thời gian và giải thích máy tính đã thay đổi công việc ra sao.","lab":"Tủ hiện vật","mechanic":"Dựng dòng thời gian và ghép ứng dụng","mode":"1","stages":["Nhận diện hiện vật","Đọc nguyên lí","Dựng dòng thời gian","Sửa chú thích","Kể tác động"]},{"n":2,"code":"2","group":"Thông tin và ứng xử số","icon":"🔎","title":"Trạm kiểm chứng","story":"Đọc dấu vết của thông tin số trước khi sử dụng hoặc chia sẻ.","lab":"Bàn kiểm chứng","mechanic":"So nguồn và chọn cách công bố","mode":"2","stages":["Nhận biết thông tin số","Đọc dấu vết nguồn","Kiểm chứng trước khi dùng","Phát hiện sai lệch","Chia sẻ có căn cứ"]},{"n":3,"code":"3","group":"Thông tin và ứng xử số","icon":"🧭","title":"Phòng khai thác tư liệu","story":"Tìm, chọn và ghi nguồn để trả lời một câu hỏi cụ thể.","lab":"Hồ sơ tra cứu","mechanic":"Lập truy vấn và nộp dẫn chứng","mode":"3","stages":["Xác định nhu cầu","Chọn kết quả","Lập hồ sơ tra cứu","Sửa kết quả sai","Nộp kết quả có căn cứ"]},{"n":4,"code":"4","group":"Thông tin và ứng xử số","icon":"🤝","title":"Bàn biên tập số","story":"Chọn cách dùng tư liệu và ứng xử tôn trọng người khác.","lab":"Trạm xuất bản","mechanic":"Rà quyền sử dụng và dữ liệu riêng","mode":"4","stages":["Nhận diện quyền","Đọc điều kiện chia sẻ","Biên tập bài đăng","Sửa tình huống sai","Chọn phương án xuất bản"]},{"n":5,"code":"5","group":"Bảng tính","icon":"💰","title":"Xưởng dự toán","story":"Dùng tham chiếu để một công thức chạy đúng trên nhiều dòng dữ liệu.","lab":"Bảng tính dự toán","mechanic":"Sao chép và chạy công thức trên hai bộ số","mode":"5","stages":["Đọc địa chỉ ô","Giải thích dịch địa chỉ","Lập công thức","Tìm lỗi tham chiếu","Kiểm chứng dự toán"]},{"n":6,"code":"6","group":"Bảng tính","icon":"🗃️","title":"Trạm lọc dữ liệu","story":"Giữ nguyên từng bản ghi khi sắp xếp và tìm đúng nhóm cần xem.","lab":"Lưới danh sách","mechanic":"Lọc rồi sắp bản ghi trực tiếp","mode":"6","stages":["Nhận diện lệnh","Đọc điều kiện","Sắp và lọc bảng","Tìm lỗi bản ghi","Bàn giao danh sách"]},{"n":7,"code":"7","group":"Bảng tính","icon":"📈","title":"Xưởng biểu đồ","story":"Chọn cách thể hiện dữ liệu sao cho người xem đọc đúng kết luận.","lab":"Bảng trực quan","mechanic":"Dựng biểu đồ từ dãy số","mode":"7","stages":["Nhận diện biểu đồ","Giải thích lựa chọn","Dựng biểu đồ","Tìm biểu đồ gây hiểu nhầm","Chọn cách kể số liệu"]},{"n":8,"code":"8a","group":"Văn bản và trình chiếu","icon":"📝","title":"Xưởng bản tin","story":"Chọn đúng kiểu danh sách và đặt ảnh vào văn bản dễ đọc.","lab":"Bản tin mô phỏng","mechanic":"Dàn danh sách và bố trí ảnh","mode":"8a","stages":["Nhận diện danh sách","Đọc bố cục","Dàn văn bản","Sửa bản tin","Bàn giao hướng dẫn"]},{"n":9,"code":"9a","group":"Văn bản và trình chiếu","icon":"📄","title":"Xưởng đóng trang","story":"Thiết kế đầu trang, chân trang và số trang cho tài liệu nhiều trang.","lab":"Bản in nhiều trang","mechanic":"Chỉnh vùng lặp và xem trước","mode":"9a","stages":["Nhận diện vùng trang","Đọc quy tắc lặp","Dựng tài liệu","Dò lỗi vùng lặp","Bàn giao bản in"]},{"n":10,"code":"10a","group":"Văn bản và trình chiếu","icon":"🎨","title":"Phòng chỉnh trang chiếu","story":"Tạo bộ trang dễ đọc, có màu nhất quán và đánh số đúng.","lab":"Bàn trình chiếu","mechanic":"Chọn màu, cỡ chữ và số trang","mode":"10a","stages":["Nhận diện định dạng","Chọn phối màu","Đặt thông tin lặp","Sửa bản chiếu","Bàn giao bộ trang"]},{"n":11,"code":"11a","group":"Văn bản và trình chiếu","icon":"🧩","title":"Xưởng bản mẫu","story":"Tùy chỉnh mẫu và thử liên kết trong chế độ trình chiếu.","lab":"Bộ mẫu tương tác","mechanic":"Tạo bộ trang và kiểm tra đường dẫn","mode":"11a","stages":["Nhận diện bản mẫu","Chọn mẫu phù hợp","Tạo bài và liên kết","Dò lỗi bản mẫu","Bàn giao bài tương tác"]},{"n":12,"code":"8b","group":"Chỉnh sửa ảnh","icon":"🖼️","title":"Bàn soi ảnh","story":"Mở ảnh, đọc thông số và phân biệt thu phóng khi xem với đổi kích thước tệp.","lab":"Khung xem ảnh","mechanic":"Mở, soi và lưu bản làm việc","mode":"8b","stages":["Nhận diện công cụ","Đọc thông tin ảnh","Khảo sát và lưu ảnh","Tìm nhầm thao tác","Bàn giao ảnh"]},{"n":13,"code":"9b","group":"Chỉnh sửa ảnh","icon":"✂️","title":"Xưởng khung hình","story":"Xoay, cắt và thu ảnh cho đúng mục đích sử dụng.","lab":"Khung xử lí ảnh","mechanic":"Xoay, cắt và kiểm tra tỉ lệ","mode":"9b","stages":["Nhận diện ba công cụ","Đọc kích thước","Sửa ảnh nghiêng","Tìm lỗi méo và mất chi tiết","Chọn ảnh bàn giao"]},{"n":14,"code":"10b","group":"Chỉnh sửa ảnh","icon":"🔆","title":"Phòng ánh sáng","story":"Đặt chú thích và chỉnh ảnh vừa đủ để giữ thông tin thị giác.","lab":"Bàn chỉnh sắc","mechanic":"Chỉnh độ sáng, tương phản và chữ","mode":"10b","stages":["Nhận diện công cụ","Đọc hiệu quả","Chỉnh ảnh và xem trước","Sửa lỗi hiệu ứng","Xuất ảnh có chú thích"]},{"n":15,"code":"11b","group":"Chỉnh sửa ảnh","icon":"📰","title":"Xưởng tờ rơi","story":"Tập hợp ảnh, tạo khung và bàn giao tờ rơi giới thiệu trường.","lab":"Bàn ghép ảnh","mechanic":"Chọn lớp, viền và bản xuất","mode":"11b","stages":["Chuẩn bị tư liệu","Đọc cấu trúc lớp","Dựng tờ rơi","Rà và sửa bố cục","Bàn giao sản phẩm"]},{"n":16,"code":"12","group":"Lập trình Scratch","icon":"🐱","title":"Xưởng vẽ Scratch","story":"Chuyển chỉ dẫn thành khối lệnh rồi chạy thử đường đi của nhân vật.","lab":"Sân khấu vẽ","mechanic":"Lắp khối và chạy đường đa giác","mode":"12","stages":["Nhận diện thuật toán","Đọc kịch bản","Lắp và chạy khối","Tìm đường đi sai","Thiết kế đường mới"]},{"n":17,"code":"13","group":"Lập trình Scratch","icon":"🔢","title":"Kho dữ liệu Scratch","story":"Phân biệt giá trị, biểu thức và biến qua các lần chạy.","lab":"Máy tính điểm","mechanic":"Lắp biểu thức và thử đầu vào","mode":"13","stages":["Nhận kiểu dữ liệu","Đọc giá trị và biểu thức","Tính và hiển thị","Gỡ lỗi dữ liệu","Thử nhiều bộ dữ liệu"]},{"n":18,"code":"14","group":"Lập trình Scratch","icon":"🎲","title":"Trò đoán số","story":"Lắp rẽ nhánh và vòng lặp để phản hồi đúng từng lượt đoán.","lab":"Sân chơi điều khiển","mechanic":"Chạy thử kịch bản đoán và đếm","mode":"14","stages":["Nhận cấu trúc","Đọc điều kiện","Chạy kịch bản","Sửa nhánh và vòng lặp","Thử trò chơi"]},{"n":19,"code":"15","group":"Lập trình Scratch","icon":"🛠️","title":"Trạm gỡ lỗi","story":"Dùng ca thử để tìm đúng lệnh sai rồi chạy lại.","lab":"Bàn kiểm thử","mechanic":"Sửa lỗi đếm và điều kiện biên","mode":"15","stages":["Nhận diện dấu hiệu","Đọc vết chạy","Sửa và chạy lại","Sửa lỗi biên","Bàn giao bản đã sửa"]},{"n":20,"code":"16","group":"Hướng nghiệp","icon":"🧑‍💻","title":"Hồ sơ hướng nghiệp số","story":"Tìm công cụ đúng việc và phân công dựa vào kĩ năng.","lab":"Bàn phân công","mechanic":"Ghép công việc với công cụ và kiểm tra tiêu chí","mode":"16","stages":["Nhận diện công việc","Giải thích lợi ích","Chọn công cụ theo việc","Nhận ra định kiến","Lập hồ sơ nghề"]}];
+const LAB_DATA={"1":[{"kind":"steps","title":"Dựng dòng thời gian","prompt":"Chọn ba hiện vật theo thứ tự từ cổ đến hiện đại. Bỏ thẻ không phải công cụ tính.","steps":["Máy tính điện tử ENIAC","Bàn tính","Bản đồ giấy","Pascaline"],"right":[1,3,0],"hint":"Xem lại công cụ thao tác tay, máy cơ khí rồi máy điện tử."},{"kind":"controls","title":"Bảo tàng mở cửa","prompt":"Hoàn thành hai nhãn cơ chế và chọn minh chứng về tác động của máy tính.","fields":[["Pascaline",["Hạt trượt","Bánh răng","Vi xử lí"]],["ENIAC",["Linh kiện điện tử","Bánh răng","Hạt trượt"]],["Minh chứng",["Máy làm mọi thông tin đúng","Thư viện tìm hồ sơ nhanh hơn khi lưu theo mã","Kích thước vỏ tự quyết định tốc độ"]]],"right":[1,0,1],"hint":"Kiểm tra lại cơ chế từng hiện vật và chọn một tác động có thể quan sát."}],"2":[{"kind":"controls","title":"Chọn thông báo đáng dùng","prompt":"Lớp 8A cần lịch ngày mai. Chọn nguồn và đối chiếu các chi tiết quyết định.","fields":[["Nguồn",["Ảnh chuyển tiếp mất ngày","Thông báo chính thức của trường","Bài đăng nhiều lượt thích"]],["Phạm vi",["Khối 9","Đúng lớp 8A"]],["Thời điểm",["Ngày của bản gốc và lần cập nhật","Ngày người bạn chuyển tiếp"]]],"right":[1,1,0],"hint":"Kiểm tra đồng thời người đăng, lớp áp dụng và thời gian của bản gốc."},{"kind":"steps","title":"Đính chính thông báo","prompt":"Em đã gửi một giờ sai vào nhóm. Chọn trình tự sửa thông tin ở đúng nơi.","steps":["Gửi giờ mới cùng nguồn trong nhóm đã nhận tin","Mở thông báo gốc mới nhất","Đối chiếu ngày, lớp và giờ","Đăng tiếp ảnh đã cắt"],"right":[1,2,0],"hint":"Xác minh trước khi đính chính và báo lại đúng nơi đã nhận tin sai."}],"3":[{"kind":"controls","title":"Tạo truy vấn","prompt":"Tìm số liệu mượn sách ở thư viện trường trong tháng 10, rồi chọn nguồn có thể trích.","fields":[["Từ khóa",["Sách hay","Số liệu mượn sách thư viện trường tháng 10","Thư viện bất kì"]],["Kết quả",["Ảnh không ngày","Bài quảng cáo","Bảng tháng 10 do thư viện công bố"]],["Ghi nguồn",["Tên bảng, đơn vị công bố, liên kết và thời gian","Chỉ tên tệp tải về"]]],"right":[1,2,0],"hint":"Chọn truy vấn đủ đối tượng, chỉ số và thời gian. Giữ thông tin truy lại nguồn."},{"kind":"steps","title":"Bàn giao hồ sơ số liệu","prompt":"Hai bảng đếm lượt khác nhau. Lập hồ sơ theo trình tự để biết có thể dùng bảng nào.","steps":["Tóm tắt số phù hợp và ghi nguồn","Chốt cần đếm lượt mượn của trường trong tháng 10","Mở hai bảng gốc và so phạm vi, tháng, đơn vị","Lấy số lớn hơn mà không xem nguồn"],"right":[1,2,0],"hint":"Cần định rõ câu hỏi trước khi so hai bộ dữ liệu."}],"4":[{"kind":"controls","title":"Rà ảnh trước khi đăng","prompt":"Ảnh lớp có số điện thoại và một hình minh họa yêu cầu ghi công. Chọn bản công khai hợp lí.","fields":[["Ảnh học sinh",["Hỏi ý kiến trước","Đăng rồi hỏi"]],["Số điện thoại",["Giữ nguyên","Che hoặc bỏ khỏi bản công khai"]],["Hình minh họa",["Dùng theo giấy phép và ghi nguồn","Xóa tên tác giả"]]],"right":[0,1,0],"hint":"Rà sự đồng ý, thông tin riêng và điều kiện của tác giả."},{"kind":"controls","title":"Xử lí bản gửi nhầm","prompt":"Bản nội bộ đã lộ địa chỉ trong nhóm công khai. Hạn chế nội dung, báo người liên quan và chọn bản thay thế.","fields":[["Bài đã đăng",["Chuyển tiếp","Gỡ hoặc hạn chế ngay"]],["Liên hệ",["Báo riêng cho người liên quan","Đăng lại địa chỉ để giải thích"]],["Bản thay",["Bản nội bộ cũ","Bản đã che và được phép chia sẻ"]]],"right":[1,0,1],"hint":"Giảm phạm vi lộ dữ liệu rồi dùng bản đã rà quyền."}],"5":[{"kind":"formula","title":"Tiền từng dòng","prompt":"Ô F1 là giá chung. Viết công thức D2 lấy số lượng B2 nhân giá, giữ cả hàng và cột của F1.","answers":[["=B2*$F$1","=$F$1*B2"]],"rows":[{"B2":3,"F1":8},{"B2":5,"F1":12}],"hint":"Dùng tham chiếu tương đối cho số lượng và địa chỉ tuyệt đối cho giá chung."},{"kind":"formula","title":"Kéo công thức xuống","prompt":"Viết D2 và D3 để tính số lượng từng dòng nhân giá chung ở F1. Cả hai ca phải chạy được.","answers":[["=B2*$F$1","=$F$1*B2"],["=B3*$F$1","=$F$1*B3"]],"rows":[{"B2":2,"B3":7,"F1":9},{"B2":0,"B3":4,"F1":11}],"hint":"Số hàng của B cần đổi khi xuống dòng, còn F1 phải giữ nguyên."}],"6":[{"kind":"controls","title":"Chọn nhóm đủ điểm","prompt":"Hiện thành viên Tổ 2 có điểm từ 8 trở lên, điểm cao đứng trước.","fields":[["Tổ",["Tất cả","Tổ 1","Tổ 2"]],["Điểm",["Mọi mức điểm","Từ 8 trở lên"]],["Sắp theo điểm",["Thứ tự ban đầu","Cao đến thấp","Thấp đến cao"]]],"right":[2,1,1],"hint":"Chọn đồng thời tổ, ngưỡng và thứ tự.","preview":"records","rows":[["An",1,9],["Bình",2,8],["Chi",2,7],["Dũng",2,10],["Hà",1,8]]},{"kind":"controls","title":"Kiểm tra ngưỡng","prompt":"Hiện cả hai tổ từ 8 điểm trở lên và xếp điểm thấp đến cao.","fields":[["Tổ",["Tất cả","Tổ 1","Tổ 2"]],["Điểm",["Mọi mức điểm","Từ 8 trở lên"]],["Sắp theo điểm",["Thứ tự ban đầu","Cao đến thấp","Thấp đến cao"]]],"right":[0,1,2],"hint":"Giữ mọi tổ, chọn ngưỡng bao gồm điểm 8 và sắp tăng.","preview":"records","rows":[["Mai",1,9],["Nam",2,8],["Linh",1,6],["Hải",2,10]]}],"7":[{"kind":"controls","title":"So lượt theo tổ","prompt":"Dựng biểu đồ để so số lượt của cả ba tổ tại cùng một thời điểm. Ghi đơn vị lượt.","fields":[["Loại",["Cột","Đường","Tròn"]],["Vùng",["Cả ba mục","Hai mục đầu"]],["Nhãn",["Có đơn vị","Không ghi đơn vị"]]],"right":[0,0,0],"hint":"Chọn biểu đồ cột, đủ ba tổ và ghi đơn vị.","preview":"chart","values":[8,15,11],"labels":["Tổ 1","Tổ 2","Tổ 3"],"unit":"lượt"},{"kind":"controls","title":"Xem xu hướng","prompt":"Dựng biểu đồ thể hiện thay đổi theo ba tháng liên tiếp. Dùng đủ dữ liệu, có nhãn đơn vị.","fields":[["Loại",["Cột","Đường","Tròn"]],["Vùng",["Cả ba mục","Hai mục đầu"]],["Nhãn",["Có đơn vị","Không ghi đơn vị"]]],"right":[1,0,0],"hint":"Chọn đường để thấy xu hướng và giữ cả ba mốc.","preview":"chart","values":[9,17,13],"labels":["Tháng 1","Tháng 2","Tháng 3"],"unit":"lượt"}],"8a":[{"kind":"controls","title":"Dàn danh sách vật dụng","prompt":"Chọn dấu đầu dòng cho các mục ngang hàng, ảnh tách riêng không che chữ và có chú thích.","fields":[["Kiểu danh sách",["Dấu đầu dòng","Đánh số"]],["Vị trí ảnh",["Tách riêng và không che chữ","Cùng dòng","Đặt trước và che chữ"]],["Chú thích",["Không có","Có chú thích"]]],"right":[0,0,1],"hint":"Vật dụng không có thứ tự, ảnh phải đọc được cùng chú thích.","preview":"page","demo":"document"},{"kind":"controls","title":"Dàn hướng dẫn theo bước","prompt":"Ba việc cần thực hiện theo thứ tự. Đánh số, để ảnh riêng không che chữ và thêm chú thích.","fields":[["Kiểu danh sách",["Dấu đầu dòng","Đánh số"]],["Vị trí ảnh",["Tách riêng và không che chữ","Cùng dòng","Đặt trước và che chữ"]],["Chú thích",["Không có","Có chú thích"]]],"right":[1,0,1],"hint":"Dùng số cho trình tự. Chọn bố cục không che chữ.","preview":"page","demo":"document"}],"9a":[{"kind":"controls","title":"Tài liệu có bìa","prompt":"Bìa để trống vùng lặp. Các trang sau có tên dự án ở đầu và số trang tự động ở chân.","fields":[["Đầu trang",["Trống","Tên dự án"]],["Chân trang",["Trống","Số tự động","Gõ cố định số 1"]],["Trang bìa",["Giống trang nội dung","Thiết lập khác"]]],"right":[1,1,1],"hint":"Dùng trang đầu khác và trường số tự động.","preview":"page","demo":"pagination","label":"Hội sách"},{"kind":"controls","title":"Sổ tay không có bìa riêng","prompt":"Cả ba trang cần có tên sổ và số tự động. Trang đầu có cùng kiểu với trang sau.","fields":[["Đầu trang",["Trống","Tên dự án"]],["Chân trang",["Trống","Số tự động","Gõ cố định số 1"]],["Trang bìa",["Giống trang nội dung","Thiết lập khác"]]],"right":[1,1,0],"hint":"Dùng vùng lặp chung và trường tự động.","preview":"page","demo":"pagination","label":"Sổ tay lớp 8"}],"10a":[{"kind":"controls","title":"Trang chiếu nội dung","prompt":"Dùng nền tối theo mẫu, chữ tương phản và số trang tự động.","fields":[["Nền",["Sáng","Tối"]],["Chữ",["Xám nhạt","Màu tương phản với nền"]],["Ghi chân trang",["Số trang tự động","Số 1 gõ tay","Không hiện số"]]],"right":[1,1,0],"hint":"Kiểm tra độ đọc và dùng trường tự động thay số cố định.","preview":"page","demo":"slide","label":"Kết quả hội sách"},{"kind":"controls","title":"Trang tiêu đề riêng","prompt":"Thiết lập bìa nền sáng, chữ tương phản và không hiện số.","fields":[["Nền",["Sáng","Tối"]],["Chữ",["Xám nhạt","Màu tương phản với nền"]],["Ghi chân trang",["Số trang tự động","Số 1 gõ tay","Không hiện số"]]],"right":[0,1,2],"hint":"Bìa cần dễ đọc và có phạm vi đánh số riêng.","preview":"page","demo":"slide","label":"Giới thiệu câu lạc bộ"}],"11a":[{"kind":"steps","title":"Khởi tạo bài từ mẫu","prompt":"Dựng bài chiếu có liên kết video. Chọn đúng thứ tự và bỏ thao tác làm mất nội dung.","steps":["Trình chiếu và thử mở video","Chọn bản mẫu có bố cục phù hợp","Thay chữ mẫu rồi gắn liên kết","Xóa bài gốc trước khi lưu"],"right":[1,2,0],"hint":"Chọn mẫu, thay nội dung và gắn đích rồi mới kiểm tra khi trình chiếu."},{"kind":"controls","title":"Bàn giao bài có liên kết","prompt":"Bạn trình bày bằng máy khác. Thiết lập một nút mở tài liệu dùng chung và có phương án nếu mất mạng.","fields":[["Nhãn nút",["Mở nội quy hội sách","Bấm đây"]],["Đích",["Tệp chỉ nằm trong ổ riêng","Tài liệu được cấp quyền xem"]],["Dự phòng",["Tóm tắt ý chính trên trang","Không cần chuẩn bị"]]],"right":[0,1,0],"hint":"Nhãn phải rõ, đích phải mở được và nội dung chính vẫn cần có trên trang.","preview":"template"}],"8b":[{"kind":"controls","title":"Soi vùng góc","prompt":"Phóng 200%, chuyển khung nhìn đến góc ảnh và lưu dự án với tên riêng.","fields":[["Mức xem",["100%","150%","200%"]],["Khung nhìn",["Giữa ảnh","Góc ảnh"]],["Bản lưu",["Ghi đè nguồn","Dự án tên riêng","Bản xuất để xem"]]],"right":[2,1,1],"hint":"Zoom và đổi khung chỉ để quan sát. Giữ ảnh nguồn khi lưu dự án.","preview":"picture","demo":"zoom"},{"kind":"controls","title":"Mở thử bản bàn giao","prompt":"Xem toàn ảnh ở mức 100% tại giữa khung rồi xuất bản xem. Không ghi đè bản nguồn.","fields":[["Mức xem",["100%","150%","200%"]],["Khung nhìn",["Giữa ảnh","Góc ảnh"]],["Bản lưu",["Ghi đè nguồn","Dự án tên riêng","Bản xuất để xem"]]],"right":[0,0,2],"hint":"Về 100% để rà bố cục rồi dùng bản xuất riêng.","preview":"picture","demo":"zoom"}],"9b":[{"kind":"controls","title":"Xử lí ảnh nghiêng","prompt":"Chỉnh ảnh thẳng, cắt mép thừa và thu cho web mà không làm méo chủ thể.","fields":[["Hướng ảnh",["Nghiêng","Đã chỉnh thẳng"]],["Khung",["Giữ nguyên","Cắt mép thừa"]],["Kích thước",["Giữ nguyên","Thu có khóa tỉ lệ","Kéo dãn ngang"]]],"right":[1,1,1],"hint":"Cần sửa hướng, khung và kích thước bằng ba thao tác phù hợp.","preview":"picture","demo":"crop"},{"kind":"controls","title":"Giữ chi tiết để in","prompt":"Chỉnh thẳng và cắt mép thừa nhưng giữ nguyên kích thước sau khi cắt.","fields":[["Hướng ảnh",["Nghiêng","Đã chỉnh thẳng"]],["Khung",["Giữ nguyên","Cắt mép thừa"]],["Kích thước",["Giữ nguyên","Thu có khóa tỉ lệ","Kéo dãn ngang"]]],"right":[1,1,0],"hint":"Tệp dùng để in cần giữ kích thước sau khi cắt, tránh kéo dãn.","preview":"picture","demo":"crop"}],"10b":[{"kind":"controls","title":"Làm rõ nhãn địa điểm","prompt":"Chỉnh mức sáng vừa, đặt nhãn dễ đọc ở mép và chọn hiệu ứng vừa đủ.","fields":[["Độ sáng",["Tối","Vừa","Quá sáng"]],["Chú thích",["Chữ chìm màu nền","Dễ đọc ở mép ảnh","Đè lên chủ thể"]],["Hiệu ứng",["Vừa đủ","Tối đa","Làm mờ toàn ảnh"]]],"right":[1,1,0],"hint":"Giữ chi tiết vùng sáng và không để chữ che ảnh.","preview":"picture","demo":"light","label":"Sân trường"},{"kind":"controls","title":"Sửa ảnh bị cháy và chữ che hình","prompt":"Ảnh cần xuất với ánh sáng vừa và chú thích rõ. Không dùng hiệu ứng cực đại.","fields":[["Độ sáng",["Tối","Vừa","Quá sáng"]],["Chú thích",["Chữ chìm màu nền","Dễ đọc ở mép ảnh","Đè lên chủ thể"]],["Hiệu ứng",["Vừa đủ","Tối đa","Làm mờ toàn ảnh"]]],"right":[1,1,0],"hint":"Giảm độ sáng quá mức rồi đưa nhãn sang vị trí phù hợp.","preview":"picture","demo":"light","label":"Vườn cây"}],"11b":[{"kind":"steps","title":"Ráp tờ rơi","prompt":"Chọn quy trình từ ảnh nguồn đã được phép dùng đến bản tờ rơi cuối.","steps":["Xuất và mở thử bản xem","Tập hợp ảnh và bố trí các khu vực","Thêm khung và chú thích ở lớp riêng","Xóa ảnh nguồn"],"right":[1,2,0],"hint":"Cần tập hợp và dàn ảnh trước khi tạo lớp viền, nhãn và xuất."},{"kind":"controls","title":"Gỡ lỗi lớp khung","prompt":"Khung đang che ảnh và chú thích bị ẩn. Sửa để nhìn thấy chủ thể và giữ khả năng sửa bản nộp.","fields":[["Khung",["Không viền","Viền, giữa trong suốt","Lớp màu phủ cả ảnh"]],["Chú thích",["Ẩn","Hiện"]],["Bàn giao",["Chỉ bản xem","Dự án có lớp và bản xuất","Đổi đuôi tệp bằng tên"]]],"right":[1,1,1],"hint":"Chọn lớp viền có giữa trong suốt, bật chú thích và giữ tệp dự án.","preview":"picture","demo":"frame","label":"Cổng trường"}],"12":[{"kind":"controls","title":"Vẽ tam giác đều","prompt":"Lắp vòng lặp vẽ tam giác đều cạnh 60 bước. Quan sát đường đi khi thay khối.","fields":[["Lặp",["3 lần","4 lần","6 lần"]],["Di chuyển",["40 bước","60 bước","80 bước"]],["Quay trái",["60 độ","90 độ","120 độ"]]],"right":[0,1,2],"hint":"Tam giác có 3 cạnh, góc quay ngoài 120°.","preview":"scratch","demo":"path"},{"kind":"controls","title":"Vẽ hình vuông","prompt":"Lắp kịch bản vẽ hình vuông cạnh 40 bước. Đường đi phải khép kín sau bốn cạnh.","fields":[["Lặp",["3 lần","4 lần","6 lần"]],["Di chuyển",["40 bước","60 bước","80 bước"]],["Quay trái",["60 độ","90 độ","120 độ"]]],"right":[1,0,1],"hint":"Hình vuông lặp 4 lần, quay 90° và dùng đúng độ dài.","preview":"scratch","demo":"path"}],"13":[{"kind":"controls","title":"Tạo kết quả có nhãn","prompt":"Cộng hai số và hiển thị “Điểm: ” kèm kết quả. Đối chiếu cả ca có số 0.","fields":[["Biểu thức",["a+b","a-b","nối a với b"]],["Hiển thị",["Nối nhãn “Điểm: ”","Chỉ hiển thị giá trị"]]],"right":[0,0],"hint":"Dùng cộng cho dữ liệu số, rồi nối nhãn vào kết quả.","preview":"scratch","demo":"expression","cases":[[3,5],[0,9]]},{"kind":"controls","title":"Kiểm tra giá trị logic","prompt":"Điểm a đạt nếu từ ngưỡng b trở lên. Chọn phép so sánh và phản hồi ở nhánh đúng.","fields":[["Điều kiện",["a ≥ b","a > b","a \u003c b"]],["Nhánh đúng",["Đạt","Chưa đạt"]]],"right":[0,0],"hint":"Từ ngưỡng nghĩa là bao gồm trường hợp bằng.","preview":"scratch","demo":"condition","cases":[[4,5],[5,5],[6,5]]}],"14":[{"kind":"controls","title":"Đoán đến khi đúng","prompt":"Chạy ca thấp rồi cao rồi đúng. Kịch bản phải dừng khi gặp giá trị bí mật.","fields":[["Vòng lặp",["Dừng khi đúng","Vẫn đọc các số sau khi đúng"]],["Nhánh khi số đoán nhỏ hơn bí mật",["Thấp","Cao"]]],"right":[0,0],"hint":"Vòng lặp cần dừng khi bằng. Nhánh nhỏ hơn phải báo thấp.","preview":"scratch","demo":"guess","cases":[[6,[2,8,6,9]],[7,[7,5]]]},{"kind":"controls","title":"Kiểm tra ngưỡng điểm","prompt":"Dùng nhánh Đạt khi điểm từ ngưỡng trở lên. So phản hồi của ba ca dưới, bằng và trên.","fields":[["Điều kiện",["a ≥ b","a > b","a \u003c b"]],["Nhánh đúng",["Đạt","Chưa đạt"]]],"right":[0,0],"hint":"Kiểm tra ca bằng ngưỡng để phân biệt ≥ với >.","preview":"scratch","demo":"condition","cases":[[6,7],[7,7],[8,7]]}],"15":[{"kind":"controls","title":"Sửa đếm thiếu một","prompt":"Sửa bộ đếm của trò đoán số, kể cả khi người chơi đoán đúng ngay. Giữ nhãn số lượt.","fields":[["Vị trí tăng bộ đếm",["Sau mọi lần nhập, kể cả lần đúng","Chỉ trong nhánh đoán sai","Không tăng"]],["Cách báo",["Nhãn “Số lượt: ” và kết quả","Chỉ hiện giá trị"]]],"right":[0,0],"hint":"Đặt lệnh tăng sau mỗi lần nhập để không bỏ lượt đúng.","preview":"scratch","demo":"counter","cases":[[5,[5]],[7,[3,8,7]]]},{"kind":"controls","title":"Sửa lỗi tại ngưỡng","prompt":"Chương trình đang bỏ ca vừa đủ điểm. Sửa phép so sánh, giữ nhánh Đạt và thử lại.","fields":[["Điều kiện",["a ≥ b","a > b","a \u003c b"]],["Nhánh đúng",["Đạt","Chưa đạt"]]],"right":[0,0],"hint":"Cần chấp nhận đúng ngưỡng, không chỉ lớn hơn.","preview":"scratch","demo":"condition","cases":[[4,5],[5,5],[7,5]]}],"16":[{"kind":"controls","title":"Chọn công cụ theo công việc","prompt":"Nhóm cần tổng hợp chi phí và làm tờ giới thiệu. Chọn công cụ, rồi chọn tiêu chí đo hiệu quả.","fields":[["Tổng hợp chi phí",["Trình xem ảnh","Bảng tính"]],["Thiết kế tờ giới thiệu",["Phần mềm chỉnh ảnh hoặc dàn trang","Công cụ nén tệp"]],["Đo hiệu quả",["Giá thiết bị","Thời gian và số lỗi trên cùng nhiệm vụ"]]],"right":[1,0,1],"hint":"Mỗi công cụ cần khớp đầu ra và tiêu chí phải đo công việc."},{"kind":"controls","title":"Phân công công bằng","prompt":"Nhóm cần lập trình, kiểm thử và trình bày. Chọn cách phân vai và giúp bạn mới tham gia.","fields":[["Phân vai",["Dựa trên giới","Dựa trên kĩ năng và sở thích"]],["Bạn mới",["Hướng dẫn và cho làm thử theo cặp","Không cho tham gia"]],["Đánh giá",["Dựa vào thiết bị đắt","Dựa vào sản phẩm và bằng chứng kiểm thử"]]],"right":[1,0,1],"hint":"Cho mọi người cơ hội học, đánh giá bằng nhiệm vụ thực tế."}]};
+const h=(tag,cls='',text='')=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e};
+function add(parent,...children){parent.append(...children.filter(x=>x!==null&&x!==undefined));return parent}
+function b(text,fn,cls='btn subtle'){const e=h('button',cls,text);e.type='button';e.addEventListener('click',fn);return e}
+function field(label,control){return add(h('label','field'),h('span','field-label',label),control)}
+function select(options,current,onChange){
+  const e=h('select');e.append(new Option('Chọn…',''));
+  options.forEach((x,i)=>e.append(new Option(x,String(i))));
+  e.value=current===null||current===undefined?'':String(current);
+  e.addEventListener('change',()=>onChange(e.value===''?null:Number(e.value)));return e
+}
+function input(value,onInput,opts={}){const e=h('input');Object.assign(e,{value,type:'text',...opts});e.addEventListener('input',()=>onInput(e.value));return e}
+function pressed(label,active,fn,cls='chip'){const e=b(label,fn,cls+(active?' selected':''));e.setAttribute('aria-pressed',String(active));return e}
+const same=(a,b)=>Array.isArray(a)&&a.length===b.length&&a.every((x,i)=>x===b[i]);
+const folded=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').trim();
+function stableOrder(n,key){
+  const arr=Array.from({length:n},(_,i)=>i);
+  let seed=[...key].reduce((a,c)=>Math.imul(a^c.charCodeAt(0),16777619)>>>0,2166136261);
+  for(let i=n-1;i>0;i--){seed=(Math.imul(1664525,seed)+1013904223)>>>0;const j=seed%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr
+}
+function checkTable(rows){
+ const box=h('div','table-wrap'),table=h('table','data-table');
+ rows.forEach((row,i)=>{const tr=h('tr');row.forEach(v=>{const td=h(i?'td':'th','',v);if(!i)td.scope='col';tr.append(td)});table.append(tr)});return add(box,table)
+}
+const LABS={};
+function mountLab(host,mission,initialDone,award){
+  const lab=LABS[mission.mode];let caseNo=initialDone.includes(0)&&!initialDone.includes(1)?1:0;
+  let state={},msg=null,done=[...initialDone];
+  const ui={
+    root:host,
+    nextRender(){render()},
+    verdict(ok,good,retry){msg={ok,text:ok?good:retry};if(ok&&!done.includes(caseNo)){done.push(caseNo);award(caseNo)}render();host.querySelector('.lab-feedback')?.focus()},
+    notify(text){msg={ok:null,text};render();host.querySelector('.lab-feedback')?.focus()},
+    change(fn){return()=>{fn();msg=null;render()}},
+    action(text,fn){return b(text,fn,'btn primary')}
+  };
+  function render(){
+    const current=lab[caseNo];
+    const tabs=h('div','lab-tabs');
+    function showCase(i){
+      if(caseNo===i)return;
+      caseNo=i;state={};msg=null;render();
+      host.querySelector('.lab-name')?.focus();
+    }
+    lab.forEach((_,i)=>{
+      const tab=pressed((done.includes(i)?'✓ ':'')+'Nhiệm vụ '+(i+1),i===caseNo,()=>showCase(i));
+      tab.disabled=i>0&&!done.includes(i-1);
+      tabs.append(tab);
+    });
+    const stage=h('section','lab-stage');
+    const name=h('h3','lab-name',current.title);name.tabIndex=-1;
+    add(stage,name,h('p','lab-instruction',current.prompt));
+    const play=h('div','lab-play');stage.append(play);
+    host.replaceChildren(tabs,stage);
+    const aria=h('div','sr-only');aria.id='lab-current';aria.textContent='Mô phỏng '+mission.lab;stage.prepend(aria);
+    current.draw(play,state,ui);
+    if(msg){
+      const out=h('p','lab-feedback '+(msg.ok===true?'success':msg.ok===false?'warning':'neutral'),msg.text);
+      out.tabIndex=-1;out.setAttribute('role','status');stage.append(out);
+      if(msg.ok&&caseNo===0&&!done.includes(1))stage.append(b('Sang nhiệm vụ 2',()=>showCase(1),'btn primary lab-next'));
+    }
+  }
+  render();
+}
+function tray(box,options,picked,onPick,onUndo,onClear,label='Các bước đã lắp'){
+ const src=h('div','tool-row'),out=h('ol','ordered-tray');out.tabIndex=-1;
+ options.forEach((x,i)=>{const e=b(x,()=>onPick(i),'btn chip');e.disabled=picked.includes(i);src.append(e)});
+ if(!picked.length)out.append(h('li','empty-slot','Chưa có bước nào.'));
+ else picked.forEach(i=>{const step=h('li','',options[i]);step.tabIndex=-1;out.append(step)});
+ const tools=h('div','tool-row');const undo=b('Bỏ bước cuối',onUndo),clear=b('Xếp lại',onClear);undo.disabled=clear.disabled=!picked.length;
+ add(box,src,h('p','field-label',label),out,add(tools,undo,clear));
+}
+function makeSteps(spec){
+ const {title,prompt,steps,right}=spec;
+ return {title,prompt,draw(box,state,ui){
+  state.picked??=[];
+  const pick=index=>{
+   state.picked.push(index);ui.nextRender();
+   ui.root.querySelector('.ordered-tray li:last-child')?.focus();
+  };
+  tray(box,steps,state.picked,pick,ui.change(()=>state.picked.pop()),
+   ui.change(()=>{state.picked=[]}),'Các bước đã chọn');
+  const check=ui.action('Kiểm tra thứ tự',()=>ui.verdict(
+   same(state.picked,right),'Đã hoàn thành đúng trình tự.',spec.hint));
+  check.disabled=state.picked.length!==right.length;
+  box.append(check);
+ }};
+}
+
+function makeControls(spec){
+ return {title:spec.title,prompt:spec.prompt,draw(box,state,ui){
+  const fields=spec.fields;
+  state.values??=fields.map(()=>null);
+  const form=h('div','form-grid'), output=h('div','lab-preview');
+  const refresh=()=>{
+   output.replaceChildren(previewLab(spec,state.values));
+   check.disabled=state.values.includes(null);
+  };
+  fields.forEach(([label,options],i)=>{
+   form.append(field(label,select(options,state.values[i],value=>{state.values[i]=value;refresh()})));
+  });
+  const check=ui.action('Kiểm tra nhiệm vụ',()=>ui.verdict(
+   same(state.values,spec.right),'Kết quả mô phỏng đáp ứng yêu cầu.',spec.hint));
+  add(box,form,output,check);refresh();
+ }};
+}
+
+function previewLab(spec, indices){
+ const labels=spec.fields.map(([,options],i)=>options[indices[i]]??'—');
+ const headings=spec.fields.map(([label])=>label);
+ if(spec.preview==='records')return recordsPreview(spec,indices);
+ if(spec.preview==='chart')return chartPreview(spec,indices);
+ if(spec.preview==='page')return pagePreview(spec,indices,labels);
+ if(spec.preview==='picture')return picturePreview(spec,indices,labels);
+ if(spec.preview==='template'){
+  const output=h('p','muted','Chọn đích rồi bấm để mở thử.');
+  output.setAttribute('role','status');
+  const tryLink=b(labels[0],()=>{
+   output.textContent=indices[1]===1?'Đã mở tài liệu mô phỏng: Nội quy hội sách.':
+    'Máy trình chiếu không tìm thấy tệp trong ổ riêng.';
+  });
+  tryLink.disabled=indices[0]===null||indices[1]===null;
+  return add(h('div'),tryLink,output,indices[2]===0?h('p','','Ý chính: mang sách đã đọc và đổi tại bàn tiếp nhận.'):null);
+ }
+ if(spec.preview==='scratch')return scratchPreview(spec,indices);
+ return checkTable([['Mục','Bản đang chuẩn bị'],...headings.map((title,i)=>[title,labels[i]])]);
+}
+
+function recordsPreview(spec,[group,minimum,sort]){
+ const rows=spec.rows
+  .filter(([,team,score])=>(group===null||group===0||team===group)&&(minimum!==1||score>=8))
+  .sort((a,b)=>sort===1?b[2]-a[2]:sort===2?a[2]-b[2]:0);
+ return add(h('div'),h('p','muted','Đang hiện '+rows.length+'/'+spec.rows.length+' bản ghi'),
+  checkTable([['Tên','Tổ','Điểm'],...rows.map(row=>row.map(String))]));
+}
+
+function chartPreview(spec,[kind,range,unit]){
+ const values=spec.values.slice(0,range===1?2:spec.values.length);
+ const labels=spec.labels.slice(0,values.length);
+ const max=Math.max(...values),total=values.reduce((a,b)=>a+b,0);
+ const type=['cột','đường','tròn'][kind??0];
+ const box=h('div','chart-preview');
+ if(type==='tròn'){
+  const colors=['#67e8c8','#f7cf73','#7aaeff','#dc9bf1'];
+  let angle=0;
+  const stops=values.map((value,i)=>{
+   const start=angle;
+   angle+=value/total*360;
+   return colors[i]+' '+start+'deg '+angle+'deg';
+  });
+  const pie=h('div','chart-pie');
+  pie.style.background='conic-gradient('+stops.join(',')+')';
+  pie.setAttribute('aria-hidden','true');
+  box.append(pie,h('p','',labels.map((name,i)=>name+': '+Math.round(100*values[i]/total)+'%').join(' · ')));
+ }else if(type==='đường'){
+  const plot=h('div','chart-line');
+  plot.setAttribute('aria-hidden','true');
+  const xy=values.map((value,i)=>[10+i*80/Math.max(1,values.length-1),85-value/max*68]);
+  xy.forEach(([x,y],i)=>{
+   const point=h('span','plot-dot');
+   point.style.left=x+'%';point.style.top=y+'%';plot.append(point);
+   if(i>0)segment(plot,xy[i-1],[x,y],2.4);
+  });
+  box.append(plot);
+ }else{
+  const bars=h('div','chart-bars');
+  values.forEach((value,i)=>{
+   const bar=h('div','chart-bar');
+   bar.style.height=(value/max*100)+'%';
+   bars.append(add(h('div','chart-column'),bar,h('span','',labels[i])));
+  });
+  bars.setAttribute('aria-hidden','true');box.append(bars);
+ }
+ return add(box,h('p','muted','Biểu đồ '+type+' · '+(unit===0?spec.unit:'chưa ghi đơn vị')),
+  checkTable([['Mục',spec.unit],...labels.map((label,i)=>[label,String(values[i])])]));
+}
+
+function segment(plot,[x,y],[nextX,nextY],aspect=1){
+ const dx=nextX-x,dy=(nextY-y)/aspect;
+ const edge=h('span','plot-edge');
+ edge.style.left=x+'%';edge.style.top=y+'%';
+ edge.style.width=Math.hypot(dx,dy)+'%';
+ edge.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
+ plot.append(edge);
+}
+
+function pagePreview(spec, indices, labels){
+ const pages=h('div','mock-pages');
+ const sectionCount=spec.demo==='pagination'?3:1;
+ for(let i=0;i<sectionCount;i++){
+  const page=h('article','mock-page');
+  if(spec.demo==='pagination'){
+   const first=i===0;
+   const header=indices[0]===1&&!(first&&indices[2]===1)?spec.label:'';
+   const number=first&&indices[2]===1?'':indices[1]===1?String(i+1):indices[1]===2?'1':'';
+   add(page,h('small','mock-header',header),h('strong','',first?'Bìa':'Nội dung '+i),
+    h('span','mock-line'),h('span','mock-line'),h('small','mock-footer',number));
+  }else if(spec.demo==='document'){
+   const list=h(indices[0]===1?'ol':'ul','');
+   ['Chuẩn bị tài liệu','Chọn ảnh minh họa','Kiểm tra bản in'].forEach(text=>list.append(h('li','',text)));
+   const picture=h('div','mock-document-picture','🖼️');
+   if(indices[1]===2)picture.classList.add('mock-cover');
+   add(page,h('strong','','Bản tin câu lạc bộ'),list,picture,h('small','',indices[2]===1?'Ảnh minh họa':''));
+  }else{
+   if(indices[0]===1)page.classList.add('mock-dark');
+   if(indices[1]===0)page.classList.add('mock-low');
+   add(page,h('strong','',spec.label),h('p','','Một ý chính trên mỗi trang'),h('small','mock-footer',labels[2]));
+  }
+  pages.append(page);
+ }
+ return pages;
+}
+
+function picturePreview(spec, indices, labels){
+ const scene=h('div','mock-photo');
+ const landscape=add(h('div','mock-landscape'),h('span','mock-sun'),h('span','mock-hill'),h('span','mock-hill back'),h('span','mock-tree','🌳'));
+ const caption=h('span','mock-caption',spec.label??'Sân trường');
+ let width=1200,height=800;
+ if(spec.demo==='zoom'){
+  landscape.style.transform='scale('+([1,1.5,2][indices[0]??0])+') translateX('+(indices[1]===1?'12%':'0')+')';
+ }else if(spec.demo==='crop'){
+  if(indices[0]===0)landscape.classList.add('mock-tilt');
+  if(indices[1]===1){scene.classList.add('mock-cropped');width=height=800}
+  if(indices[2]===1){width/=2;height/=2}
+  if(indices[2]===2){landscape.classList.add('mock-stretched');width=Math.round(width*1.35)}
+ }else if(spec.demo==='light'){
+  const brightness=indices[0]===0?'.65':indices[0]===2?'1.55':'1.03';
+  const effect=indices[2]===1?' contrast(2.2)':indices[2]===2?' blur(3px)':'';
+  landscape.style.filter='brightness('+brightness+')'+effect;
+  if(indices[1]===0)caption.classList.add('mock-caption-low');
+  if(indices[1]===2)caption.classList.add('mock-caption-center');
+  scene.append(caption);
+ }else{
+  if(indices[0]===1)scene.classList.add('mock-framed');
+  if(indices[0]===2)scene.classList.add('mock-covered');
+  if(indices[1]===1)scene.append(caption);
+ }
+ scene.prepend(landscape);
+ scene.setAttribute('aria-hidden','true');
+ return add(h('div'),scene,h('p','muted',labels.join(' · ')),
+  spec.demo==='zoom'||spec.demo==='crop'?h('p','','Kích thước ảnh: '+width+' × '+height+' px'):null);
+}
+
+function scratchPreview(spec,indices){
+ if(indices.includes(null))return h('p','muted','Chọn đủ khối để xem các ca chạy.');
+ if(spec.demo==='path')return pathPreview(spec,indices);
+ const choices=indices.map((i,j)=>spec.fields[j][1][i]);
+ const rows=spec.cases.map(([a,b])=>{
+  let output='';
+  if(spec.demo==='expression'){
+   const number=indices[0]===0?a+b:indices[0]===1?a-b:String(a)+String(b);
+   output=indices[1]===0?'Điểm: '+number:String(number);
+  }else if(spec.demo==='condition'){
+   const pass=indices[0]===0?a>=b:indices[0]===1?a>b:a<b;
+   output=pass?choices[1]:'Chưa đạt';
+  }else if(spec.demo==='guess'){
+   const secret=a,attempts=b;
+   const found=attempts.indexOf(secret);
+   const trace=(indices[0]===0&&found>=0?attempts.slice(0,found+1):attempts)
+     .map(value=>value===secret?'Đúng':(value<secret)===(indices[1]===0)?'Thấp':'Cao');
+   output=trace.join(' → ');
+  }else{
+   const secret=a,attempts=b;
+   const found=attempts.indexOf(secret), limit=found>=0?found+1:attempts.length;
+   const count=indices[0]===0?limit:indices[0]===1?limit-(found>=0?1:0):0;
+   output=indices[1]===0?'Số lượt: '+count:String(count);
+  }
+  return [Array.isArray(b)?'Bí mật '+a+'; nhập '+b.join(', '):a+', '+b,output];
+ });
+ return checkTable([['Đầu vào','Kết quả mô phỏng'],...rows]);
+}
+
+function pathPreview(spec,[repeat,move,turn]){
+ const choices=spec.fields.map(([,options])=>options);
+ const [count,distance,angle]=[repeat,move,turn].map((index,i)=>Number.parseInt(choices[i][index],10));
+ let x=0,y=0,heading=0;
+ const points=[[x,y]];
+ for(let i=0;i<count;i++){
+  x+=distance*Math.cos(heading);y-=distance*Math.sin(heading);
+  points.push([x,y]);heading+=angle*Math.PI/180;
+ }
+ const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+ const minX=Math.min(...xs),minY=Math.min(...ys);
+ const span=Math.max(Math.max(...xs)-minX,Math.max(...ys)-minY,1);
+ const screen=points.map(([px,py])=>[10+(px-minX)*80/span,10+(py-minY)*80/span]);
+ const board=h('div','scratch-path');
+ board.setAttribute('aria-hidden','true');
+ for(let i=1;i<screen.length;i++)segment(board,screen[i-1],screen[i]);
+ const closed=Math.hypot(x,y)<.01;
+ return add(h('div'),board,h('p','',count+' nét · '+(closed?'đường khép kín':'đường chưa khép kín')));
+}
+
+function formulaValue(formula,data){
+ const factors=/^=(\$?[A-Z]\$?[1-9]\d*)\*(\$?[A-Z]\$?[1-9]\d*)$/.exec(formula);
+ if(!factors)return NaN;
+ return data[factors[1].replace(/\$/g,'')]*data[factors[2].replace(/\$/g,'')];
+}
+function makeFormula(spec){
+ return {title:spec.title,prompt:spec.prompt,draw(box,state,ui){
+  state.formulas??=spec.answers.map(()=>'');
+  const form=h('div','form-grid');
+  spec.answers.forEach((_,i)=>form.append(field('Công thức ô D'+(i+2),
+   input(state.formulas[i],value=>{state.formulas[i]=value},{maxLength:25,spellcheck:false,autocomplete:'off'}))));
+  const data=spec.rows.map(row=>Object.entries(row).map(([key,value])=>key+'='+value).join(', '));
+  const results=spec.rows.map((row,i)=>[data[i],...(state.results?.[i]??spec.answers.map(()=>null))
+   .map(value=>value===null?'—':Number.isFinite(value)?String(value):'Không tính được')]);
+  const run=ui.action('Chạy công thức',()=>{
+   const formulas=state.formulas.map(text=>text.trim().toUpperCase().replace(/\s+/g,''));
+   state.results=spec.rows.map(row=>formulas.map(formula=>formulaValue(formula,row)));
+   const ok=formulas.every((formula,i)=>spec.answers[i].includes(formula));
+   ui.verdict(ok,'Công thức giữ đúng tham chiếu và chạy được trên cả hai ca.',spec.hint);
+  });
+  add(box,form,checkTable([['Dữ liệu vào',...spec.answers.map((_,i)=>'D'+(i+2))],...results]),run);
+ }};
+}
+
+for(const [code,cases] of Object.entries(LAB_DATA)){
+ LABS[code]=cases.map(spec=>{
+  if(spec.kind==='steps')return makeSteps(spec);
+  if(spec.kind==='formula')return makeFormula(spec);
+  return makeControls(spec);
+ });
+}
+
+const main=document.getElementById('main');
+const nav=document.getElementById('header-links');
+const brand=document.getElementById('brand');
+const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
+const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
+const TOTAL=25, STORAGE='fptbn-t8-missions-v1:';
+const STUDY_SECONDS=15;
+const modes={choice:'Chọn một',multi:'Chọn tất cả đáp án đúng',match:'Ghép cặp',order:'Sắp xếp',number:'Nhập số nguyên',practice:'Tự đánh giá'};
+let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
+let storageProblem=false;
+const mem=new Map();
+const empty=()=>({count:0,xp:0,tries:{},lab:[],extras:[],finalCases:[],certificateAt:null});
+const hasCertificate=p=>p.count===TOTAL&&p.finalCases.length===2&&p.certificateAt!==null;
+const roomsDone=p=>Math.min(4,Math.floor(p.count/5))+(hasCertificate(p)?1:0);
+function validAwardDate(date){
+ if(typeof date!=='string'||!/^\d{4}-\d\d-\d\dT/.test(date))return null;
+ const time=Date.parse(date);
+ return Number.isFinite(time)?new Date(time).toISOString():null;
+}
+function get(n){
+  if(mem.has(n))return mem.get(n);
+  let state=empty();
+  try{
+   const x=JSON.parse(localStorage.getItem(STORAGE+CATALOG[n-1].code)||'null');
+   if(x&&Number.isInteger(x.count)&&x.count>=0&&x.count<=TOTAL){
+    const ids=Object.fromEntries(Object.entries(x.tries&&typeof x.tries==='object'?x.tries:{}).filter(([k,v])=>/^([0-9]|1[0-9]|2[0-4])$/.test(k)&&Number.isInteger(v)&&v>0&&v<1000));
+    const awardDate=validAwardDate(x.certificateAt);
+    const finalCases=x.count===TOTAL&&Array.isArray(x.finalCases)&&x.finalCases.includes(0)
+      ? (x.finalCases.includes(1)&&awardDate?[0,1]:[0]) : [];
+    state={...empty(),count:x.count,xp:Number.isInteger(x.xp)&&x.xp>=0?x.xp:0,tries:ids,
+      lab:[...new Set((Array.isArray(x.lab)?x.lab:[]).filter(v=>v===0||v===1))],
+      extras:[...new Set((Array.isArray(x.extras)?x.extras:[]).filter(v=>typeof v==='string'))],
+      finalCases,certificateAt:finalCases.length===2?awardDate:null};
+   }
+  }catch{storageProblem=true}
+  mem.set(n,state);return state;
+}
+function save(n){try{localStorage.setItem(STORAGE+CATALOG[n-1].code,JSON.stringify(mem.get(n)))}catch{storageProblem=true}}
+function link(text,url,cls='text-link'){const e=h('a',cls,text);e.href=url;return e}
+function focus(e){if(e){if(!e.matches('button,a,input,textarea,select'))e.tabIndex=-1;e.focus({preventScroll:true})}}
+function focusViewStart(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
+function courseLink(text='Chương trình',cls='text-link'){return link(text,STANDALONE?'index.html#chuong-trinh':'#chuong-trinh',cls)}
+function lessonLink(n,text,cls){return link(text,'bai'+CATALOG[n-1].code+'.html',cls)}
+function setHeader(m){
+ brand.replaceChildren(add(h('span','logo','⌘ CODE'),h('em','','QUEST')),
+  h('span','brand-subtitle',m?'TIN HỌC 8 · BÀI '+m.code.toUpperCase()+' · '+lesson.title.toUpperCase():'TIN HỌC 8'));
+ nav.replaceChildren();
+ if(m){
+  const retry=Object.values(progress.tries).reduce((sum,value)=>sum+value,0);
+  const metrics=h('div','header-stats');
+  for(const text of ['⚡ '+progress.xp+' XP','🏅 '+roomsDone(progress)+'/5','📖 '+retry+' ôn lại']){
+   metrics.append(h('span','stat-pill',text));
+  }
+  nav.append(metrics);
+ }else nav.append(courseLink('Danh sách bài','nav-link'));
+}
+function number(n){return String(n).padStart(2,'0')}
+function meter(val,max,caption){
+ const bar=h('div','meter');
+ bar.setAttribute('role','progressbar');
+ bar.setAttribute('aria-label',caption);
+ bar.setAttribute('aria-valuenow',String(val));
+ bar.setAttribute('aria-valuemin','0');
+ bar.setAttribute('aria-valuemax',String(max));
+ const fill=h('span');fill.style.width=(val/max*100)+'%';bar.append(fill);
+ return bar;
+}
+function art(icon){
+ const mark=h('span','hero-watermark',icon);
+ mark.setAttribute('aria-hidden','true');
+ return mark;
+}
+function home(scroll){
+ setHeader(null);
+ const complete=MISSIONS.filter(m=>hasCertificate(get(m.n))).length;
+ const recent=MISSIONS.find(m=>{const p=get(m.n);return p.count>0&&!hasCertificate(p)});
+ const hero=h('section','course-hero hero');
+ const copy=h('div','hero-copy'),title=add(h('h1'),h('em','','Tin học 8'));
+ const actions=h('div','hero-actions');actions.append(recent?lessonLink(recent.n,'Tiếp tục Bài '+recent.code+' →','btn primary'):lessonLink(1,'Bắt đầu với Bài 1 →','btn primary'),courseLink('Danh sách bài','btn outline'));
+ add(copy,h('p','eyebrow','CODEQUEST'),title,actions);
+ add(hero,copy,art('⚙️'));
+ const signals=h('section','signal-band');
+ [[String(CATALOG.length),'Bài học'],[complete+'/'+CATALOG.length,'Bài đã hoàn thành']].forEach(([num,label])=>signals.append(add(h('div','signal-stat'),h('strong','',num),h('span','',label))));
+ const head=add(h('div','section-head'),h('h2','','Chọn bài học'));
+ const lib=add(h('section','library'),head);lib.id='chuong-trinh';
+ const groups=['Tất cả',...new Set(MISSIONS.map(m=>m.group))],filters=h('div','filter-row'),cards=h('div','course-grid');
+ function renderCards(keepFocus=false){
+  filters.replaceChildren(...groups.map(g=>pressed(g,filter===g,()=>{filter=g;renderCards(true)})));
+  cards.replaceChildren();
+  const shown=MISSIONS.filter(m=>filter==='Tất cả'||filter===m.group);
+  const status=h('p','sr-only',shown.length+' bài trong danh sách');status.setAttribute('role','status');cards.append(status);
+  shown.forEach(m=>{
+   const data=CATALOG[m.n-1],p=get(m.n),a=lessonLink(m.n,'','course-card');
+   a.style.setProperty('--card-tint',m.tint);a.style.setProperty('--card-accent',m.color);
+   const visual=add(h('div','card-visual'),h('span','card-no','BÀI '+m.code.toUpperCase()),h('span','card-icon',m.icon),h('span','card-arrow','↗'));
+   visual.querySelector('.card-icon').setAttribute('aria-hidden','true');
+   visual.querySelector('.card-arrow').setAttribute('aria-hidden','true');
+   const body=add(h('div','card-copy'),h('span','card-group',m.group),h('h3','',m.title),h('p','',data.title),h('span','mechanic',m.mechanic));
+   const status=hasCertificate(p)?'Hoàn thành':p.count?'Đang làm':'Chưa bắt đầu';
+   const track=add(h('div','card-track'),meter(roomsDone(p),5,'Khu vực đã hoàn thành'),add(h('div','card-progress'),h('span','',status),h('span','',roomsDone(p)+'/5')));
+   add(a,visual,body,track);cards.append(a);
+  });
+  if(keepFocus)focus([...filters.children].find(x=>x.textContent===filter));
+ }
+ renderCards();add(lib,filters,cards);
+ main.replaceChildren(hero,signals,lib);
+ if(storageProblem)main.append(h('p','notice','Trình duyệt đang chặn lưu trữ. Tiến độ chỉ giữ trong lần mở trang này.'));
+ if(scroll){lib.scrollIntoView({block:'start'});focus(head.querySelector('h2'))}else focusViewStart(title);
+}
+function lessonPage(scroll=true){
+ attempt=null;
+ setHeader(mission);
+ const p=progress;
+ const title=add(h('h1'),h('em','',mission.title));
+ const startLabel=hasCertificate(p)?'Xem chứng nhận':p.count===TOTAL?'Tiếp tục thực hành':p.count?'Tiếp tục':'🚀 Bắt đầu khám phá';
+ const actions=add(h('div','hero-actions'),b(startLabel,()=>{
+  if(hasCertificate(p))certificate();
+  else if(p.count===TOTAL)lab();
+  else play(p.count);
+ },'btn primary'));
+ if(p.count)actions.append(b('↻ Chơi lại',resetLesson));
+ const copy=add(h('div','hero-copy'),
+  h('p','eyebrow','NHIỆM VỤ '+lesson.code.toUpperCase()+' · CODEQUEST'),
+  title,h('p','hero-desc',mission.story),actions);
+ const hero=add(h('section','hero mission-hero'),copy,art(mission.icon));
+ const titleRow=add(h('div','section-head'),
+  add(h('div'),h('p','eyebrow','BẢN ĐỒ NHIỆM VỤ'),h('h2','','5 cánh cửa tri thức')),
+  h('span','tiny',roomsDone(p)+'/5 khu vực đã hoàn thành'));
+ const list=h('ol','stage-list');
+ mission.stages.forEach((name,i)=>{
+  const final=i===4;
+  const solved=Math.max(0,Math.min(5,p.count-i*5));
+  const open=p.count>=i*5;
+  const done=final?hasCertificate(p):solved===5;
+  const roomName=final?'Thử thách cuối':name;
+  const state=done?'✓':open?'✨':'🔒';
+  const details=final?(solved===5?'Thực hành '+p.finalCases.length+'/2':'5 câu + thực hành'):'5 câu';
+  const row=h('li','stage-row'+(done?' done':'')+(!open?' locked':''));
+  const room=b('',()=>{
+   if(done){if(final)certificate();else review(i)}
+   else if(final&&solved===5)lab();
+   else play(p.count);
+  },'room-button');
+  room.disabled=!open;
+  const seal=h('span','room-seal',state);
+  seal.setAttribute('aria-hidden','true');
+  const icon=h('span','room-icon',ROOM_ICONS[i]);
+  icon.setAttribute('aria-hidden','true');
+  add(room,seal,icon,h('strong','',roomName),h('small','',details));
+  if(!open)room.setAttribute('aria-label',roomName+' · Chưa mở');
+  row.append(room);
+  if(solved&&(final||!done))row.append(b('Xem lời giải',()=>review(i),'btn text-btn'));
+  list.append(row);
+ });
+ main.replaceChildren(hero,titleRow,list);
+ if(storageProblem)main.append(h('p','notice','Tiến độ sẽ mất khi em đóng trang vì trình duyệt đang chặn lưu.'));
+ if(scroll)focusViewStart(title);
+}
+function resetLesson(){
+ if(!confirm('Chơi lại từ đầu? Tiến độ và chứng nhận của bài này sẽ bị xóa trên trình duyệt.'))return;
+ progress=empty();
+ mem.set(lesson.n,progress);
+ save(lesson.n);
+ lessonPage();
+}
+function route(){
+ attempt=null;
+ const hash=location.hash;
+ const match=hash.match(/^#bai-(\d+[ab]?)$/i);
+ const n=STANDALONE||(match?CATALOG.find(entry=>entry.code===match[1].toLowerCase())?.n:0);
+ if(BANK[n]){
+  lesson=BANK[n];mission=MISSIONS[n-1];progress=get(n);
+  document.title='Bài '+lesson.code+' · '+lesson.title+' | Tin học 8';
+  lessonPage();
+ }else{
+  lesson=mission=progress=null;
+  document.title='Tin học 8 · Phòng nhiệm vụ';
+  home(hash==='#chuong-trinh');
+ }
+}
+function basePanel(label,title,desc,back=()=>lessonPage()){
+ const head=h('div','view-heading');
+ const titleNode=h('h1','',title);
+ add(head,b('☰ Bản đồ bài này',back,'btn subtle'),h('p','eyebrow',label),titleNode,desc?h('p','muted',desc):null);
+ return [head,titleNode];
+}
+function lab(){
+ if(progress.count!==TOTAL){lessonPage();return}
+ if(hasCertificate(progress)){certificate();return}
+ attempt=null;
+ const [head,title]=basePanel('KHU VỰC 05 · THỬ THÁCH CUỐI',mission.lab,'Hoàn thành cả hai nhiệm vụ để nhận chứng nhận.');
+ const box=h('div','lab-shell');
+ const actions=h('div','final-actions');
+ main.replaceChildren(add(h('div','lesson-panel'),head,box,actions));
+ mountLab(box,mission,progress.finalCases,i=>{
+  if(progress.finalCases.includes(i))return;
+  progress.finalCases.push(i);
+  if(!progress.lab.includes(i)){progress.lab.push(i);progress.xp+=30}
+  if(progress.finalCases.length===2)progress.certificateAt=new Date().toISOString();
+  save(lesson.n);
+  setHeader(mission);
+  if(hasCertificate(progress)){
+   actions.replaceChildren(b('🏆 Nhận chứng nhận',()=>certificate(),'btn primary'));
+  }
+ });
+ if(lesson.extras.length)actions.append(b('Bài mở rộng',()=>extra(),'btn text-btn'));
+ focusViewStart(title);
+}
+function drawStudy(stage){
+ const heading=h('h2','','Kiến thức cần nhớ');
+ heading.id='study-title';
+ const points=h('ul','study-points');
+ for(const point of stage.study.points)points.append(h('li','',point));
+ const example=add(h('div','study-example'),h('strong','','Ví dụ'),h('p','',stage.study.example));
+ const panel=add(h('section','study'),heading,points,example,h('p','study-source','SGK · trang '+lesson.pages));
+ panel.setAttribute('aria-labelledby',heading.id);
+ return panel;
+}
+function hint(q,stage){
+ if(q.type==='order')return 'Tìm việc phải làm trước khi có thể thực hiện bước kế tiếp.';
+ if(q.type==='match')return 'Đọc từng dòng và dựa vào vai trò hoặc dấu hiệu riêng để chọn.';
+ if(q.type==='multi')return 'Đối chiếu từng lựa chọn với câu hỏi. Có thể có hơn một ý đúng.';
+ return stage.goal;
+}
+function play(index,retry=false){
+ if(!Number.isInteger(index)||index<0||index>=TOTAL||index!==progress.count){lessonPage();return}
+ const i=Math.floor(index/5),stage=lesson.stages[i],q=stage.tasks[index%5];
+ const [head,title]=basePanel('KHU VỰC '+number(i+1)+' / 05',i===4?'Thử thách cuối':mission.stages[i],'Câu '+(index%5+1)+' / 5');
+ const dots=h('div','progress-dots');
+ dots.setAttribute('aria-hidden','true');
+ for(let j=0;j<5;j++)dots.append(h('span',j<index%5?'done':j===index%5?'current':''));
+ const study=drawStudy(stage);
+ const pane=h('section','question-card');
+ const jump=b('Đến câu hỏi ↓',()=>{
+  pane.scrollIntoView({block:'start'});
+  focus(pane.querySelector('h2'));
+ },'btn text-btn study-jump');
+ const grid=add(h('div','play-grid'),study);
+ const session={index,q,stage,i,phase:'study',pane,study};
+ attempt=session;
+ const mustRead=!retry;
+ jump.hidden=mustRead;
+ const status=h('p','sr-only');
+ status.setAttribute('role','status');
+ main.replaceChildren(add(h('div','lesson-panel play-panel'),head,dots,jump,grid,status));
+ focusViewStart(title);
+ if(!mustRead){
+  showQuestion();
+  if(retry)focus(pane.querySelector('h2'));
+  return;
+ }
+
+ grid.classList.add('study-only');
+ const fill=h('span','study-meter-fill');
+ fill.style.setProperty('--study-time',STUDY_SECONDS+'s');
+ const meter=add(h('div','study-meter'),fill);
+ meter.setAttribute('aria-hidden','true');
+ const notice=h('p','','Đọc kiến thức trong '+STUDY_SECONDS+' giây. Câu hỏi sẽ tự mở.');
+ const wait=add(h('div','study-wait'),notice,meter);
+ study.append(wait);
+ setTimeout(()=>{
+  if(attempt!==session)return;
+  wait.hidden=true;
+  grid.classList.remove('study-only');
+  showQuestion();
+  status.textContent='Câu hỏi đã mở.';
+ },STUDY_SECONDS*1000);
+
+ function showQuestion(){
+  session.phase='answer';
+  drawQuestion(q,pane,stage,index);
+  grid.append(pane);
+  jump.hidden=false;
+ }
+}
+function drawQuestion(q,pane,stage,index){
+ const head=h('p','question-kind',q.grouping?'Phân loại':modes[q.type]);
+ const prompt=h('h2','question-prompt',q.prompt);
+ add(pane,head,prompt);
+ if(q.table)pane.append(checkTable(q.table));
+ if(q.type==='practice'){drawPractice(q,pane,()=>complete(index,q,pane,true));return}
+ const area=h('div','answer-area');pane.append(area);
+ const toolbar=h('div','tool-row');pane.append(toolbar);
+ const submit=b('Kiểm tra',grade,'btn primary');submit.disabled=true;toolbar.append(submit);
+ let valid=()=>false,correct=()=>false;
+ const update=()=>submit.disabled=!valid();
+ if(q.type==='number'){
+  const value=input('',update,{inputMode:'numeric'});
+  area.append(field('Kết quả',value));
+  valid=()=>/^[+-]?\d+$/.test(value.value.trim());
+  correct=()=>Number(value.value)===q.answer;
+ }else if(q.type==='order'){
+  const local=[];const order=stableOrder(q.steps.length,q.id);
+  function drawOrder(){
+   area.replaceChildren(h('p','muted','Bấm từng bước theo thứ tự. Có thể bỏ bước cuối hoặc xếp lại.'));
+   tray(area,order.map(i=>q.steps[i]),local,i=>{local.push(i);drawOrder();focus(area.querySelector('.ordered-tray li:last-child'))},()=>{local.pop();drawOrder();focus(area.querySelector('.ordered-tray'))},()=>{local.splice(0);drawOrder();focus(area.querySelector('.tool-row button'))},'Thứ tự của em');
+   update();
+  }
+  valid=()=>local.length===q.steps.length;
+  correct=()=>same(local.map(i=>order[i]),q.sequence);drawOrder();
+ }else if(q.type==='match'){
+  const chosen=Array(q.items.length).fill(null);
+  const order=stableOrder(q.groups.length,q.id);
+  q.items.forEach((x,i)=>area.append(field(x,select(order.map(k=>q.groups[k]),null,v=>{chosen[i]=v;update()}))));
+  valid=()=>chosen.every(x=>x!==null);correct=()=>same(chosen.map(i=>order[i]),q.assign);
+ }else{
+  const ids=stableOrder(q.choices.length,q.id),set=new Set(),fields=h('fieldset','answer-options');
+  const legend=h('legend','sr-only',q.type==='multi'?'Chọn tất cả phương án đúng':'Chọn một phương án đúng');fields.append(legend);
+  ids.forEach((idx,i)=>{
+   const f=h('input');f.type=q.type==='multi'?'checkbox':'radio';f.name=q.id;f.value=String(idx);
+   f.addEventListener('change',()=>{if(q.type==='choice')set.clear();if(f.checked)set.add(idx);else set.delete(idx);update()});
+   fields.append(add(h('label','answer-choice'),f,h('span','letter',String.fromCharCode(65+i)),h('span','',q.choices[idx])));
+  });
+  area.append(fields);
+  valid=()=>set.size>0;correct=()=>same([...set].sort(),[...q.correct].sort());
+ }
+ function grade(){
+  if(attempt?.phase!=='answer'||!valid()||pane!==attempt.pane)return;
+  if(correct())complete(index,q,pane,false);
+  else wrong(index,q,pane,stage);
+ }
+}
+function drawPractice(q,pane,finish){
+ const intro=h('p','muted','Làm bài rồi tự đối chiếu kết quả.');
+ const holder=h('div','practice-rubric');holder.hidden=true;
+ const checks=[];
+ const submit=b('Ghi nhận đã tự đối chiếu',()=>{if(checks.every(x=>x.checked))finish()},'btn primary');submit.disabled=true;
+ q.rubric.forEach(line=>{const e=h('input');e.type='checkbox';e.addEventListener('change',()=>submit.disabled=!checks.every(x=>x.checked));checks.push(e);
+  holder.append(add(h('label','rubric-item'),e,h('span','',line)))});
+ holder.append(submit);
+ const show=b('Mở tiêu chí tự kiểm tra',()=>{holder.hidden=false;show.hidden=true;focus(checks[0])});
+ add(pane,intro,show,holder);
+}
+function disable(pane){pane.querySelectorAll('button,input,select,textarea').forEach(x=>x.disabled=true)}
+function complete(index,q,pane,self){
+ if(attempt?.phase!=='answer'||index!==progress.count)return;
+ attempt.phase='complete';disable(pane);
+ progress.count++;
+ if(!self)progress.xp+=progress.tries[index]?10:20;
+ if(progress.count%5===0)progress.xp+=30;
+ save(lesson.n);
+ setHeader(mission);
+ const end=progress.count%5===0;
+ const result=add(h('div','result-card success'),h('strong','',self?'✓ Đã ghi nhận tự đối chiếu':'✓ Chính xác!'),h('p','',self?'Em đã tự kiểm tra bài theo tiêu chí.':q.why));
+ result.setAttribute('role','status');
+ const stageIndex=Math.floor(index/5);
+ if(end&&stageIndex<4)result.append(h('p','medal',MEDALS[stageIndex]+' Huy hiệu khu vực '+(stageIndex+1)));
+ const next=b(progress.count===TOTAL?'Vào thử thách thực hành':end?'Nhận huy chương':'Sang câu tiếp theo',
+  ()=>end?(progress.count===TOTAL?lab():celebrateStage(stageIndex)):play(progress.count),'btn primary');
+ add(pane,result,next);focus(next);
+}
+function wrong(index,q,pane,stage){
+ attempt.phase='retry';disable(pane);
+ progress.tries[index]=(progress.tries[index]||0)+1;save(lesson.n);
+ const reviewNotes=b('Xem lại kiến thức',()=>{
+  const study=attempt?.study;
+  if(study){
+   study.scrollIntoView({block:'start'});
+   focus(study.querySelector('h2'));
+  }
+ },'btn text-btn');
+ const read=add(h('div','result-card warning'),h('h3','','Đọc lại rồi thử lần nữa'),
+  h('p','',hint(q,stage)),reviewNotes);
+ const e=h('input');e.type='checkbox';
+ const retry=b('Thử lại câu này',()=>play(index,true),'btn primary');retry.disabled=true;
+ e.addEventListener('change',()=>retry.disabled=!e.checked);
+ add(read,add(h('label','rubric-item'),e,h('span','','Em đã đọc lại tư liệu')),retry);pane.append(read);focus(e);
+}
+function solution(q){
+ if(q.type==='practice')return q.rubric.join(' ');
+ if(q.type==='number')return String(q.answer);
+ if(q.type==='order')return q.sequence.map(i=>q.steps[i]).join(' → ');
+ if(q.type==='match')return q.items.map((t,i)=>t+' → '+q.groups[q.assign[i]]).join(' · ');
+ return q.correct.map(i=>q.choices[i]).join(' · ');
+}
+function review(i){
+ attempt=null;
+ const s=lesson.stages[i],solved=Math.max(0,Math.min(5,progress.count-5*i));
+ const [head,title]=basePanel('BÀI '+lesson.code.toUpperCase()+' · ÔN TẬP',mission.stages[i],solved+'/5 câu đã hoàn thành.');
+ const box=h('div','review-stack');box.append(drawStudy(s));
+ s.tasks.slice(0,solved).forEach(q=>{
+  const item=add(h('details','review-item'),h('summary','',q.prompt));
+  if(q.table)item.append(checkTable(q.table));
+  add(item,h('p','',solution(q)),q.why?h('p','muted',q.why):null);box.append(item);
+ });
+ if(!solved)box.append(h('p','muted','Lời giải sẽ xuất hiện ở đây sau khi em vượt qua từng câu.'));
+ main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
+}
+function extra(){
+ attempt=null;
+ const q=lesson.extras[0];
+ const [head,title]=basePanel('THỰC HÀNH BỔ SUNG','Bài mở rộng');
+ const box=add(h('section','question-card'),h('h2','',q.prompt));
+ drawPractice(q,box,()=>{
+  if(!progress.extras.includes(q.id)){progress.extras.push(q.id);save(lesson.n)}
+  disable(box);const result=h('p','result-card success','✓ Đã ghi nhận tự đối chiếu.');box.append(result);focus(result);
+ });
+ main.replaceChildren(add(h('div','lesson-panel'),head,box));focusViewStart(title);
+}
+function celebrateStage(i){
+ attempt=null;
+ const title=h('h1','','Hoàn thành khu vực '+(i+1)+'!');
+ const actions=add(h('div','tool-row'),
+  b('Sang khu vực tiếp theo',()=>play(progress.count),'btn primary'),
+  b('Xem lời giải',()=>review(i)),
+  b('Bản đồ bài này',()=>lessonPage()));
+ const panel=add(h('section','lesson-panel celebration'),
+  h('span','award',MEDALS[i]),title,
+  h('p','muted',mission.stages[i]),actions);
+ main.replaceChildren(panel);
+ focusViewStart(title);
+}
+function certificate(){
+ if(!hasCertificate(progress)){lessonPage();return}
+ attempt=null;
+ const title=h('h1','','Chứng nhận hoàn thành');
+ const recipient=h('p','certificate-recipient');
+ const name=input('',value=>{recipient.textContent=value.trim()},{maxLength:80,autocomplete:'off'});
+ const date=new Intl.DateTimeFormat('vi-VN',{
+  day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'
+ }).format(new Date(progress.certificateAt));
+ const card=add(h('section','certificate-card'),
+  h('span','certificate-icon','🏆'),
+  h('p','eyebrow','CODEQUEST · TIN HỌC 8'),
+  title,recipient,
+  h('h3','','Bài '+lesson.code+' · '+lesson.title),
+  h('p','','25 câu luyện tập · 2 nhiệm vụ thực hành'),
+  h('p','certificate-date','Ngày hoàn thành: '+date));
+ const actions=add(h('div','certificate-actions'),
+  field('Tên trên chứng nhận (tùy chọn)',name),
+  b('In / lưu PDF',()=>window.print(),'btn primary'));
+ if(lesson.extras.length)actions.append(b('Bài mở rộng',()=>extra()));
+ main.replaceChildren(add(h('div','lesson-panel certificate-view'),
+  b('☰ Bản đồ bài này',()=>lessonPage()),card,actions));
+ focusViewStart(title);
+}
+document.querySelector?.('.skip')?.addEventListener('click',e=>{e.preventDefault();main.scrollIntoView({block:'start'});focus(main)});
+window.addEventListener('hashchange',route);
+route();
+
+</script>
+</body>
+</html>
