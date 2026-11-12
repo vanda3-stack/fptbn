@@ -324,6 +324,31 @@ main { min-height: 65vh; padding-block: 20px 42px }
   main, .certificate-view { max-width: none; margin: 0; padding: 0; border: 0; background: transparent }
   .certificate-card { min-height: 155mm; align-content: center; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact }
 }
+
+.lesson-panel:not(.certificate-view) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.lesson-panel :is(input, textarea) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.lesson-clipboard-notice {
+  position: fixed;
+  inset: auto 1rem max(1rem, env(safe-area-inset-bottom));
+  z-index: 20;
+  max-width: 30rem;
+  margin-inline: auto;
+  pointer-events: none;
+}
+.lesson-clipboard-notice:empty {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+@media print {
+  .lesson-clipboard-notice { display: none }
+}
 </style>
 </head>
 <body>
@@ -1280,6 +1305,42 @@ function certificate(){
 document.querySelector?.('.skip')?.addEventListener('click',e=>{e.preventDefault();main.scrollIntoView({block:'start'});focus(main)});
 window.addEventListener('hashchange',route);
 route();
+
+// These controls apply to user actions in the lesson, not to browser extensions.
+(() => {
+ const notice=h('p','notice lesson-clipboard-notice');
+ notice.setAttribute('role','status');
+ notice.setAttribute('aria-atomic','true');
+ document.body.append(notice);
+ let hideNotice;
+
+ function selectionTouchesLesson(){
+  const selection=document.getSelection?.();
+  if(!selection||selection.isCollapsed)return false;
+  for(let i=0;i<selection.rangeCount;i++){
+   if(selection.getRangeAt(i).intersectsNode(main))return true;
+  }
+  return false;
+ }
+
+ function restrictClipboard(event){
+  if(!lesson||main.querySelector('.certificate-view'))return;
+  const carriesSelection=['copy','cut','dragstart'].includes(event.type);
+  if(!main.contains(event.target)&&!(carriesSelection&&selectionTouchesLesson()))return;
+  if(event.type==='beforeinput'&&!['insertFromPaste','insertFromPasteAsQuotation','insertFromDrop'].includes(event.inputType))return;
+  if(!event.cancelable)return;
+  event.preventDefault();
+  notice.textContent=carriesSelection
+   ?'Bài học này đã tắt sao chép và cắt nội dung.'
+   :'Hãy nhập câu trả lời trực tiếp. Bài học này đã tắt dán và thả nội dung.';
+  clearTimeout(hideNotice);
+  hideNotice=setTimeout(()=>{notice.textContent=''},4000);
+ }
+
+ for(const type of ['copy','cut','paste','dragstart','drop','beforeinput']){
+  document.addEventListener(type,restrictClipboard,{capture:true});
+ }
+})();
 
 </script>
 </body>
