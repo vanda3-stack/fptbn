@@ -1311,7 +1311,7 @@ function render(){
     const pausedCount=document.getElementById("rosterPaused");
     pausedCount.textContent=paused+" tạm mất kết nối";
     pausedCount.hidden=paused===0;
-    document.getElementById("rosterMissing").textContent=(total-online-paused)+" chưa vào";
+    document.getElementById("rosterMissing").textContent=(total-online)+" chưa vào";
     document.getElementById("rosterMissing").hidden=exam;
     tabs.hidden=exam;
     const title=panel.querySelector(".rosterTop strong");
@@ -1319,7 +1319,7 @@ function render(){
     document.querySelectorAll("[data-roster-filter]").forEach(b=>b.classList.toggle("selected",b.dataset.rosterFilter===filter));
     const q=search.value.trim().toLocaleLowerCase("vi");
     list.replaceChildren();
-    const visible=students.filter(s=>(exam||filter==="all"||(filter==="online"?s.online:!s.online&&!s.connectionPaused))&&
+    const visible=students.filter(s=>(exam||filter==="all"||(filter==="online"?s.online:!s.online))&&
         (String(s.full_name||"")+" "+String(s.student_code||"")+" "+String(s.original_class||"")).toLocaleLowerCase("vi").includes(q));
     for(const s of visible){
         const item=document.createElement("div");item.className="rosterItem";
