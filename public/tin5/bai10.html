@@ -732,7 +732,11 @@ const nav=document.getElementById('header-links');
 const brand=document.getElementById('brand');
 const MEDALS=['🥉','🥈','🥇','🏅','🏆'];
 const ROOM_ICONS=['🔎','🧩','⚙️','🛠️','🏆'];
-const TOTAL=25, STORAGE='fptbn-t5-missions-v1:';
+// A new student starts with empty progress on a shared classroom computer.
+// Keep the unassigned legacy progress separate; it cannot identify its owner.
+const codeParam=(new URLSearchParams(location.search).get('student_code')||'').trim().toUpperCase();
+const LESSON_STUDENT_CODE=/^FBN\d{5}$/.test(codeParam)?codeParam:'';
+const TOTAL=25, STORAGE='fptbn-t5-missions-v1:'+(LESSON_STUDENT_CODE?'student:'+LESSON_STUDENT_CODE+':':'');
 const STUDY_SECONDS=15;
 const modes={choice:'Chọn một',multi:'Chọn tất cả đáp án đúng',match:'Ghép cặp',order:'Sắp xếp',number:'Nhập số nguyên',practice:'Tự đánh giá'};
 let lesson=null,mission=null,progress=null,filter='Tất cả',attempt=null;
@@ -765,7 +769,16 @@ function get(n){
   mem.set(n,state);return state;
 }
 function save(n){try{localStorage.setItem(STORAGE+CATALOG[n-1].code,JSON.stringify(mem.get(n)))}catch{storageProblem=true}}
-function link(text,url,cls='text-link'){const e=h('a',cls,text);e.href=url;return e}
+function link(text,url,cls='text-link'){
+ const e=h('a',cls,text);e.href=url;
+ if(LESSON_STUDENT_CODE){
+  const target=new URL(url,location.href);
+  if(target.origin===location.origin&&/^\/tin5(?:\/|$)/.test(target.pathname)){
+   target.searchParams.set('student_code',LESSON_STUDENT_CODE);e.href=target.href;
+  }
+ }
+ return e;
+}
 function focus(e){if(e){if(!e.matches('button,a,input,textarea,select'))e.tabIndex=-1;e.focus({preventScroll:true})}}
 function focusViewStart(e){window.scrollTo({top:0,behavior:'instant'});focus(e)}
 function courseLink(text='Chương trình',cls='text-link'){return link(text,STANDALONE?'index.html#chuong-trinh':'#chuong-trinh',cls)}

@@ -73,13 +73,24 @@
         else if(panel.parentElement!==anchor.parentElement || panel.nextElementSibling!==anchor)anchor.before(panel);
     }
     window.addEventListener('teacher-screen-changed',placeStudentResources);
+    // Bind classroom lesson links to the current login, never an old saved login.
+    function lessonUrl(raw){
+        const url=new URL(raw,location.href);
+        if(!teacher && url.origin===location.origin && /^\/tin5(?:\/|$)/.test(url.pathname)){
+            url.searchParams.delete('student_code');
+            const code=typeof studentCode==='string'?studentCode.trim().toUpperCase():'';
+            if(/^FBN\d{5}$/.test(code))url.searchParams.set('student_code',code);
+            return url.href;
+        }
+        return raw;
+    }
     function render(items){
         list.replaceChildren();if(!teacher)panel.hidden=!items.length;
         if(teacher&&!items.length){const p=document.createElement('p');p.textContent='Chưa có thông tin được gửi trong buổi học này.';list.append(p);}
         for(const item of items){
             const card=document.createElement('article');const row=document.createElement('div');row.className='resource-line';
             const p=document.createElement('p');p.textContent=item.text||item.title;row.append(p);
-            if(item.type==='link'&&item.url){const a=document.createElement('a');a.textContent='Truy cập ↗';a.href=item.url;a.target='_blank';a.rel='noopener noreferrer';row.append(a);}
+            if(item.type==='link'&&item.url){const a=document.createElement('a');a.textContent='Truy cập ↗';a.href=lessonUrl(item.url);for(const type of ['click','auxclick'])a.addEventListener(type,()=>{a.href=lessonUrl(item.url)});a.target='_blank';a.rel='noopener noreferrer';row.append(a);}
             card.append(row);
             if(teacher){
                 if(!item.visible){const label=document.createElement('small');label.textContent='Đang ẩn với HS';card.append(label);}
