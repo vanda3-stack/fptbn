@@ -14,6 +14,14 @@ Máy chủ kiểm tra cả `/api/student/login` (trước bước chọn chia s�
 
 Thay đổi cài đặt áp dụng cho lượt vào lớp tiếp theo. Quy định này kiểm soát việc vào phòng lớp; không chủ động kết thúc phiên HS đang ở trong lớp. Nút kết thúc lớp của GV giữ hành vi hiện có.
 
+## Mất mạng tạm thời
+
+GV mất mạng, đóng tab hoặc tải lại trang không tự kết thúc lớp của HS. HS giữ nguyên bài đang làm và màn hình đang chia sẻ. Khi GV vào lại lớp, kết nối giám sát được tạo lại mà không yêu cầu HS đăng nhập hoặc chọn lại màn hình.
+
+Nếu cả HS và GV cùng mất mạng, HS có thể tiếp tục phiên đã được máy chủ xác nhận bằng mã nối lại riêng. Mã chỉ lưu trong bộ nhớ của trang HS, gắn với đúng HS, lớp xếp học và phòng đã vào; không phát trong danh sách lớp hoặc thông báo cho bạn khác. Lượt vào mới vẫn cần GV mở lớp trong giờ học.
+
+Máy chủ giữ phiên HS mất kết nối tối đa 60 phút theo cơ chế hiện có. Thoát chủ động, GV bấm kết thúc lớp, hết thời hạn giữ phiên hoặc khởi động lại máy chủ sẽ làm mất quyền nối lại. Khi mất mạng, nút kết thúc lớp của GV không gửi lệnh chờ để tránh đóng lớp bất ngờ lúc kết nối trở lại.
+
 Kiểm tra trước khi cập nhật VPS:
 
 ```bash

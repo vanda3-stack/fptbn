@@ -79,6 +79,23 @@ test('view-only tablets rejoin after a transport reconnect and resend device hin
  assert.equal(h.captures,0);
 });
 
+test('teacher outage preserves the student screen and portal, and a shared network reconnect resumes automatically',async()=>{
+ const h=setup({capture:'supported'});await h.element('shareButton').click();
+ h.context.Event=class {constructor(type){this.type=type;}};
+ const token='a'.repeat(64);h.handlers['class-info']({classCode:'9A3',teacherOnline:true,resumeToken:token});
+ const stream=vm.runInContext('screenStream',h.context);
+ h.handlers['teacher-offline']();
+ assert.equal(vm.runInContext('joinedClass',h.context),true);
+ assert.equal(vm.runInContext('screenStream',h.context),stream);
+ assert.equal(h.events.filter(e=>e.type==='student-portal-access'&&e.detail===false).length,0);
+ h.socket.connected=false;h.handlers.disconnect('transport close');h.socket.connected=true;h.handlers.connect();
+ assert.equal(h.sent.filter(e=>e.name==='student-join').at(-1).data.resumeToken,token);
+ h.handlers['class-info']({classCode:'9A3',teacherOnline:false,resumeToken:token});
+ h.handlers['teacher-online']();
+ assert.match(h.element('studentStatus').textContent,/GV đang trực tuyến/);
+ assert.equal(h.captures,1);assert.equal(h.alerts.length,0);
+});
+
 
 test('first login waits for socket startup and then proceeds without a server-error alert',async()=>{
  const h=setup();let waited=0;

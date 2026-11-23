@@ -11,6 +11,7 @@ const { Server } = require("socket.io");
 const identifyStudentDevice = require("./lib/student-device");
 const clbRoom = require("./lib/clb-room");
 const classroomAccessModule = require("./lib/classroom-access");
+const canResumeClass = require("./lib/classroom-resume");
 const adminLoginTokens = new Map();
 setInterval(() => {
     for (const [token, session] of adminLoginTokens) {
@@ -4982,7 +4983,8 @@ const resourceStore = resourceModule.createStore(path.join(__dirname, "data", "c
 
 const students = new Map();
 const classroomPresence = require("./lib/classroom-presence")(students, (event, id, student) => {
-    io.to(getClassRoom(student.classCode)).emit(event, {id, ...student});
+    const {resumeToken, ...publicStudent} = student;
+    io.to(getClassRoom(student.classCode)).emit(event, {id, ...publicStudent});
     revisionModule.refreshFamilyAccess();
 });
 const teachersByClass = new Map();
@@ -5301,6 +5303,8 @@ io.on(
                         )
                     );
 
+                    socket.to(room).emit("teacher-online");
+
 
                 } catch (error) {
 
@@ -5423,29 +5427,35 @@ io.on(
                     const classCode = clbRoom.studentRoom(data, originalClassCode);
                     const displayClassName = classCode === "CLB" ? "Lớp CLB (nhiều lớp)" : dbStudent.class_name;
 
-                    // Recheck after DB lookup: the teacher may have left since HTTP login.
+                    const existingSession = Array.from(students.entries()).find(
+                        ([socketId, entry]) => socketId !== socket.id &&
+                            Number(entry.studentId) === Number(dbStudent.student_id)
+                    );
+                    const retainedSession = students.get(socket.id) || existingSession?.[1];
+                    const resuming = canResumeClass(retainedSession,
+                        {...dbStudent, roomCode:classCode}, data?.resumeToken);
+                    // New entries need a teacher; a retained, authenticated session
+                    // may reconnect while the teacher is temporarily offline.
                     const access = classroomAccess.check(classCode);
-                    if (!access.allowed) {
+                    if (!access.allowed && !resuming) {
                         socket.emit("student-join-error", {code:access.code, message:access.message});
                         return;
                     }
 
                     // Chỉ cho phép một phiên đang hoạt động trên mỗi mã HS.
                     // Kiểm tra ngay tại máy chủ để ngăn mở tab/trình duyệt thứ hai.
-                    const existingSession = Array.from(students.entries()).find(
-                        ([socketId, entry]) =>
-                            socketId !== socket.id &&
-                            Number(entry.studentId) === Number(dbStudent.student_id)
-                    );
                     let replacesId;
                     if (existingSession) {
                         const oldSocket = io.sockets.sockets.get(existingSession[0]);
-                        if (oldSocket && oldSocket.connected) {
+                        if (oldSocket && oldSocket.connected && !resuming) {
                             socket.emit("student-join-error", {
                                 message: "Mã học sinh này đang tham gia lớp ở một tab hoặc thiết bị khác. Vui lòng đóng phiên đang dùng trước khi đăng nhập lại."
                             });
                             return;
                         }
+                        // A fast reconnect may arrive before the old transport's
+                        // heartbeat expires. Transfer only the proven session.
+                        if (resuming && oldSocket?.connected) oldSocket.disconnect(true);
                         const [oldId, oldStudent] = existingSession;
                         classroomPresence.remove(oldId);
                         if (oldStudent.classCode === classCode) replacesId = oldId;
@@ -5500,6 +5510,8 @@ io.on(
 
                             classCode,
                             originalClassCode,
+
+                            resumeToken:resuming ? retainedSession.resumeToken : crypto.randomBytes(32).toString("hex"),
 
                             className:
                                 displayClassName,
@@ -5560,6 +5572,7 @@ io.on(
                     socket.emit(
                         "class-info",
                         {
+                            resumeToken:students.get(socket.id).resumeToken,
                             classCode,
                             originalClassCode,
 
@@ -6061,6 +6074,8 @@ io.on(
                     console.log("Exam proctor left:", socket.id, "remaining:", examTeachers.size);
                     return;
                 }
+
+                if (teachersByClass.get(classCode) !== socket.id) return;
 
                 const room =
                     getClassRoom(

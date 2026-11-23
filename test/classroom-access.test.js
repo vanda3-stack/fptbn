@@ -8,6 +8,7 @@ const vm = require('node:vm');
 const crypto = require('node:crypto');
 const {isSchoolTime, createPolicy, mountAdminRoutes} = require('../lib/classroom-access');
 const clbRoom = require('../lib/clb-room');
+const canResumeClass = require('../lib/classroom-resume');
 const source = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
 const localDate = value => new Date(value + '+07:00');
 
@@ -128,16 +129,16 @@ test('HTTP entry rejects a closed class, ignores spoofed class code, and checks 
     assert.equal(res.statusCode,200);assert.equal(res.body.student.class_code,'9A3');
 });
 
-function socketHandler(policy, beforeLookup = () => {}) {
+function socketHandler(policy, beforeLookup = () => {}, {students=new Map(), sockets=new Map(), id='new'} = {}) {
     const start=source.indexOf('socket.on(',source.indexOf('// STUDENT JOIN'));
     const end=source.indexOf('// STUDENT SCREEN READY',start);
     let handler;
-    const events=[], rooms=[], students=new Map();
-    const socket={id:'new',data:{},connected:true,handshake:{headers:{}}, on:(event,fn) => {if(event==='student-join')handler=fn;},emit:(event,data) => events.push({event,data}),join:room => rooms.push(room),to:() => ({emit(){}})};
-    vm.runInNewContext(source.slice(start,end), {socket,students,clbRoom,classroomAccess:policy,
+    const events=[], rooms=[];
+    const socket={id,data:{},connected:true,handshake:{headers:{}}, on:(event,fn) => {if(event==='student-join')handler=fn;},emit:(event,data) => events.push({event,data}),join:room => rooms.push(room),to:() => ({emit(){}})};
+    vm.runInNewContext(source.slice(start,end), {socket,students,clbRoom,canResumeClass,crypto,classroomAccess:policy,
         db:{execute:async () => {beforeLookup();return [[{student_id:1,student_code:'FBN12345',full_name:'HS test',class_code:'9A3',class_id:10}]];}},
         normalizeClassCode:s=>String(s).trim().toUpperCase(),getClassRoom:code=>'class:'+code,
-        classroomPresence:{remove(){}},io:{sockets:{sockets:new Map()}},revisionModule:{refreshFamilyAccess(){}},identifyStudentDevice:()=> 'desktop',
+        classroomPresence:{remove:id=>students.delete(id)},io:{sockets:{sockets}},revisionModule:{refreshFamilyAccess(){}},identifyStudentDevice:()=> 'desktop',
         examTeachers:new Set(),teachersByClass:new Map(),console:{log(){},error(){}}});
     return {socket,students,events,rooms,join:body => handler({studentId:1,...body})};
 }
@@ -153,6 +154,40 @@ test('direct socket entry and reconnect cannot bypass the rule; denial leaves no
     h.online.clear();
     const reconnect=socketHandler(h.policy);await reconnect.join({});
     assert.equal(reconnect.events.at(-1).data.code,'CLASS_NOT_OPEN');
+});
+
+test('a confirmed student reconnects during teacher outage with the same private session credential', async t => {
+    const h=fixture(t), students=new Map(), sockets=new Map();h.online.add('9A3');
+    const first=socketHandler(h.policy,undefined,{students,sockets,id:'old'});
+    await first.join({});const token=first.events.at(-1).data.resumeToken;
+    assert.match(token,/^[a-f0-9]{64}$/);sockets.set('old',first.socket);
+    h.online.clear();first.socket.connected=false;
+    const next=socketHandler(h.policy,undefined,{students,sockets,id:'next'});
+    await next.join({resumeToken:token});
+    assert.deepEqual(next.rooms,['class:9A3']);assert.equal(students.has('old'),false);
+    assert.equal(next.events.at(-1).data.resumeToken,token,'do not rotate into a credential lost with its acknowledgement');
+    assert.equal(next.events.at(-1).data.teacherOnline,false);
+    sockets.set('next',next.socket);
+    const duplicate=socketHandler(h.policy,undefined,{students,sockets,id:'duplicate'});
+    h.online.add('9A3');await duplicate.join({});assert.equal(duplicate.rooms.length,0,'new login still cannot replace an active session');h.online.clear();
+    let disconnected=0;next.socket.disconnect=()=>{disconnected++;next.socket.connected=false;};
+    const fast=socketHandler(h.policy,undefined,{students,sockets,id:'fast'});
+    await fast.join({resumeToken:token});assert.deepEqual(fast.rooms,['class:9A3']);assert.equal(disconnected,1);
+    assert.equal(students.size,1,'fast continuation replaces, rather than duplicates, its old connection');
+    const forged=socketHandler(h.policy,undefined,{students,sockets,id:'forged'});
+    await forged.join({resumeToken:'0'.repeat(64)});assert.equal(forged.events.at(-1).data.code,'CLASS_NOT_OPEN');
+    await forged.join({resumeToken:token,clbMode:true});assert.equal(forged.rooms.length,0,'cannot move a retained session to another room');
+    students.clear();
+    await forged.join({resumeToken:token});assert.equal(forged.events.at(-1).data.code,'CLASS_NOT_OPEN','end-class or expiry revokes continuation');
+});
+
+test('continuation is bound to both the student and current enrollment',()=>{
+    const token='a'.repeat(64),entry={resumeToken:token,studentId:1,classId:10,classCode:'9A3'};
+    const student={student_id:1,class_id:10,roomCode:'9A3'};
+    assert.equal(canResumeClass(entry,student,token),true);
+    for(const update of [{student_id:2},{class_id:20},{roomCode:'CLB'}]) assert.equal(canResumeClass(entry,{...student,...update},token),false);
+    assert.equal(canResumeClass(undefined,student,token),false);
+    assert.equal(canResumeClass(entry,student,{toString:()=>token}),false);
 });
 
 test('a teacher leaving during lookup blocks the join; off-hours entry remains available for review', async t => {

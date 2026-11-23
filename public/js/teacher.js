@@ -155,9 +155,7 @@ socket.on(
         );
 
 
-        socket.emit(
-            "teacher-join"
-        );
+        // teacher-login.js rejoins with the authenticated token and class.
 
     }
 );
@@ -170,6 +168,19 @@ socket.on(
 socket.on(
     "disconnect",
     reason => {
+
+        // Rebuild WebRTC using the new socket ID after reconnection. Keep the
+        // captured teacher screen and student cards so no one must start over.
+        studentRetryTimers.forEach(clearTimeout);
+        studentConnectTimeouts.forEach(clearTimeout);
+        studentRetryTimers.clear(); studentConnectTimeouts.clear(); studentRetryCounts.clear();
+        pendingStudentIce.clear(); pendingTeacherIce.clear();
+        for (const peers of [studentPeers, teacherPeers]) {
+            const previous = Array.from(peers.values());
+            peers.clear();
+            previous.forEach(peer => { try { peer.close(); } catch (_) {} });
+        }
+        for (const id of studentNames.keys()) setStudentStatus(id, "Đang chờ kết nối lại", false);
 
         console.warn(
             "TEACHER SOCKET DISCONNECTED:",
@@ -2862,6 +2873,11 @@ endClassButton.addEventListener(
     "click",
     () => {
 
+        if (!socket.connected) {
+            alert("Đang mất kết nối. Vui lòng chờ kết nối lại trước khi kết thúc lớp.");
+            return;
+        }
+
         const ok =
             confirm(
                 "Kết thúc lớp học?"
@@ -2997,6 +3013,8 @@ endClassButton.addEventListener(
         socket.emit(
             "end-class"
         );
+
+        if (typeof teacherClassJoined !== "undefined") teacherClassJoined = false;
 
     }
 );

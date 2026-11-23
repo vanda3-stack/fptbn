@@ -78,6 +78,7 @@ let studentClassName = "";
 let studentSchoolYear = "";
 
 let joinedClass = false;
+let studentResumeToken = "";
 let classroomViewOnly = false;
 
 function canJoinWithoutScreenSharing() {
@@ -214,6 +215,7 @@ socket.on(
             socket.emit(
                 "student-join",
                 {
+                    resumeToken: studentResumeToken,
                     examMode: window.FPTBN_EXAM_MODE === true,
                     clbMode: window.FPTBN_CLB_MODE === true,
                     device: {maxTouchPoints: Number(navigator.maxTouchPoints) || 0},
@@ -626,6 +628,7 @@ button.addEventListener(
             socket.emit(
                 "student-join",
                 {
+                    resumeToken: studentResumeToken,
                     examMode: window.FPTBN_EXAM_MODE === true,
                     clbMode: window.FPTBN_CLB_MODE === true,
                     device: {maxTouchPoints: Number(navigator.maxTouchPoints) || 0},
@@ -2044,6 +2047,8 @@ socket.on(
             return;
         }
 
+        if (typeof info?.resumeToken === "string") studentResumeToken = info.resumeToken;
+
         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(classroomViewOnly || screenStream?.active)}));
         window.FPTBNFamilySession?.start(studentCode, screenStream);
 
@@ -2134,6 +2139,8 @@ socket.on(
 socket.on(
     "student-join-error",
     info => {
+
+        studentResumeToken = "";
 
         console.error(
             "STUDENT JOIN ERROR:",
@@ -2319,7 +2326,8 @@ socket.on(
 
 
         waitingTeacher.textContent =
-            "🔴 Giáo viên đã mất kết nối";
+            "Giáo viên tạm mất kết nối. Em tiếp tục học và chờ giáo viên kết nối lại.";
+        studentStatus.textContent = "Đang chờ giáo viên kết nối lại • Phiên học của em vẫn được giữ";
 
 
         waitingTeacher.style.display =
@@ -2328,6 +2336,12 @@ socket.on(
     }
 );
 
+socket.on("teacher-online", () => {
+    if (!joinedClass) return;
+    studentStatus.textContent = "Đã vào lớp " + studentClassCode + " • GV đang trực tuyến";
+    waitingTeacher.textContent = "Giáo viên đã kết nối lại";
+    if (screenStream?.active) socket.emit("screen-ready");
+});
 
 // =====================================================
 // GIÁO VIÊN KẾT THÚC LỚP
@@ -2336,6 +2350,8 @@ socket.on(
 socket.on(
     "class-ended",
     () => {
+
+        studentResumeToken = "";
 
         console.log(
             "CLASS ENDED"
