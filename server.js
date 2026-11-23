@@ -4993,6 +4993,7 @@ const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
 const studentTabAccess = tabAccessModule.createController({
+    file:path.join(__dirname,"data","student-tab-presets.json"),
     notify:(code,access) => io.to(getClassRoom(code)).emit("student-tab-access",access)
 });
 tabAccessModule.mountRoutes(app,{db,teacherTokens:teacherLoginTokens,controller:studentTabAccess,
@@ -5313,7 +5314,7 @@ io.on(
                     );
 
                     socket.to(room).emit("teacher-online");
-                    studentTabAccess.open(classCode,login.teacherId);
+                    studentTabAccess.open(classCode,login.teacherId,selectedClass.id);
 
 
                 } catch (error) {

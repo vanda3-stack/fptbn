@@ -27,10 +27,11 @@ test('off-hours and weekends preserve home revision, then school-hour permission
 });
 
 test('real HTTP routes reject direct student API access and restrict grants to the authenticated teaching owner',async t=>{
- const h=setup(),c=h.controller;c.open('9A3',7);c.open('9A2',8);
+ const h=setup(),c=h.controller;c.open('9A3',7,10);c.open('9A2',8,20);
  let teaching=true;const tokens=new Map([['teacher',{teacherId:7,createdAt:Date.now()}]]);
- const db={query:async sql=>{
+ const db={query:async(sql,args=[])=>{
   if(sql.startsWith('SELECT id FROM teachers'))return [[{id:7}]];
+  if(sql.startsWith('SELECT c.id,c.class_code,c.grade_level')){const rows=[{id:10,class_code:'9A3',grade_level:9},{id:20,class_code:'9A2',grade_level:9},{id:30,class_code:'6A1',grade_level:6}];return [args.length?rows.filter(row=>row.class_code===args[0]):rows];}
   if(sql.startsWith('SELECT s.id,s.student_code'))return [[{id:1,student_code:'FBN12345',class_code:'9A3',class_id:10,school_year_id:2}]];
   return [[]];
  }};
@@ -44,7 +45,14 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  const login=await fetch(base+'/api/ot/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_code:'FBN12345'})});const student=(await login.json()).token;
  for(const path of ['/packs','/packs/id','/documents','/live/student','/exams','/exams/attempts/id'])assert.equal((await request('/api/ot'+path,student)).status,403,path);
  assert.equal((await request('/api/teacher/student-tab-access',student)).status,401);
- assert.equal((await request('/api/teacher/student-tab-access','teacher')).data.classes.length,1);
+ const listed=(await request('/api/teacher/student-tab-access','teacher')).data.classes;
+ assert.equal(listed.length,3,'list includes current-year classes without an open session');
+ assert.equal(listed.find(row=>row.class_code==='9A2').can_edit,false);
+ assert.equal(listed.find(row=>row.class_code==='6A1').can_edit,true);
+ const staged=await request('/api/teacher/student-tab-access/6A1','teacher',{tabs:{...locked,review:true}});
+ assert.equal(staged.status,200);assert.equal(staged.data.applied,false);
+ c.open('6A1',7,30);assert.equal(c.view('6A1').tabs.review,true);
+ assert.equal((await request('/api/teacher/student-tab-access/UNKNOWN','teacher',{tabs:locked})).status,404);
  assert.equal((await request('/api/teacher/student-tab-access/9A2','teacher',{tabs:locked})).status,403);
  assert.equal((await request('/api/teacher/student-tab-access/9A3','teacher',{tabs:{...locked,exam:true,print:true,review:true}})).status,200);
  assert.equal((await request('/api/ot/documents',student)).status,200);
