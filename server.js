@@ -138,7 +138,7 @@ app.use(express.json({ limit: "64kb" }));
 
 require("./lib/review-pages")(app, {path, root: __dirname});
 app.get("/scan", (req, res) => {res.set("Cache-Control", "no-store");res.sendFile(path.join(__dirname, "public/scan.html"));});
-app.get("/giaovien", (req, res) => res.sendFile(path.join(__dirname, "public/GV.html")));
+app.get(["/giaovien", "/GV.html"], (req, res) => {res.set("Cache-Control", "no-store");res.sendFile(path.join(__dirname, "public/GV.html"));});
 app.get("/clb", (req, res) => { res.set("Cache-Control", "no-store"); res.sendFile(path.join(__dirname, "public/clb.html")); });
 
 app.use(

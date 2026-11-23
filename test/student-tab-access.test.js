@@ -31,17 +31,17 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  let teaching=true;const tokens=new Map([['teacher',{teacherId:7,createdAt:Date.now()}]]);
  const db={query:async(sql,args=[])=>{
   if(sql.startsWith('SELECT id FROM teachers'))return [[{id:7}]];
-  if(sql.startsWith('SELECT c.id,c.class_code,c.grade_level')){const rows=[{id:10,class_code:'9A3',grade_level:9},{id:20,class_code:'9A2',grade_level:9},{id:30,class_code:'6A1',grade_level:6}];return [args.length?rows.filter(row=>row.class_code===args[0]):rows];}
+  if(sql.startsWith('SELECT c.id,c.class_code,c.grade_level')){const rows=[{id:10,class_code:'9A3',grade_level:9},{id:20,class_code:'9A2',grade_level:9},{id:30,class_code:'6A1',grade_level:6}];return [Array.isArray(args[0])?rows.filter(row=>args[0].includes(row.class_code)):args.length?rows.filter(row=>row.class_code===args[0]):rows];}
   if(sql.startsWith('SELECT s.id,s.student_code'))return [[{id:1,student_code:'FBN12345',class_code:'9A3',class_id:10,school_year_id:2}]];
   return [[]];
  }};
  const app=express();app.use(express.json());
- mountRoutes(app,{db,teacherTokens:tokens,controller:c,isTeaching:(code,id)=>teaching&&code==='9A3'&&id===7});
+ mountRoutes(app,{db,teacherTokens:tokens,controller:c,isTeaching:(code,id)=>teaching&&['9A3','6A1'].includes(code)&&id===7});
  const mounted=require('../lib/ot')(app,{db,teacherTokens:tokens,assertStudentTabAccess:(s,p)=>c.assert(s,p)});
  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
  t.after(async()=>{mounted.close();await new Promise(resolve=>server.close(resolve));});
  const base='http://127.0.0.1:'+server.address().port;
- const request=async(path,token='',body)=>{const r=await fetch(base+path,{method:body?'PUT':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});return{status:r.status,data:await r.json()};};
+ const request=async(path,token='',body,method=body?'PUT':'GET')=>{const r=await fetch(base+path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});return{status:r.status,data:await r.json()};};
  const login=await fetch(base+'/api/ot/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_code:'FBN12345'})});const student=(await login.json()).token;
  for(const path of ['/packs','/packs/id','/documents','/live/student','/exams','/exams/attempts/id'])assert.equal((await request('/api/ot'+path,student)).status,403,path);
  assert.equal((await request('/api/teacher/student-tab-access',student)).status,401);
@@ -59,6 +59,16 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  assert.equal((await request('/api/ot/packs',student)).status,200);
  assert.equal((await request('/api/ot/live/student',student)).status,403);
  assert.equal((await request('/api/ot/exams',student)).status,200,'mounted /exams middleware must retain the full route for permission checks');
+ const batch=(body,token='teacher')=>request('/api/teacher/student-tab-access/batch',token,body,'POST');
+ assert.equal((await batch({class_codes:['9A3'],changes:{live:true}},student)).status,401);
+ assert.equal((await batch({class_codes:[],changes:{live:true}})).status,400);
+ assert.equal((await batch({class_codes:['9a3','9A3'],changes:{live:true}})).status,400);
+ assert.equal((await batch({class_codes:['9A3'],changes:{class:false}})).status,400);
+ const applied=await batch({class_codes:['9A3','6A1'],changes:{live:true}});
+ assert.equal(applied.status,200);assert.equal(applied.data.classes.length,2);assert.equal(applied.data.applied_count,2);
+ assert.equal(c.view('9A3').tabs.review,true);assert.equal(c.view('6A1').tabs.exam,false,'unchanged per-class differences are preserved');
+ assert.equal((await batch({class_codes:['9A3','9A2'],changes:{live:false}})).status,403);assert.equal(c.view('9A3').tabs.live,true,'reject the whole batch when one class is unauthorized');
+ assert.equal((await batch({class_codes:['9A3','UNKNOWN'],changes:{live:false}})).status,409);assert.equal(c.view('9A3').tabs.live,true);
  teaching=false;assert.equal((await request('/api/teacher/student-tab-access/9A3','teacher',{tabs:locked})).status,403);assert.equal(c.view('9A3').tabs.review,true);
  c.save('9A3',7,locked);assert.equal((await request('/api/ot/packs',student)).status,403);
 });

@@ -41,3 +41,26 @@ test('staged saves cannot modify another teacher or a disconnected active sessio
  assert.throws(()=>h.c.configure(row,7,{...locked,review:true},false),{status:403});
  assert.equal(h.c.configure(row,7,{...locked,review:true},true).applied,true);
 });
+
+test('batch changes save selected classes together and preserve their unchanged permission differences',t=>{
+ const h=setup(t),other={id:20,class_code:'7A2',grade_level:7};
+ h.c.configure(row,7,{...locked,review:true},false);h.c.configure(other,7,{...locked,exam:true},false);h.c.open('6A1',7,10);
+ const saved=h.c.configureMany([row,other],7,{live:true},code=>code==='6A1');
+ assert.equal(saved.classes.length,2);assert.equal(saved.applied_count,1);assert.equal(saved.staged_count,1);
+ assert.equal(h.c.view('6A1').tabs.live,true);assert.equal(h.c.view('6A1').tabs.review,true);
+ const restored=createController(h.options);restored.open('7A2',7,20);
+ assert.equal(restored.view('7A2').tabs.live,true);assert.equal(restored.view('7A2').tabs.exam,true);assert.equal(restored.view('7A2').tabs.review,false);
+});
+
+test('a rejected or failed batch leaves every selected class and its saved preset unchanged',t=>{
+ const h=setup(t),other={id:20,class_code:'7A2',grade_level:7};
+ h.c.configure(row,7,{...locked,review:true},false);h.c.open('6A1',7,10);h.c.open('7A2',8,20);
+ const before=fs.readFileSync(h.options.file,'utf8');
+ assert.throws(()=>h.c.configureMany([row,other],7,{review:false},()=>true),{status:403});
+ assert.equal(fs.readFileSync(h.options.file,'utf8'),before);assert.equal(h.c.view('6A1').tabs.review,true);
+ h.c.close('7A2');fs.mkdirSync(h.options.file+'.tmp');
+ assert.throws(()=>h.c.configureMany([row,other],7,{review:false},()=>true));
+ assert.equal(fs.readFileSync(h.options.file,'utf8'),before);assert.equal(h.c.view('6A1').tabs.review,true);
+ assert.equal(h.c.describe(other,7,false).permissions.review,false);
+ for(const changes of [{},{class:false},{review:'false'},null])assert.throws(()=>h.c.configureMany([row],7,changes,()=>true),{status:400});
+});

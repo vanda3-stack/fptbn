@@ -4,8 +4,8 @@ Trang `/giaovien` có thanh điều hướng gồm Tổng quan, Đề cương, �
 
 ## Cấp quyền
 
-1. Vào **Quyền học sinh**, chọn **Tải lại** để xem tất cả lớp đang hoạt động trong năm học hiện tại.
-2. Chọn lớp, chọn các mục được phép và bấm **Lưu quyền cho lớp**. Có thể chọn Khóa các mục hoặc Cho phép tất cả trước khi lưu.
+1. Vào **Quyền học sinh**, chọn **Tải lại** để xem danh sách lớp có ô tích, chia theo khối. Có thể tìm lớp, chọn tất cả lớp đang hiển thị hoặc bỏ chọn tất cả.
+2. Tích một hoặc nhiều lớp, thay đổi quyền cần áp dụng rồi bấm **Lưu quyền cho N lớp đã chọn**. Có thể chọn Khóa các mục hoặc Cho phép tất cả trước khi lưu. Quyền có trạng thái khác nhau giữa các lớp sẽ hiện trạng thái trung gian; chỉ quyền đã thay đổi mới được ghi cho cả nhóm, các quyền khác của từng lớp giữ nguyên.
 3. Với lớp chưa mở buổi học, quyền được lưu trước và áp dụng khi GV mở lớp trên `/x.html` bằng cùng tài khoản. Với lớp đang dạy, quyền áp dụng ngay. Mỗi lớp có bộ quyền riêng.
 
 Học tại lớp luôn mở. Khi GV mở một buổi học trong 08:00 đến trước 17:00, thứ Hai–thứ Sáu theo giờ Việt Nam, hệ thống áp dụng quyền đã lưu cho GV và lớp đó. Nếu chưa lưu quyền, bốn mục còn lại mặc định khóa: Ôn tập tại nhà, Ôn tập tại lớp, Thi thử và Đề cương để in. Ngoài khung giờ này, các mục được mở để HS ôn tập bình thường. Quyền vào lớp theo giờ vẫn dùng quy định hiện có; lưu trước quyền không mở lớp và không cho HS bỏ qua điều kiện GV vào lớp.
@@ -13,6 +13,10 @@ Học tại lớp luôn mở. Khi GV mở một buổi học trong 08:00 đến 
 Danh sách có nhãn Đang dạy, Chưa mở lớp, GV khác đang dạy hoặc Đang nối lại. GV khác không được đổi quyền của phiên dạy hiện có. GV tạm mất mạng không làm mất quyền đã cấp; cần nối lại lớp trước khi đổi quyền phiên đó. Kết thúc lớp sẽ xóa phiên dạy nhưng giữ cấu hình đã lưu của từng GV, từng ID lớp. GV khác có cấu hình riêng; ID lớp mới của năm học khác không nhận cấu hình lớp năm trước.
 
 Cấu hình lưu tại `data/student-tab-presets.json`, được ghi nguyên tử và giữ qua khởi động lại. Khởi động lại máy chủ vẫn kết thúc các phiên đang dạy; cấu hình được áp dụng lại khi GV mở lớp.
+
+Lưu nhóm lớp dùng `POST /api/teacher/student-tab-access/batch`. Máy chủ kiểm tra toàn bộ lớp trong năm học hiện tại và quyền quản lý trước khi ghi cấu hình một lần. Nếu có lớp không hợp lệ, thuộc GV khác hoặc ghi file thất bại, các lớp trong nhóm không bị cập nhật từng phần. Mục Học tại lớp luôn được mở.
+
+Khi tải lỗi, dữ liệu sai phiên bản hoặc hết phiên đăng nhập, giao diện xóa lựa chọn/quyền cũ và khóa nút Lưu. Trang GV gửi `Cache-Control: no-store` và dùng tên tệp mới cho thành phần ô tích để tránh dùng lại bản hộp chọn lớp cũ. Kiểm thử DOM dùng jsdom 26 (Node 18 trở lên) để kiểm tra các ô tích và trạng thái khi lỗi mà không cần điều khiển trình duyệt.
 
 Máy chủ phát quyền qua Socket.IO khi đổi quyền, vào lớp hoặc kết nối lại. Đồng hồ giờ học cập nhật trạng thái giao diện trong tối đa 15 giây; API kiểm tra giờ hiện tại trên mỗi yêu cầu. API ôn tập, trò chơi, tài liệu và thi thử kiểm tra quyền dựa trên lớp xếp học được truy vấn từ cơ sở dữ liệu. Đăng nhập ôn tập và kết nối phụ huynh không bị dùng như cách cấp quyền.
 
