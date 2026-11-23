@@ -404,8 +404,9 @@ button.addEventListener(
     // TRA THÔNG TIN HỌC SINH
     // =========================================
 
+    const loginBody = JSON.stringify({student_code:code, examMode:Boolean(window.FPTBN_EXAM_MODE), clbMode:Boolean(window.FPTBN_CLB_MODE)});
     const loginResponse = globalThis.FPTBNConnection
-        ? {ok:true,json:async()=>FPTBNConnection.json("/api/student/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({student_code:code})},true)}
+        ? {ok:true,json:async()=>FPTBNConnection.json("/api/student/login",{method:"POST",headers:{"Content-Type":"application/json"},body:loginBody},true)}
         : await fetch(
             "/api/student/login",
             {
@@ -416,9 +417,7 @@ button.addEventListener(
                         "application/json"
                 },
 
-                body: JSON.stringify({
-                    student_code: code
-                })
+                body: loginBody
             }
         );
 
@@ -2176,6 +2175,7 @@ socket.on(
             "block";
 
 
+        statusBox.hidden = false;
         statusBox.textContent =
             "🔴 " +
             (

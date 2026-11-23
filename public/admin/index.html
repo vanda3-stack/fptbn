@@ -1898,6 +1898,10 @@ tbody tr:hover {
             </div>
 
 
+            <div class="menu-item" data-page="settings">
+                <span>⚙</span>
+                <span class="menu-label">Cài đặt</span>
+            </div>
         </nav>
 
 
@@ -2093,6 +2097,31 @@ tbody tr:hover {
 
             </section>
 
+
+            <section id="page-settings" class="page">
+                <div class="page-header">
+                    <div>
+                        <div class="admin-kicker">Cài đặt hệ thống</div>
+                        <h2>Quy định học sinh vào lớp</h2>
+                        <p>Áp dụng cho tất cả lớp theo giờ Việt Nam.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <form id="classroomAccessForm">
+                            <label style="display:flex;gap:12px;align-items:flex-start;line-height:1.6;cursor:pointer">
+                                <input id="classroomAccessEnabled" type="checkbox" disabled style="width:20px;height:20px;flex-shrink:0;margin-top:3px">
+                                <span><strong>Yêu cầu giáo viên mở lớp trong giờ học</strong><br>
+                                Từ 08:00 đến trước 17:00, thứ Hai đến thứ Sáu, học sinh chỉ vào được khi giáo viên đã mở đúng lớp và đang kết nối.</span>
+                            </label>
+                            <p style="margin:16px 0;line-height:1.6">Trước 08:00, từ 17:00 trở đi và cả ngày thứ Bảy, Chủ nhật, học sinh được vào bình thường để ôn tập. Giáo viên mở lớp bằng thao tác vào lớp trên trang giáo viên.</p>
+                            <button id="classroomAccessSave" class="btn btn-primary" type="submit" disabled>Lưu cài đặt</button>
+                            <button id="classroomAccessReload" class="btn" type="button">Tải lại</button>
+                            <p id="classroomAccessMessage" role="status" aria-live="polite" style="margin-top:12px;line-height:1.6"></p>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
             <!-- ==========================================
                  STUDENTS
@@ -3520,6 +3549,7 @@ loginForm.addEventListener(
                     data.admin
                 )
             );
+            sessionStorage.setItem("fptbnAdminToken", data.token);
 
 
             showAdmin(
@@ -3598,6 +3628,7 @@ function showAdmin(admin) {
 
 function logout() {
 
+    sessionStorage.removeItem("fptbnAdminToken");
     sessionStorage.removeItem(
         "fptbnAdmin"
     );
@@ -3643,7 +3674,9 @@ const pageTitles = {
 
 
     years:
-        "Năm học"
+        "Năm học",
+    settings:
+        "Cài đặt"
 
 };
 
@@ -8611,6 +8644,7 @@ async function importSchoolExcel() {
 }
 </script>
 
+<script src="/js/classroom-access-admin.js"></script>
 
 </body>
 

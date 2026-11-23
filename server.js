@@ -10,6 +10,13 @@ const XLSX = require("xlsx");
 const { Server } = require("socket.io");
 const identifyStudentDevice = require("./lib/student-device");
 const clbRoom = require("./lib/clb-room");
+const classroomAccessModule = require("./lib/classroom-access");
+const adminLoginTokens = new Map();
+setInterval(() => {
+    for (const [token, session] of adminLoginTokens) {
+        if (Date.now() - session.createdAt >= 8*3600000) adminLoginTokens.delete(token);
+    }
+}, 60000).unref();
 
 const app = express();
 const server = http.createServer(app);
@@ -319,9 +326,14 @@ app.post("/api/admin/login", async (req, res) => {
         }
 
 
+        if (adminLoginTokens.size >= 5000) return res.status(503).json({success:false,message:"Máy chủ đang bận. Vui lòng thử lại sau."});
+        const token = crypto.randomBytes(32).toString("hex");
+        adminLoginTokens.set(token, {adminId:admin.id, createdAt:Date.now()});
+
         res.json({
 
             success: true,
+            token,
 
             message:
                 "Đăng nhập thành công",
@@ -4899,6 +4911,8 @@ app.post("/api/student/login", async (req, res) => {
 
         const student = rows[0];
 
+        const access = classroomAccess.check(clbRoom.studentRoom(req.body, student.class_code));
+        if (!access.allowed) return res.status(403).json({success:false, code:access.code, message:access.message});
 
         res.json({
 
@@ -4974,6 +4988,19 @@ const classroomPresence = require("./lib/classroom-presence")(students, (event, 
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
+
+function isClassTeacherOnline(classCode) {
+    const ids = classCode === "EXAM" ? examTeachers : [teachersByClass.get(classCode)];
+    return Array.from(ids).some(id => {
+        const peer = io.sockets.sockets.get(id);
+        return peer?.connected && peer.data.role === "teacher" && peer.data.classCode === classCode;
+    });
+}
+const classroomAccess = classroomAccessModule.createPolicy({
+    file:path.join(__dirname, "data", "classroom-access.json"),
+    isTeacherOnline:isClassTeacherOnline
+});
+classroomAccessModule.mountAdminRoutes(app, {db, adminTokens:adminLoginTokens, policy:classroomAccess});
 
 
 function normalizeClassCode(value) {
@@ -5396,6 +5423,12 @@ io.on(
                     const classCode = clbRoom.studentRoom(data, originalClassCode);
                     const displayClassName = classCode === "CLB" ? "Lớp CLB (nhiều lớp)" : dbStudent.class_name;
 
+                    // Recheck after DB lookup: the teacher may have left since HTTP login.
+                    const access = classroomAccess.check(classCode);
+                    if (!access.allowed) {
+                        socket.emit("student-join-error", {code:access.code, message:access.message});
+                        return;
+                    }
 
                     // Chỉ cho phép một phiên đang hoạt động trên mỗi mã HS.
                     // Kiểm tra ngay tại máy chủ để ngăn mở tab/trình duyệt thứ hai.
