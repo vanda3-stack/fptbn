@@ -5,12 +5,15 @@
     const panels = [document.getElementById('classPanel'), document.getElementById('reviewPanel'), document.getElementById('livePanel'), document.getElementById('examPanel'), document.getElementById('paperPanel')];
     const navigation = document.getElementById('studentTabs');
     let frame = null, ready = false;
+    const keys=['class','review','live','exam','print'];
+    let permissions={class:true,review:true,live:true,exam:true,print:true};
     let requestedTab = new URLSearchParams(location.search).get('tab');
     function visibility(visible) {
         if (frame?.contentWindow) frame.contentWindow.dispatchEvent(new CustomEvent('ot-portal-visibility', {detail: visible}));
     }
     let previous=0;
     function select(index, packId) {
+        if (!permissions[keys[index]]) return;
         if (!ready && index !== 0) index = 0;
         const join=document.getElementById('joinPage');
         join.hidden=index!==0||ready;
@@ -47,7 +50,7 @@
             const data = await response.json();
             if (!ready || !data.success) return;
             const target = {class:0,review:1,live:2,exam:3,print:4}[data.tab];
-            if (Number.isInteger(target)) select(target);
+            if (Number.isInteger(target) && permissions[keys[target]]) select(target);
         } catch (error) { console.warn('Không tải được trang mặc định:', error); }
     }
     window.addEventListener('student-portal-access', event => {
@@ -58,13 +61,26 @@
         else if (!preferenceApplied) { preferenceApplied = true; applyGradeDefault(); }
     });
     navigation.hidden = !ready;
+    window.addEventListener('student-tab-access',event=>{
+        const access=event.detail;
+        if(!access?.tabs)return;
+        permissions={...access.tabs,class:true};
+        tabs.forEach((tab,index)=>{
+            const locked=!permissions[keys[index]];
+            tab.disabled=locked;
+            tab.setAttribute('aria-disabled',String(locked));
+            tab.title=locked?'Đang khóa. Chờ giáo viên cấp quyền.':'';
+        });
+        if(!permissions[keys[previous]])select(0);
+    });
     window.addEventListener('portal-open-paper', event => { if(ready) select(4, event.detail?.packId); });
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index));
         tab.addEventListener('keydown', event => {
             if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
             event.preventDefault();
-            const next = event.key === 'Home' ? 0 : event.key === 'End' ? 4 : (index + (event.key === 'ArrowLeft' ? 4 : 1)) % 5;
+            let next = event.key === 'Home' ? 0 : event.key === 'End' ? 4 : (index + (event.key === 'ArrowLeft' ? 4 : 1)) % 5;
+            for(let attempts=0;attempts<5&&!permissions[keys[next]];attempts++)next=(next+(event.key==='ArrowLeft'||event.key==='End'?4:1))%5;
             select(next);
             tabs[next].focus();
         });

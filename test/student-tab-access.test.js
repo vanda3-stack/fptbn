@@ -1,0 +1,56 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const express=require('express');
+const {createController,mountRoutes}=require('../lib/student-tab-access');
+
+function setup(){let instant=new Date('2026-11-23T10:00:00+07:00');const events=[];const controller=createController({now:()=>instant,notify:(code,access)=>events.push({code,access})});return{controller,events,time:v=>{instant=new Date(v);}};}
+const locked={review:false,live:false,exam:false,print:false};
+
+test('classes start with only the classroom open; permissions are scoped and survive teacher reconnect',()=>{
+ const h=setup(),c=h.controller;c.open('9A3',7);c.open('9A2',8);
+ assert.deepEqual(c.view('9A3').tabs,{class:true,...locked});
+ assert.throws(()=>c.assert({class_code:'9A3'},'/packs'),{status:403});
+ c.save('9A3',7,{...locked,review:true});c.open('9A3',7);
+ assert.equal(c.view('9A3').tabs.review,true);assert.equal(c.view('9A2').tabs.review,false);
+ assert.equal(c.list(7).length,1);assert.equal(c.list(7)[0].class_code,'9A3');
+ assert.throws(()=>c.save('9A3',8,locked),{status:403});
+ for(const tabs of [null,{}, {...locked,review:'true'},{...locked,class:false},{...locked,unknown:true}])assert.throws(()=>c.save('9A3',7,tabs),{status:400});
+ c.open('9A3',9);assert.equal(c.view('9A3').tabs.review,false,'new teacher receives locked defaults');
+ c.close('9A3');assert.equal(c.view('9A3').controlled,false);assert.equal(h.events.at(-1).access.tabs.review,true);
+});
+
+test('off-hours and weekends preserve home revision, then school-hour permissions resume',()=>{
+ const h=setup(),c=h.controller;c.open('9A3',7);
+ for(const date of ['2026-11-23T07:59:59+07:00','2026-11-23T17:00:00+07:00','2026-11-28T10:00:00+07:00','2026-11-29T10:00:00+07:00']){h.time(date);for(const path of ['/packs','/live/student','/exams','/documents'])assert.doesNotThrow(()=>c.assert({class_code:'9A3'},path));}
+ h.time('2026-11-23T16:59:59+07:00');assert.throws(()=>c.assert({class_code:'9A3'},'/packs'),{status:403});
+ c.save('9A3',7,{...locked,exam:true});assert.doesNotThrow(()=>c.assert({class_code:'9A3'},'/exams/attempts/1?view=result'));assert.throws(()=>c.assert({class_code:'9A3'},'/documents'),{status:403});
+});
+
+test('real HTTP routes reject direct student API access and restrict grants to the authenticated teaching owner',async t=>{
+ const h=setup(),c=h.controller;c.open('9A3',7);c.open('9A2',8);
+ let teaching=true;const tokens=new Map([['teacher',{teacherId:7,createdAt:Date.now()}]]);
+ const db={query:async sql=>{
+  if(sql.startsWith('SELECT id FROM teachers'))return [[{id:7}]];
+  if(sql.startsWith('SELECT s.id,s.student_code'))return [[{id:1,student_code:'FBN12345',class_code:'9A3',class_id:10,school_year_id:2}]];
+  return [[]];
+ }};
+ const app=express();app.use(express.json());
+ mountRoutes(app,{db,teacherTokens:tokens,controller:c,isTeaching:(code,id)=>teaching&&code==='9A3'&&id===7});
+ const mounted=require('../lib/ot')(app,{db,teacherTokens:tokens,assertStudentTabAccess:(s,p)=>c.assert(s,p)});
+ const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+ t.after(async()=>{mounted.close();await new Promise(resolve=>server.close(resolve));});
+ const base='http://127.0.0.1:'+server.address().port;
+ const request=async(path,token='',body)=>{const r=await fetch(base+path,{method:body?'PUT':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});return{status:r.status,data:await r.json()};};
+ const login=await fetch(base+'/api/ot/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student_code:'FBN12345'})});const student=(await login.json()).token;
+ for(const path of ['/packs','/packs/id','/documents','/live/student','/exams','/exams/attempts/id'])assert.equal((await request('/api/ot'+path,student)).status,403,path);
+ assert.equal((await request('/api/teacher/student-tab-access',student)).status,401);
+ assert.equal((await request('/api/teacher/student-tab-access','teacher')).data.classes.length,1);
+ assert.equal((await request('/api/teacher/student-tab-access/9A2','teacher',{tabs:locked})).status,403);
+ assert.equal((await request('/api/teacher/student-tab-access/9A3','teacher',{tabs:{...locked,exam:true,print:true,review:true}})).status,200);
+ assert.equal((await request('/api/ot/documents',student)).status,200);
+ assert.equal((await request('/api/ot/packs',student)).status,200);
+ assert.equal((await request('/api/ot/live/student',student)).status,403);
+ assert.equal((await request('/api/ot/exams',student)).status,200,'mounted /exams middleware must retain the full route for permission checks');
+ teaching=false;assert.equal((await request('/api/teacher/student-tab-access/9A3','teacher',{tabs:locked})).status,403);assert.equal(c.view('9A3').tabs.review,true);
+ c.save('9A3',7,locked);assert.equal((await request('/api/ot/packs',student)).status,403);
+});

@@ -2048,6 +2048,7 @@ socket.on(
         }
 
         if (typeof info?.resumeToken === "string") studentResumeToken = info.resumeToken;
+        if (info?.tabAccess) window.dispatchEvent(new CustomEvent("student-tab-access", {detail:info.tabAccess}));
 
         window.dispatchEvent(new CustomEvent("student-portal-access", {detail: Boolean(classroomViewOnly || screenStream?.active)}));
         window.FPTBNFamilySession?.start(studentCode, screenStream);
@@ -2342,6 +2343,8 @@ socket.on("teacher-online", () => {
     waitingTeacher.textContent = "Giáo viên đã kết nối lại";
     if (screenStream?.active) socket.emit("screen-ready");
 });
+
+socket.on("student-tab-access", access => window.dispatchEvent(new CustomEvent("student-tab-access",{detail:access})));
 
 // =====================================================
 // GIÁO VIÊN KẾT THÚC LỚP

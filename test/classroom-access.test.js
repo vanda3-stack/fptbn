@@ -135,7 +135,7 @@ function socketHandler(policy, beforeLookup = () => {}, {students=new Map(), soc
     let handler;
     const events=[], rooms=[];
     const socket={id,data:{},connected:true,handshake:{headers:{}}, on:(event,fn) => {if(event==='student-join')handler=fn;},emit:(event,data) => events.push({event,data}),join:room => rooms.push(room),to:() => ({emit(){}})};
-    vm.runInNewContext(source.slice(start,end), {socket,students,clbRoom,canResumeClass,crypto,classroomAccess:policy,
+    vm.runInNewContext(source.slice(start,end), {socket,students,clbRoom,canResumeClass,crypto,classroomAccess:policy,studentTabAccess:require('../lib/student-tab-access').createController(),
         db:{execute:async () => {beforeLookup();return [[{student_id:1,student_code:'FBN12345',full_name:'HS test',class_code:'9A3',class_id:10}]];}},
         normalizeClassCode:s=>String(s).trim().toUpperCase(),getClassRoom:code=>'class:'+code,
         classroomPresence:{remove:id=>students.delete(id)},io:{sockets:{sockets}},revisionModule:{refreshFamilyAccess(){}},identifyStudentDevice:()=> 'desktop',

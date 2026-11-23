@@ -42,7 +42,7 @@
     section.innerHTML = `
       <div class="landing-head">
         <div><h2>Trang mở mặc định cho học sinh</h2>
-          <p>Chọn nội dung hiển thị đầu tiên theo từng khối. Học sinh vẫn sử dụng được tất cả tab.</p>
+          <p>Chọn nội dung hiển thị đầu tiên theo từng khối. Trong giờ học, học sinh chỉ mở được các mục giáo viên đã cấp quyền.</p>
         </div>
         <span class="landing-tag">Áp dụng khối 3–12</span>
       </div>

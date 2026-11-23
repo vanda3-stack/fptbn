@@ -1,59 +1,49 @@
 'use strict';
-(()=>{
-const app=document.getElementById('app');if(!app)return;
-let lastHeading=null;
-function activate(space){
- if(!app.querySelector('.dashboard-heading'))return;
- app.dataset.workspace=space;
- app.querySelectorAll('.dashboard-actions [data-workspace]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.workspace===space)));
-}
-function sync(){
- const heading=app.querySelector('.dashboard-heading');if(!heading){lastHeading=null;return}
- const changed=heading!==lastHeading;
- lastHeading=heading;
- const bar=heading.querySelector('.dashboard-actions');if(!bar)return;
- const create=bar.querySelector('#create');if(!create)return;
- const oldLink=bar.querySelector('.student-page-link');oldLink?.remove();
- let outlines=bar.querySelector('#teacherOutlinesTop');
- if(!outlines){
-   outlines=document.createElement('button');
-   outlines.id='teacherOutlinesTop';
-   outlines.type='button';
-   outlines.textContent='📚 Đề cương đã tạo';
-   bar.insertBefore(outlines,create);
+(() => {
+ const app=document.getElementById('app');if(!app)return;
+ const spaces=[['overview','Tổng quan','Không gian làm việc'],['outline','Đề cương','Tài liệu và kết quả'],['live','Ôn tập tại lớp','Câu hỏi và trò chơi'],['exam','Thi thử','Đề thi và chấm điểm'],['permissions','Quyền học sinh','Khóa, mở các mục học'],['settings','Trang mặc định','Cài đặt theo khối']];
+ const labels=Object.fromEntries(spaces.map(([id,label])=>[id,label]));
+ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const sidebar=document.createElement('aside');sidebar.id='teacherSidebar';sidebar.hidden=true;sidebar.setAttribute('aria-label','Điều hướng giáo viên');
+ sidebar.innerHTML='<div class="teacher-side-heading">KHÔNG GIAN GIÁO VIÊN</div><nav>'+spaces.map(([id,label,detail],i)=>'<button type="button" data-teacher-space="'+id+'"><span class="teacher-nav-icon" aria-hidden="true">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+label+'</strong><small>'+detail+'</small></span></button>').join('')+'</nav><div class="teacher-side-links"><span>GIẢNG DẠY</span><a href="/x.html" target="_blank" rel="noopener">Mở lớp giám sát ↗</a><a href="/baocao-gvcn.html" target="_blank" rel="noopener">Báo cáo GVCN ↗</a><a href="/scan" target="_blank" rel="noopener">Chấm bài giấy ↗</a></div><p class="teacher-side-note">FPTBN Monitor<br><small>Quản lý dạy và học</small></p>';
+ document.body.append(sidebar);
+ let current='overview',lastHeading=null,navigating=false;
+ function activate(space){
+  current=space;app.dataset.workspace=space;
+  sidebar.querySelectorAll('[data-teacher-space]').forEach(button=>{const active=button.dataset.teacherSpace===space;button.classList.toggle('active',active);button.setAttribute('aria-current',active?'page':'false');});
+  const title=app.querySelector('.dashboard-heading h1');
+  if(title&&title.textContent!==labels[space])title.textContent=labels[space]||'Quản lý giảng dạy';
  }
- outlines.dataset.workspace='outline';
- const filter=app.querySelector('.dashboard-filter');
- if(filter&&!app.querySelector('#savedOutlinesHeading')){
-  const title=document.createElement('div');
-  title.id='savedOutlinesHeading';
-  title.innerHTML='<h2>📚 Đề cương đã tạo</h2><p>Danh sách đề cương đã lưu, trạng thái mở, cập nhật và thống kê học sinh.</p>';
-  filter.parentNode.insertBefore(title,filter);
+ async function navigate(space){
+  if(navigating)return;navigating=true;
+  try{
+   if(!app.querySelector('.dashboard-heading'))await dashboard();
+   if(!app.querySelector('.dashboard-heading'))return;
+   sync();activate(space);
+   if(space==='exam')app.querySelector('#mockManage')?.click();
+   if(space==='permissions')await window.FPTBNTabPermissions?.load();
+   app.querySelector('h1')?.focus({preventScroll:true});
+  }catch(error){alert(error.message||'Chưa mở được mục này. Vui lòng thử lại.');}
+  finally{navigating=false;}
  }
- outlines.onclick=async()=>{
-   try{
-     // Reload from the existing teacher API to reflect the latest saved packs.
-     await dashboard();
-     activate('outline');
-   }catch(error){alert(error.message||'Không tải được danh sách đề cương')}
- };
- const oldMock=bar.querySelector('#mockManage');if(oldMock){if(oldMock.textContent!=='+ Tạo đề thi thử')oldMock.textContent='+ Tạo đề thi thử';oldMock.classList.add('primary');oldMock.dataset.workspace='exam';}
- const live=bar.querySelector('#liveCreateTop');if(live)live.dataset.workspace='live';
- let settings=bar.querySelector('#teacherSettingsTop');
- if(!settings){settings=document.createElement('button');settings.id='teacherSettingsTop';settings.textContent='⚙ Trang mặc định';settings.type='button';bar.append(settings)}
- settings.dataset.workspace='settings';
- if(live&&!live.dataset.boundWorkspace){live.dataset.boundWorkspace='1';live.addEventListener('click',()=>activate('live'),true)}
- if(oldMock&&!oldMock.dataset.boundWorkspace){oldMock.dataset.boundWorkspace='1';oldMock.addEventListener('click',()=>activate('exam'),true)}
- settings.onclick=()=>activate('settings');
- create.dataset.workspace='outline';
- if(!create.dataset.boundWorkspace){create.dataset.boundWorkspace='1';create.addEventListener('click',()=>activate('outline'),true)}
- if(changed||!app.dataset.workspace)activate('settings');
-}
-const header=document.querySelector('body > header');
-if(header&&!document.getElementById('teacherHomeButton')){
- const home=document.createElement('button');home.id='teacherHomeButton';home.type='button';home.textContent='← Về trang chủ';header.append(home);
- home.onclick=async()=>{if(!sessionStorage.getItem('ot-teacher-token'))return;try{if(!app.querySelector('.dashboard-heading'))await dashboard();activate('settings')}catch(error){alert(error.message||'Không mở được trang chủ')}};
-}
-new MutationObserver(()=>{sync();const b=document.getElementById('teacherHomeButton');if(b)b.hidden=!sessionStorage.getItem('ot-teacher-token')||!!(app.querySelector('.dashboard-heading')&&app.dataset.workspace==='settings')}).observe(app,{childList:true,subtree:true});
-sync();
+ function sync(){
+  const signedIn=Boolean(sessionStorage.getItem('ot-teacher-token'))&&!app.querySelector('#loginForm');
+  sidebar.hidden=!signedIn;document.body.classList.toggle('teacher-authenticated',signedIn);
+  const heading=app.querySelector('.dashboard-heading');if(!heading){lastHeading=null;return;}
+  const changed=lastHeading!==heading;lastHeading=heading;
+  app.querySelector('.student-page-link')?.remove();
+  const title=heading.querySelector('h1');if(title)title.tabIndex=-1;
+  if(!app.querySelector('#teacherOverview')){
+   const items=typeof packs==='undefined'?[]:packs;
+   const panel=document.createElement('section');panel.id='teacherOverview';
+   panel.innerHTML='<div class="teacher-welcome"><div><span class="tag">GIẢNG DẠY & ÔN TẬP</span><h2>Chào '+escape(sessionStorage.getItem('ot-teacher-name')||'thầy cô')+'</h2><p>Chọn công việc cần thực hiện và quản lý quyền truy cập trong buổi học.</p></div><a class="teacher-open-class" href="/x.html" target="_blank" rel="noopener">Mở lớp giám sát ↗</a></div><div class="teacher-metrics"><article><span>Đề cương đã tạo</span><strong>'+items.length+'</strong></article><article><span>Đề cương đang mở</span><strong>'+items.filter(p=>p.is_open).length+'</strong></article><article><span>Lớp trong năm học</span><strong>'+(typeof classes==='undefined'?0:classes.length)+'</strong></article></div><div class="teacher-section-title"><div><h2>Công việc thường dùng</h2><p>Điều hướng nhanh đến từng khu vực quản lý.</p></div></div><div class="teacher-shortcuts">'+spaces.filter(([id])=>id!=='overview').map(([id,label,detail])=>'<button type="button" data-shortcut="'+id+'"><span>'+detail+'</span><strong>'+label+'</strong><small>Mở khu vực →</small></button>').join('')+'</div>';
+   heading.after(panel);panel.querySelectorAll('[data-shortcut]').forEach(button=>button.onclick=()=>navigate(button.dataset.shortcut));
+  }
+  window.FPTBNTabPermissions?.mount();
+  if(changed)activate(current==='exam'?'overview':current);
+ }
+ sidebar.querySelectorAll('[data-teacher-space]').forEach(button=>button.onclick=()=>navigate(button.dataset.teacherSpace));
+ new MutationObserver(sync).observe(app,{childList:true,subtree:true});
+ const small=document.querySelector('.wordmark .product-name small');if(small)small.textContent='Không gian giáo viên';
+ sync();
 })();

@@ -48,7 +48,7 @@ test('classroom presence broadcasts never disclose a resume credential to classm
 test('only the current teacher can deliberately end a class and revoke its retained student sessions',()=>{
  const students=new Map([['s',{classCode:'9A3',resumeToken:'secret'}],['other',{classCode:'9A2'}]]),teachersByClass=new Map([['9A3','current']]),events=[];
  let handler;const socket={id:'stale',data:{role:'teacher',classCode:'9A3'},on:(name,fn)=>{handler=fn;},to:()=>({emit:name=>events.push(name)})};
- const context={socket,students,teachersByClass,examTeachers:new Set(),normalizeClassCode:c=>c,getClassRoom:c=>c,console:{log(){}},resourceStore:{clear(){}},io:{to:()=>({emit(){}})},revisionModule:{refreshFamilyAccess(){}},classroomPresence:{remove:id=>students.delete(id)}};
+ const context={socket,students,teachersByClass,studentTabAccess:{close(){}},examTeachers:new Set(),normalizeClassCode:c=>c,getClassRoom:c=>c,console:{log(){}},resourceStore:{clear(){}},io:{to:()=>({emit(){}})},revisionModule:{refreshFamilyAccess(){}},classroomPresence:{remove:id=>students.delete(id)}};
  const start=server.indexOf('socket.on(',server.indexOf('// END CLASS'));
  vm.runInNewContext(server.slice(start,server.indexOf('// DISCONNECT',start)),context);
  handler();assert.equal(students.size,2);assert.equal(events.length,0);

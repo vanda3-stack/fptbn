@@ -12,6 +12,7 @@ const identifyStudentDevice = require("./lib/student-device");
 const clbRoom = require("./lib/clb-room");
 const classroomAccessModule = require("./lib/classroom-access");
 const canResumeClass = require("./lib/classroom-resume");
+const tabAccessModule = require("./lib/student-tab-access");
 const adminLoginTokens = new Map();
 setInterval(() => {
     for (const [token, session] of adminLoginTokens) {
@@ -4592,6 +4593,7 @@ const teacherLoginTokens = new Map();
 require("./lib/scan")(app, { db, teacherTokens: teacherLoginTokens });
 require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens });
 const revisionModule = require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io,
+    assertStudentTabAccess: (student, route) => studentTabAccess.assert(student, route),
     isParentViewingBlocked: child => {
         if (teachersByClass.has(normalizeClassCode(child.class_code))) return true;
         return examTeachers.size > 0 && Array.from(students.values()).some(s => Number(s.studentId) === Number(child.id) && s.classCode === "EXAM");
@@ -4990,6 +4992,13 @@ const classroomPresence = require("./lib/classroom-presence")(students, (event, 
 const teachersByClass = new Map();
 // EXAM allows multiple independent teacher viewers; normal classes remain single-teacher.
 const examTeachers = new Set();
+const studentTabAccess = tabAccessModule.createController({
+    notify:(code,access) => io.to(getClassRoom(code)).emit("student-tab-access",access)
+});
+tabAccessModule.mountRoutes(app,{db,teacherTokens:teacherLoginTokens,controller:studentTabAccess,
+    isTeaching:(code,teacherId)=>isClassTeacherOnline(code) && io.sockets.sockets.get(teachersByClass.get(code))?.data.teacherId===teacherId
+});
+setInterval(()=>studentTabAccess.refresh(),15000).unref();
 
 function isClassTeacherOnline(classCode) {
     const ids = classCode === "EXAM" ? examTeachers : [teachersByClass.get(classCode)];
@@ -5304,6 +5313,7 @@ io.on(
                     );
 
                     socket.to(room).emit("teacher-online");
+                    studentTabAccess.open(classCode,login.teacherId);
 
 
                 } catch (error) {
@@ -5573,6 +5583,7 @@ io.on(
                         "class-info",
                         {
                             resumeToken:students.get(socket.id).resumeToken,
+                            tabAccess:studentTabAccess.view(originalClassCode),
                             classCode,
                             originalClassCode,
 
@@ -6076,6 +6087,7 @@ io.on(
                 }
 
                 if (teachersByClass.get(classCode) !== socket.id) return;
+                studentTabAccess.close(classCode);
 
                 const room =
                     getClassRoom(
