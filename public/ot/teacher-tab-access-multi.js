@@ -14,12 +14,12 @@
   return data;
  }
  function mount(){
-  const heading=root.querySelector('.dashboard-heading');if(!heading)return null;
-  const previous=root.querySelector('#studentTabPermissions');if(previous)return previous;
-  const panel=document.createElement('section');panel.id='studentTabPermissions';panel.className='teacher-permissions card';
-  panel.innerHTML='<div class="teacher-section-title"><div><h2>Quyền truy cập của học sinh</h2><p>Tích chọn một hoặc nhiều lớp, sau đó thay đổi quyền cần áp dụng.</p></div><button type="button" id="tabAccessReload">Tải lại</button></div><div class="permission-class-toolbar"><label for="permissionClassSearch">Tìm lớp<input id="permissionClassSearch" type="search" placeholder="Ví dụ: 6A5 hoặc 9A" autocomplete="off" disabled></label><button type="button" id="permissionSelectAll" disabled>Chọn tất cả đang hiện</button><button type="button" id="permissionClear" disabled>Bỏ chọn tất cả</button><strong id="permissionSelectedCount" role="status">Chưa chọn lớp</strong></div><div id="permissionClassList" class="permission-class-list" role="group" aria-label="Danh sách lớp để tích chọn"><p>Đang chờ tải danh sách lớp…</p></div><p class="permission-scope">Trong 08:00–17:00, thứ Hai–thứ Sáu. Ngoài giờ, học sinh ôn tập bình thường.</p><form id="permissionForm"><fieldset id="permissionFields" disabled><div class="permission-options"><label class="permission-option permission-fixed"><span><strong>Học tại lớp</strong><small>Luôn cho phép</small></span><input type="checkbox" checked disabled aria-label="Học tại lớp luôn mở"></label>'+choices.map(([key,label])=>'<label class="permission-option"><span><strong>'+label+'</strong><small data-status-for="'+key+'">Chưa chọn lớp</small></span><input type="checkbox" data-permission="'+key+'" aria-label="Cho phép '+label+'"></label>').join('')+'</div><div class="permission-actions"><button type="button" id="permissionLockAll">Khóa các mục</button><button type="button" id="permissionOpenAll">Cho phép tất cả</button><button type="submit" id="permissionSave" class="primary" disabled>Lưu quyền cho các lớp đã chọn</button></div></fieldset><p id="permissionNotice" role="status" aria-live="polite">Chọn Tải lại để xem danh sách lớp.</p></form><p class="permission-impact">Chỉ quyền được thay đổi mới áp dụng cho các lớp đã tích. Quyền khác giữ nguyên. Khóa mục đang mở sẽ đưa HS về Học tại lớp; thời gian thi thử vẫn chạy.</p><a href="/x.html" target="_blank" rel="noopener">Mở trang giám sát lớp ↗</a>';
-  heading.after(panel);
-  let records=[],selected=new Set(),changes={},busy=false,loaded=false;
+  const host=root.querySelector('#studentTabPermissionsMount');if(!host)return null;
+  const previous=root.querySelector('#studentTabPermissions');if(previous){if(!host.contains(previous))host.append(previous);return previous;}
+  const panel=document.createElement('section');panel.id='studentTabPermissions';panel.className='teacher-permissions integrated-tab-permissions';
+  panel.innerHTML='<div class="teacher-section-title"><div><h2>Tab học sinh được phép mở</h2><p>Tích tab để cho phép HS bấm vào; bỏ tích để khóa tab trong giờ học.</p></div><button type="button" id="tabAccessReload">Tải lại</button></div><details id="permissionClassPicker" class="permission-class-picker" open><summary>Chọn lớp áp dụng <strong id="permissionSelectedCount" role="status">Chưa chọn lớp</strong></summary><div class="permission-class-toolbar"><label for="permissionClassSearch">Tìm lớp<input id="permissionClassSearch" type="search" placeholder="Ví dụ: 6A5 hoặc 9A" autocomplete="off" disabled></label><button type="button" id="permissionSelectAll" disabled>Chọn tất cả đang hiện</button><button type="button" id="permissionClear" disabled>Bỏ chọn tất cả</button></div><div id="permissionClassList" class="permission-class-list" role="group" aria-label="Danh sách lớp để tích chọn"><p>Đang chờ tải danh sách lớp…</p></div></details><p class="permission-scope">Trong 08:00–17:00, thứ Hai–thứ Sáu. Ngoài giờ, học sinh ôn tập bình thường.</p><form id="permissionForm"><fieldset id="permissionFields" disabled><div class="permission-options"><label class="permission-option permission-fixed"><span><strong>Học tại lớp</strong><small>Luôn cho phép</small></span><input type="checkbox" checked disabled aria-label="Học tại lớp luôn mở"></label>'+choices.map(([key,label])=>'<label class="permission-option"><span><strong>'+label+'</strong><small data-status-for="'+key+'">Chưa chọn lớp</small></span><input type="checkbox" data-permission="'+key+'" aria-label="Cho phép '+label+'"></label>').join('')+'</div><div class="permission-actions"><button type="button" id="permissionLockAll">Bỏ tích các tab</button><button type="button" id="permissionOpenAll">Tích tất cả tab</button><button type="submit" id="permissionSave" class="primary" disabled>Lưu quyền tab</button></div></fieldset><p id="permissionNotice" role="status" aria-live="polite">Chọn Tải lại để xem danh sách lớp.</p></form><p class="permission-impact">Tab được tích: cho phép. Tab không tích: khóa trong giờ học. Khóa tab đang mở sẽ đưa HS về Học tại lớp; thời gian thi thử vẫn chạy.</p><a href="/x.html" target="_blank" rel="noopener">Mở trang giám sát lớp ↗</a>';
+  host.append(panel);
+  let records=[],selected=new Set(),changes={},busy=false,loaded=false,dirty=false;
   const list=panel.querySelector('#permissionClassList'),search=panel.querySelector('#permissionClassSearch'),fields=panel.querySelector('#permissionFields'),save=panel.querySelector('#permissionSave'),notice=panel.querySelector('#permissionNotice');
   const selectedRows=()=>records.filter(row=>selected.has(row.class_code));
   function controls(){
@@ -29,22 +29,23 @@
    panel.querySelector('#permissionSelectAll').disabled=busy||!loaded;
    panel.querySelector('#permissionClear').disabled=busy||!loaded||!selected.size;
    list.querySelectorAll('input[data-class-code]').forEach(input=>{input.disabled=busy||records.find(row=>row.class_code===input.dataset.classCode)?.can_edit!==true;});
-   save.disabled=busy||!loaded||!selected.size||!Object.keys(changes).length;
-   save.textContent=selected.size?'Lưu quyền cho '+selected.size+' lớp đã chọn':'Lưu quyền cho các lớp đã chọn';
+   save.disabled=busy||!loaded||!selected.size||!dirty;
+   save.textContent=selected.size?'Lưu quyền cho '+selected.size+' lớp':'Lưu quyền tab';
    panel.querySelector('#permissionSelectedCount').textContent='Đã chọn '+selected.size+' / '+records.filter(row=>row.can_edit).length+' lớp có thể sửa';
   }
   function permissions(){
    const rows=selectedRows();
    choices.forEach(([key])=>{
     const input=panel.querySelector('[data-permission="'+key+'"]'),values=new Set(rows.map(row=>row.permissions[key]));
-    input.indeterminate=!Object.hasOwn(changes,key)&&values.size>1;
+    input.indeterminate=false;
     input.checked=Object.hasOwn(changes,key)?changes[key]:rows.length>0&&values.size===1&&values.has(true);
     panel.querySelector('[data-status-for="'+key+'"]').textContent=!rows.length?'Chưa chọn lớp':input.indeterminate?'Khác nhau giữa các lớp':input.checked?'Được phép':'Đang khóa';
    });controls();
   }
   function selectionChanged(){
+   dirty=true;
    permissions();
-   notice.textContent=!selected.size?'Tích chọn lớp cần cấu hình.':Object.keys(changes).length?'Quyền đã thay đổi sẽ áp dụng cho '+selected.size+' lớp đã tích. Bấm Lưu để xác nhận.':'Thay đổi quyền bên dưới. Các quyền có trạng thái khác nhau sẽ giữ nguyên nếu không được thay đổi.';
+   notice.textContent=!selected.size?'Tích chọn lớp cần cấu hình.':'Tích tab được phép mở. Tab không tích sẽ bị khóa cho '+selected.size+' lớp đã chọn sau khi bấm Lưu.';
   }
   function filter(){
    const query=search.value.trim().toUpperCase();
@@ -72,12 +73,12 @@
   choices.forEach(([key])=>panel.querySelector('[data-permission="'+key+'"]').onchange=()=>{if(busy||!loaded||!selected.size)return;changes[key]=panel.querySelector('[data-permission="'+key+'"]').checked;selectionChanged();});
   for(const [id,value] of [['permissionLockAll',false],['permissionOpenAll',true]])panel.querySelector('#'+id).onclick=()=>{if(busy||!loaded||!selected.size)return;changes=Object.fromEntries(choices.map(([key])=>[key,value]));selectionChanged();};
   panel.querySelector('form').onsubmit=async event=>{
-   event.preventDefault();if(busy||!loaded||!selected.size||!Object.keys(changes).length)return;
-   const codes=Array.from(selected);busy=true;controls();notice.textContent='Đang lưu quyền cho '+codes.length+' lớp…';
+   event.preventDefault();if(busy||!loaded||!selected.size||!dirty)return;
+   const codes=Array.from(selected),tabs=Object.fromEntries(choices.map(([key])=>[key,panel.querySelector('[data-permission="'+key+'"]').checked]));busy=true;controls();notice.textContent='Đang lưu quyền cho '+codes.length+' lớp…';
    try{
-    const data=await request({class_codes:codes,changes:{...changes}});
+    const data=await request({class_codes:codes,changes:tabs});
     if(data.classes.length!==codes.length||data.classes.some(row=>!codes.includes(row.class_code)))throw Error('Chưa xác nhận được đầy đủ các lớp. Vui lòng tải lại danh sách.');
-    const updates=new Map(data.classes.map(row=>[row.class_code,row]));records=records.map(row=>updates.get(row.class_code)||row);changes={};renderClasses();permissions();
+    const updates=new Map(data.classes.map(row=>[row.class_code,row]));records=records.map(row=>updates.get(row.class_code)||row);changes={};dirty=false;renderClasses();permissions();
     notice.textContent='Đã lưu quyền cho '+data.classes.length+' lớp.'+(data.staged_count?' '+data.staged_count+' lớp sẽ áp dụng khi thầy cô mở lớp.':'');
    }catch(error){notice.textContent=error.message;}
    finally{busy=false;controls();}
@@ -88,9 +89,9 @@
    try{
     const data=await request();
     if(!panel.isConnected||sessionStorage.getItem('ot-teacher-token')!==token)return;
-    records=data.classes;selected=new Set(Array.from(selected).filter(code=>records.some(row=>row.class_code===code&&row.can_edit)));changes={};loaded=true;renderClasses();permissions();
-    notice.textContent=records.length?'Tích chọn một hoặc nhiều lớp rồi thay đổi quyền cần áp dụng.':'Chưa có lớp trong năm học hiện tại.';
-   }catch(error){records=[];selected.clear();changes={};list.replaceChildren();const message=document.createElement('p');message.textContent='Danh sách lớp chưa tải được.';list.append(message);permissions();notice.textContent=error.message;}
+    records=data.classes;selected=new Set(Array.from(selected).filter(code=>records.some(row=>row.class_code===code&&row.can_edit)));changes={};dirty=false;loaded=true;renderClasses();permissions();
+    notice.textContent=records.length?'Chọn lớp, tích các tab cho phép rồi lưu quyền.':'Chưa có lớp trong năm học hiện tại.';
+   }catch(error){records=[];selected.clear();changes={};dirty=false;list.replaceChildren();const message=document.createElement('p');message.textContent='Danh sách lớp chưa tải được.';list.append(message);permissions();notice.textContent=error.message;}
    finally{busy=false;controls();}
   };
   panel.querySelector('#tabAccessReload').onclick=()=>panel.loadPermissions();controls();

@@ -71,4 +71,9 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  assert.equal((await batch({class_codes:['9A3','UNKNOWN'],changes:{live:false}})).status,409);assert.equal(c.view('9A3').tabs.live,true);
  teaching=false;assert.equal((await request('/api/teacher/student-tab-access/9A3','teacher',{tabs:locked})).status,403);assert.equal(c.view('9A3').tabs.review,true);
  c.save('9A3',7,locked);assert.equal((await request('/api/ot/packs',student)).status,403);
+ teaching=true;
+ assert.equal((await batch({class_codes:['9A3'],changes:{review:false,live:false,exam:false,print:false}})).status,200);
+ for(const route of ['/packs','/live/student','/exams','/documents'])assert.equal((await request('/api/ot'+route,student)).status,403,'unchecked tab must be blocked at the API: '+route);
+ assert.equal((await batch({class_codes:['9A3'],changes:{review:true,live:false,exam:false,print:false}})).status,200);
+ assert.equal((await request('/api/ot/packs',student)).status,200);assert.equal((await request('/api/ot/documents',student)).status,403);
 });

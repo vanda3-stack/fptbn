@@ -1,12 +1,12 @@
 # Giao diện GV và quyền các mục học sinh
 
-Trang `/giaovien` có thanh điều hướng gồm Tổng quan, Đề cương, Ôn tập tại lớp, Thi thử, Quyền học sinh và Trang mặc định. Các liên kết Mở lớp giám sát, Báo cáo GVCN và Chấm bài giấy mở trang nghiệp vụ tương ứng. Các trình soạn đề, chấm bài, báo cáo, ngân hàng câu hỏi và cài đặt trang mặc định giữ các API hiện có.
+Trang `/giaovien` có thanh điều hướng gồm Tổng quan, Đề cương, Ôn tập tại lớp, Thi thử và Trang mặc định. Phần khóa/mở tab HS được gộp ngay trong Trang mặc định. Các liên kết Mở lớp giám sát, Báo cáo GVCN và Chấm bài giấy mở trang nghiệp vụ tương ứng. Các trình soạn đề, chấm bài, báo cáo, ngân hàng câu hỏi và cài đặt trang mặc định giữ các API hiện có.
 
 ## Cấp quyền
 
-1. Vào **Quyền học sinh**, chọn **Tải lại** để xem danh sách lớp có ô tích, chia theo khối. Có thể tìm lớp, chọn tất cả lớp đang hiển thị hoặc bỏ chọn tất cả.
-2. Tích một hoặc nhiều lớp, thay đổi quyền cần áp dụng rồi bấm **Lưu quyền cho N lớp đã chọn**. Có thể chọn Khóa các mục hoặc Cho phép tất cả trước khi lưu. Quyền có trạng thái khác nhau giữa các lớp sẽ hiện trạng thái trung gian; chỉ quyền đã thay đổi mới được ghi cho cả nhóm, các quyền khác của từng lớp giữ nguyên.
-3. Với lớp chưa mở buổi học, quyền được lưu trước và áp dụng khi GV mở lớp trên `/x.html` bằng cùng tài khoản. Với lớp đang dạy, quyền áp dụng ngay. Mỗi lớp có bộ quyền riêng.
+1. Vào **Trang mặc định**. Phần **Trang mở đầu theo khối** có thể mở rộng để đổi trang đầu tiên của khối 3–12. Phần **Tab học sinh được phép mở** hiển thị danh sách lớp có ô tích, chia theo khối, có thể thu gọn. Có thể tìm lớp, chọn tất cả lớp đang hiển thị hoặc bỏ chọn tất cả; nút Tải lại lấy dữ liệu mới từ máy chủ.
+2. Tích một hoặc nhiều lớp, tích các tab cho phép rồi bấm **Lưu quyền cho N lớp**. Tab được tích cho phép HS bấm vào; tab không tích bị khóa trong giờ học. Có thể dùng **Bỏ tích các tab** hoặc **Tích tất cả tab** trước khi lưu. Khi các lớp có quyền khác nhau, ô chỉ được tích nếu tất cả lớp đang chọn đều cho phép. Lần lưu ghi đầy đủ cả bốn ô tích cho toàn bộ lớp đã chọn, bao gồm cả ô không tích. Các lớp không được chọn giữ nguyên quyền.
+3. Trang mở đầu theo khối có nút **Lưu trang mở đầu** riêng. Nếu trang mở đầu bị khóa, HS ở lại Học tại lớp. Với lớp chưa mở buổi học, quyền được lưu trước và áp dụng khi GV mở lớp trên `/x.html` bằng cùng tài khoản. Với lớp đang dạy, quyền áp dụng ngay. Mỗi lớp có bộ quyền riêng.
 
 Học tại lớp luôn mở. Khi GV mở một buổi học trong 08:00 đến trước 17:00, thứ Hai–thứ Sáu theo giờ Việt Nam, hệ thống áp dụng quyền đã lưu cho GV và lớp đó. Nếu chưa lưu quyền, bốn mục còn lại mặc định khóa: Ôn tập tại nhà, Ôn tập tại lớp, Thi thử và Đề cương để in. Ngoài khung giờ này, các mục được mở để HS ôn tập bình thường. Quyền vào lớp theo giờ vẫn dùng quy định hiện có; lưu trước quyền không mở lớp và không cho HS bỏ qua điều kiện GV vào lớp.
 

@@ -41,22 +41,25 @@
     section.className = 'landing-preferences';
     section.innerHTML = `
       <div class="landing-head">
-        <div><h2>Trang mở mặc định cho học sinh</h2>
-          <p>Chọn nội dung hiển thị đầu tiên theo từng khối. Trong giờ học, học sinh chỉ mở được các mục giáo viên đã cấp quyền.</p>
+        <div><h2>Trang mặc định và quyền truy cập</h2>
+          <p>Chọn trang mở đầu theo khối và tích các tab học sinh được phép sử dụng theo lớp.</p>
         </div>
         <span class="landing-tag">Áp dụng khối 3–12</span>
       </div>
+      <details class="landing-defaults" id="defaultLandingPreferences">
+      <summary>Trang mở đầu theo khối <span>Khối 3–12</span></summary>
       <div class="landing-controls">
         ${grades.map(g=>`<label for="landing-grade-${g}"><span>Khối ${g}</span><select id="landing-grade-${g}" data-grade="${g}">
           ${choices.map(([value,label])=>`<option value="${value}">${label}</option>`).join('')}
         </select></label>`).join('')}
       </div>
       <div class="landing-footer">
-        <span class="landing-note">Cài đặt lưu trên máy chủ và áp dụng khi học sinh đăng nhập.</span>
+        <span class="landing-note">Trang mở đầu chỉ áp dụng khi tab đó được cho phép. Nếu bị khóa, HS ở lại Học tại lớp.</span>
         <span class="landing-status" id="defaultTabStatus" role="status" aria-live="polite"></span>
-        <button type="button" class="primary" id="saveDefaultTabs">Lưu thay đổi</button>
-      </div>`;
+        <button type="button" class="primary" id="saveDefaultTabs">Lưu trang mở đầu</button>
+      </div></details><div id="studentTabPermissionsMount"></div>`;
     root.querySelector('.dashboard-heading').after(section);
+    window.FPTBNTabPermissions?.mount();
     const status = section.querySelector('#defaultTabStatus');
     const save = section.querySelector('#saveDefaultTabs');
     const setStatus = (message, kind='') => {
