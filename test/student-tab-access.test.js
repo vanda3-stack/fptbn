@@ -88,4 +88,8 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  assert.equal((await request('/api/ot/packs',student)).status,200);
  assert.equal((await request('/api/ot/documents',student)).status,403);
  assert.equal((await request(gradePath,'teacher')).data.grades[9].review,true);
+ grades[9].class=false;assert.equal((await request(gradePath,'teacher',{grades},'POST')).status,200);
+ assert.equal((await request(gradePath,'teacher')).data.grades[9].class,false);
+ assert.equal(c.view('9A3',9).tabs.class,false);
+ assert.equal((await request('/api/ot/packs',student)).status,200,'locking Học tại lớp does not lock independently granted review');
 });

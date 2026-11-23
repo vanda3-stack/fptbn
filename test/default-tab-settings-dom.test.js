@@ -24,11 +24,13 @@ test('grade dropdowns keep default-page radios independent of the adjacent acces
  assert.equal(doc.querySelector('[data-default-grade="6"]:checked').value,'review','unchecking access must not change the saved default selection');
  const exam=doc.querySelector('[data-default-grade="6"][value="exam"]');exam.checked=true;exam.dispatchEvent(new w.Event('change'));
  assert.equal(doc.querySelector('[data-default-label="6"]').textContent,'Thi thử');assert.equal(doc.querySelector('[data-access-grade="6"][data-tab="exam"]').checked,false,'choosing a default does not grant access');
- assert.equal(doc.querySelector('[data-access-grade="6"][data-tab="class"]').disabled,true);
+ const classroom=doc.querySelector('[data-access-grade="6"][data-tab="class"]');assert.equal(classroom.disabled,false);
+ classroom.checked=false;classroom.dispatchEvent(new w.Event('change'));
+ assert.equal(doc.querySelector('[data-default-grade="6"]:checked').value,'exam');
  await doc.querySelector('#saveDefaultTabs').onclick();assert.equal(posts.length,1);assert.equal(posts[0].url,'/api/teacher/default-tabs');assert.equal(posts[0].body.tabs[6],'exam');assert.equal(posts[0].body.grades,undefined);
  const live=doc.querySelector('[data-access-grade="6"][data-tab="live"]');live.checked=true;live.dispatchEvent(new w.Event('change'));
  await doc.querySelector('#saveGradeTabs').onclick();assert.equal(posts.length,2);assert.equal(posts[1].url,'/api/teacher/student-tab-access/grades');assert.equal(Object.keys(posts[1].body.grades).length,10);
- assert.deepEqual(posts[1].body.grades[6],{...locked,live:true});assert.equal(posts[1].body.tabs,undefined,'permission save must leave default-page preferences untouched');
+ assert.deepEqual(posts[1].body.grades[6],{...locked,class:false,live:true});assert.equal(posts[1].body.tabs,undefined,'permission save must leave default-page preferences untouched');
  await doc.querySelector('[data-teacher-space="overview"]').onclick();await doc.querySelector('[data-teacher-space="settings"]').onclick();assert.equal(doc.querySelectorAll('#defaultTabSettings').length,1);
  picker.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(picker.open,false);
 });

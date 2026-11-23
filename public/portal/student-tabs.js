@@ -13,10 +13,12 @@
     }
     let previous=0;
     function select(index, packId) {
-        if (!permissions[keys[index]]) return;
-        if (!ready && index !== 0) index = 0;
+        if (!ready) index = 0;
+        else if (index >= 0 && !permissions[keys[index]]) return;
         const join=document.getElementById('joinPage');
-        join.hidden=index!==0||ready;
+        join.hidden=ready;
+        const waiting=document.getElementById('studentTabsLocked');
+        if(waiting)waiting.hidden=!ready||index!==-1;
         if(previous===4&&index!==4)window.dispatchEvent(new Event('paper-tab-hidden'));
         if(previous===3&&index!==3)window.dispatchEvent(new Event('mock-tab-hidden'));
         if(index===3)window.dispatchEvent(new Event('mock-tab-show'));
@@ -39,6 +41,7 @@
         document.getElementById('reviewClassNotice').hidden = !(index === 1 && typeof joinedClass !== 'undefined' && joinedClass);
         visibility(index === 1);
     }
+    function fallback() {select(keys.findIndex(key=>permissions[key]));}
     // Apply grade preference after the student has gained portal access.
     let preferenceApplied = false;
     async function applyGradeDefault() {
@@ -51,27 +54,29 @@
             if (!ready || !data.success) return;
             const target = {class:0,review:1,live:2,exam:3,print:4}[data.tab];
             if (Number.isInteger(target) && permissions[keys[target]]) select(target);
+            else fallback();
         } catch (error) { console.warn('Không tải được trang mặc định:', error); }
     }
     window.addEventListener('student-portal-access', event => {
         ready = event.detail === true;
         navigation.hidden = !ready;
         if (!ready) { preferenceApplied = false; select(0); }
-        else if (requestedTab) { const index={review:1,live:2,exam:3,paper:4}[requestedTab]||0; requestedTab=null; preferenceApplied=true; select(index); }
-        else if (!preferenceApplied) { preferenceApplied = true; applyGradeDefault(); }
+        else if (requestedTab) { const index={class:0,review:1,live:2,exam:3,paper:4}[requestedTab]??0; requestedTab=null; preferenceApplied=true; if(permissions[keys[index]])select(index);else fallback(); }
+        else if (!preferenceApplied) { preferenceApplied = true; if(permissions[keys[previous]])select(previous);else fallback(); applyGradeDefault(); }
     });
     navigation.hidden = !ready;
     window.addEventListener('student-tab-access',event=>{
         const access=event.detail;
         if(!access?.tabs)return;
-        permissions={...access.tabs,class:true};
+        permissions={...access.tabs};
         tabs.forEach((tab,index)=>{
             const locked=!permissions[keys[index]];
             tab.disabled=locked;
             tab.setAttribute('aria-disabled',String(locked));
             tab.title=locked?'Đang khóa. Chờ giáo viên cấp quyền.':'';
         });
-        if(!permissions[keys[previous]])select(0);
+        if(ready&&!permissions[keys[previous]])fallback();
+        else if(!ready&&!permissions.class)panels[0].hidden=true;
     });
     window.addEventListener('portal-open-paper', event => { if(ready) select(4, event.detail?.packId); });
     tabs.forEach((tab, index) => {
@@ -81,6 +86,7 @@
             event.preventDefault();
             let next = event.key === 'Home' ? 0 : event.key === 'End' ? 4 : (index + (event.key === 'ArrowLeft' ? 4 : 1)) % 5;
             for(let attempts=0;attempts<5&&!permissions[keys[next]];attempts++)next=(next+(event.key==='ArrowLeft'||event.key==='End'?4:1))%5;
+            if(!permissions[keys[next]])return;
             select(next);
             tabs[next].focus();
         });
