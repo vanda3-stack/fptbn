@@ -32,7 +32,7 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  const db={query:async(sql,args=[])=>{
   if(sql.startsWith('SELECT id FROM teachers'))return [[{id:7}]];
   if(sql.startsWith('SELECT c.id,c.class_code,c.grade_level')){const rows=[{id:10,class_code:'9A3',grade_level:9},{id:20,class_code:'9A2',grade_level:9},{id:30,class_code:'6A1',grade_level:6}];return [Array.isArray(args[0])?rows.filter(row=>args[0].includes(row.class_code)):args.length?rows.filter(row=>row.class_code===args[0]):rows];}
-  if(sql.startsWith('SELECT s.id,s.student_code'))return [[{id:1,student_code:'FBN12345',class_code:'9A3',class_id:10,school_year_id:2}]];
+  if(sql.startsWith('SELECT s.id,s.student_code'))return [[{id:1,student_code:'FBN12345',class_code:'9A3',grade_level:9,class_id:10,school_year_id:2}]];
   return [[]];
  }};
  const app=express();app.use(express.json());
@@ -76,4 +76,16 @@ test('real HTTP routes reject direct student API access and restrict grants to t
  for(const route of ['/packs','/live/student','/exams','/documents'])assert.equal((await request('/api/ot'+route,student)).status,403,'unchecked tab must be blocked at the API: '+route);
  assert.equal((await batch({class_codes:['9A3'],changes:{review:true,live:false,exam:false,print:false}})).status,200);
  assert.equal((await request('/api/ot/packs',student)).status,200);assert.equal((await request('/api/ot/documents',student)).status,403);
+ const gradePath='/api/teacher/student-tab-access/grades';
+ assert.equal((await request(gradePath,student)).status,401);
+ assert.equal((await request(gradePath,'teacher')).data.scope,'grade');
+ const grades=Object.fromEntries([3,4,5,6,7,8,9,10,11,12].map(g=>[g,{class:true,...locked}]));
+ assert.equal((await request(gradePath,student,{grades},'POST')).status,401);
+ assert.equal((await request(gradePath,'teacher',{grades:{9:locked}},'POST')).status,400);
+ assert.equal((await request(gradePath,'teacher',{grades},'POST')).status,200);
+ for(const route of ['/packs','/live/student','/exams','/documents'])assert.equal((await request('/api/ot'+route,student)).status,403,'grade policy denies direct API access: '+route);
+ grades[9].review=true;assert.equal((await request(gradePath,'teacher',{grades},'POST')).status,200);
+ assert.equal((await request('/api/ot/packs',student)).status,200);
+ assert.equal((await request('/api/ot/documents',student)).status,403);
+ assert.equal((await request(gradePath,'teacher')).data.grades[9].review,true);
 });

@@ -4994,7 +4994,10 @@ const teachersByClass = new Map();
 const examTeachers = new Set();
 const studentTabAccess = tabAccessModule.createController({
     file:path.join(__dirname,"data","student-tab-presets.json"),
-    notify:(code,access) => io.to(getClassRoom(code)).emit("student-tab-access",access)
+    notify:(code,access) => {
+        // Students in EXAM/CLB keep the permissions of their enrolled class.
+        for(const [id,student] of students)if(normalizeClassCode(student.originalClassCode||student.classCode)===code)io.to(id).emit("student-tab-access",access);
+    }
 });
 tabAccessModule.mountRoutes(app,{db,teacherTokens:teacherLoginTokens,controller:studentTabAccess,
     isTeaching:(code,teacherId)=>isClassTeacherOnline(code) && io.sockets.sockets.get(teachersByClass.get(code))?.data.teacherId===teacherId
@@ -5191,6 +5194,7 @@ io.on(
                                 c.id,
                                 c.class_code,
                                 c.class_name,
+                                c.grade_level,
                                 sy.name AS school_year
                             FROM classes c
                             INNER JOIN school_years sy
@@ -5314,7 +5318,7 @@ io.on(
                     );
 
                     socket.to(room).emit("teacher-online");
-                    studentTabAccess.open(classCode,login.teacherId,selectedClass.id);
+                    studentTabAccess.open(classCode,login.teacherId,selectedClass.id,selectedClass.grade_level);
 
 
                 } catch (error) {
@@ -5388,6 +5392,7 @@ io.on(
                                 c.id AS class_id,
                                 c.class_code,
                                 c.class_name,
+                                c.grade_level,
                                 sy.name AS school_year
                             FROM students s
                             INNER JOIN student_enrollments se
@@ -5584,7 +5589,7 @@ io.on(
                         "class-info",
                         {
                             resumeToken:students.get(socket.id).resumeToken,
-                            tabAccess:studentTabAccess.view(originalClassCode),
+                            tabAccess:studentTabAccess.view(originalClassCode,dbStudent.grade_level),
                             classCode,
                             originalClassCode,
 

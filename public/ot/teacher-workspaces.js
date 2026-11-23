@@ -23,7 +23,6 @@
    if(!app.querySelector('.dashboard-heading'))return;
    sync();activate(space);
    if(space==='exam')app.querySelector('#mockManage')?.click();
-   if(space==='settings')await window.FPTBNTabPermissions?.load();
    app.querySelector('h1')?.focus({preventScroll:true});
   }catch(error){alert(error.message||'Chưa mở được mục này. Vui lòng thử lại.');}
   finally{navigating=false;}
@@ -41,7 +40,6 @@
    panel.innerHTML='<div class="teacher-welcome"><div><span class="tag">GIẢNG DẠY & ÔN TẬP</span><h2>Chào '+escape(sessionStorage.getItem('ot-teacher-name')||'thầy cô')+'</h2><p>Chọn công việc cần thực hiện và quản lý quyền truy cập trong buổi học.</p></div><a class="teacher-open-class" href="/x.html" target="_blank" rel="noopener">Mở lớp giám sát ↗</a></div><div class="teacher-metrics"><article><span>Đề cương đã tạo</span><strong>'+items.length+'</strong></article><article><span>Đề cương đang mở</span><strong>'+items.filter(p=>p.is_open).length+'</strong></article><article><span>Lớp trong năm học</span><strong>'+(typeof classes==='undefined'?0:classes.length)+'</strong></article></div><div class="teacher-section-title"><div><h2>Công việc thường dùng</h2><p>Điều hướng nhanh đến từng khu vực quản lý.</p></div></div><div class="teacher-shortcuts">'+spaces.filter(([id])=>id!=='overview').map(([id,label,detail])=>'<button type="button" data-shortcut="'+id+'"><span>'+detail+'</span><strong>'+label+'</strong><small>Mở khu vực →</small></button>').join('')+'</div>';
    heading.after(panel);panel.querySelectorAll('[data-shortcut]').forEach(button=>button.onclick=()=>navigate(button.dataset.shortcut));
   }
-  window.FPTBNTabPermissions?.mount();
   if(changed)activate(current==='exam'?'overview':current);
  }
  sidebar.querySelectorAll('[data-teacher-space]').forEach(button=>button.onclick=()=>navigate(button.dataset.teacherSpace));

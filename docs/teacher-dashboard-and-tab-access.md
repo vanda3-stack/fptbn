@@ -1,25 +1,23 @@
-# Giao diện GV và quyền các mục học sinh
+# Trang mặc định và quyền tab theo khối
 
-Trang `/giaovien` có thanh điều hướng gồm Tổng quan, Đề cương, Ôn tập tại lớp, Thi thử và Trang mặc định. Phần khóa/mở tab HS được gộp ngay trong Trang mặc định. Các liên kết Mở lớp giám sát, Báo cáo GVCN và Chấm bài giấy mở trang nghiệp vụ tương ứng. Các trình soạn đề, chấm bài, báo cáo, ngân hàng câu hỏi và cài đặt trang mặc định giữ các API hiện có.
+Trang `/giaovien` có thanh điều hướng Tổng quan, Đề cương, Ôn tập tại lớp, Thi thử và Trang mặc định. Quyền tab HS nằm trong **Trang mặc định**, áp dụng theo khối 3–12. Không cần chọn từng lớp.
 
-## Cấp quyền
+Mỗi khối có một danh sách thả xuống. Mỗi dòng gồm ô tròn chọn **trang mặc định**, tên tab và ô tích **Cho phép**. Hai lựa chọn độc lập:
 
-1. Vào **Trang mặc định**. Phần **Trang mở đầu theo khối** có thể mở rộng để đổi trang đầu tiên của khối 3–12. Phần **Tab học sinh được phép mở** hiển thị danh sách lớp có ô tích, chia theo khối, có thể thu gọn. Có thể tìm lớp, chọn tất cả lớp đang hiển thị hoặc bỏ chọn tất cả; nút Tải lại lấy dữ liệu mới từ máy chủ.
-2. Tích một hoặc nhiều lớp, tích các tab cho phép rồi bấm **Lưu quyền cho N lớp**. Tab được tích cho phép HS bấm vào; tab không tích bị khóa trong giờ học. Có thể dùng **Bỏ tích các tab** hoặc **Tích tất cả tab** trước khi lưu. Khi các lớp có quyền khác nhau, ô chỉ được tích nếu tất cả lớp đang chọn đều cho phép. Lần lưu ghi đầy đủ cả bốn ô tích cho toàn bộ lớp đã chọn, bao gồm cả ô không tích. Các lớp không được chọn giữ nguyên quyền.
-3. Trang mở đầu theo khối có nút **Lưu trang mở đầu** riêng. Nếu trang mở đầu bị khóa, HS ở lại Học tại lớp. Với lớp chưa mở buổi học, quyền được lưu trước và áp dụng khi GV mở lớp trên `/x.html` bằng cùng tài khoản. Với lớp đang dạy, quyền áp dụng ngay. Mỗi lớp có bộ quyền riêng.
+- Ô tròn giữ cơ chế trang mở đầu cũ: mỗi khối có đúng một trang mặc định. Bấm **Lưu trang mặc định** để lưu bằng API `/api/teacher/default-tabs`; dữ liệu `student_default_tabs` giữ nguyên.
+- Ô tích cho phép HS cả khối bấm vào tab đó; bỏ tích để khóa trong giờ học. Bấm **Lưu quyền tab** để lưu đầy đủ bốn quyền cho cả 10 khối. Thao tác này không thay đổi trang mặc định.
+- Học tại lớp luôn được phép, ô tích cố định. Nếu trang mặc định bị khóa, HS ở lại Học tại lớp.
 
-Học tại lớp luôn mở. Khi GV mở một buổi học trong 08:00 đến trước 17:00, thứ Hai–thứ Sáu theo giờ Việt Nam, hệ thống áp dụng quyền đã lưu cho GV và lớp đó. Nếu chưa lưu quyền, bốn mục còn lại mặc định khóa: Ôn tập tại nhà, Ôn tập tại lớp, Thi thử và Đề cương để in. Ngoài khung giờ này, các mục được mở để HS ôn tập bình thường. Quyền vào lớp theo giờ vẫn dùng quy định hiện có; lưu trước quyền không mở lớp và không cho HS bỏ qua điều kiện GV vào lớp.
+Quyền theo khối áp dụng trong 08:00 đến trước 17:00, thứ Hai–thứ Sáu, giờ Việt Nam. Ngoài giờ, tất cả tab được mở phục vụ ôn tập như trước. Việc cấp quyền tab không mở lớp và không thay thế điều kiện GV mở lớp để HS vào học.
 
-Danh sách có nhãn Đang dạy, Chưa mở lớp, GV khác đang dạy hoặc Đang nối lại. GV khác không được đổi quyền của phiên dạy hiện có. GV tạm mất mạng không làm mất quyền đã cấp; cần nối lại lớp trước khi đổi quyền phiên đó. Kết thúc lớp sẽ xóa phiên dạy nhưng giữ cấu hình đã lưu của từng GV, từng ID lớp. GV khác có cấu hình riêng; ID lớp mới của năm học khác không nhận cấu hình lớp năm trước.
+`GET/POST /api/teacher/student-tab-access/grades` yêu cầu phiên GV còn hạn và tài khoản đang hoạt động. Cấu hình chung cho cả khối, áp dụng cả các lớp có GV khác đang dạy. Máy chủ kiểm tra đủ khối 3–12, kiểu boolean và Học tại lớp luôn mở; lưu toàn bộ một lần trước khi phát quyền. Lưu lỗi không cập nhật từng phần.
 
-Cấu hình lưu tại `data/student-tab-presets.json`, được ghi nguyên tử và giữ qua khởi động lại. Khởi động lại máy chủ vẫn kết thúc các phiên đang dạy; cấu hình được áp dụng lại khi GV mở lớp.
+Quyền lưu bền tại trường `grades` trong `data/student-tab-presets.json`. Các cấu hình theo lớp trước đây được giữ để tương thích; khi đã lưu cấu hình khối, quyền khối được ưu tiên. Chỉ cài đặt giao diện mới chưa làm thay đổi quyền: cần bấm Lưu quyền tab. Cấu hình khối vẫn áp dụng sau khi GV mất mạng, nối lại, kết thúc lớp hoặc máy chủ khởi động lại.
 
-Lưu nhóm lớp dùng `POST /api/teacher/student-tab-access/batch`. Máy chủ kiểm tra toàn bộ lớp trong năm học hiện tại và quyền quản lý trước khi ghi cấu hình một lần. Nếu có lớp không hợp lệ, thuộc GV khác hoặc ghi file thất bại, các lớp trong nhóm không bị cập nhật từng phần. Mục Học tại lớp luôn được mở.
+Khối của HS được lấy từ lớp xếp học trong cơ sở dữ liệu trên mỗi yêu cầu API và khi kết nối lớp; không tin khối do trình duyệt truyền vào. Quyền cập nhật qua Socket.IO khi lưu, kết nối lại và tối đa 15 giây khi qua mốc giờ học. HS ở phòng EXAM/CLB vẫn nhận quyền theo lớp gốc của mình. API ôn tập, tài liệu, thi thử và ôn tập tại lớp từ chối yêu cầu của tab bị khóa.
 
-Khi tải lỗi, dữ liệu sai phiên bản hoặc hết phiên đăng nhập, giao diện xóa lựa chọn/quyền cũ và khóa nút Lưu. Trang GV gửi `Cache-Control: no-store` và dùng tên tệp mới cho thành phần ô tích để tránh dùng lại bản hộp chọn lớp cũ. Kiểm thử DOM dùng jsdom 26 (Node 18 trở lên) để kiểm tra các ô tích và trạng thái khi lỗi mà không cần điều khiển trình duyệt.
+Khóa tab đang mở đưa HS về Học tại lớp và giữ các khung bài để tiếp tục khi được mở lại. **Thời gian thi thử vẫn chạy.** Điều khiển này áp dụng cho các mục bên trong FPTBN Monitor.
 
-Máy chủ phát quyền qua Socket.IO khi đổi quyền, vào lớp hoặc kết nối lại. Đồng hồ giờ học cập nhật trạng thái giao diện trong tối đa 15 giây; API kiểm tra giờ hiện tại trên mỗi yêu cầu. API ôn tập, trò chơi, tài liệu và thi thử kiểm tra quyền dựa trên lớp xếp học được truy vấn từ cơ sở dữ liệu. Đăng nhập ôn tập và kết nối phụ huynh không bị dùng như cách cấp quyền.
+Khi tải quyền lỗi hoặc dữ liệu sai phiên bản, ô quyền và nút lưu quyền bị vô hiệu hóa; cấu hình trang mặc định vẫn dùng được nếu tải thành công. Có nút Tải lại và thông báo riêng khi chưa xác nhận được thao tác lưu. Trang GV dùng `Cache-Control: no-store` và phiên bản tài nguyên mới. Sau khi cập nhật VPS, tải lại trang GV và HS.
 
-Khi khóa mục đang hiển thị, HS trở về Học tại lớp. Các khung bài được giữ để có thể tiếp tục sau khi được mở lại; máy chủ từ chối các thao tác học của mục đang khóa. **Thời gian thi thử vẫn chạy**, kể cả khi mục Thi thử bị khóa. Quyền này kiểm soát các mục trong FPTBN Monitor.
-
-Sau khi cập nhật VPS, tải lại trang GV và HS để nhận giao diện và điều khiển quyền mới.
+Kiểm thử tự động dùng DOM thật trong jsdom để kiểm tra danh sách theo khối, ô tròn/ô tích độc lập, dữ liệu gửi đến từng API và lỗi phiên; kiểm thử HTTP kiểm tra xác thực, lưu đầy đủ, quyền API; kiểm thử bộ điều khiển kiểm tra nhiều lớp cùng khối, ngoài giờ, khởi động lại và lỗi ghi file.
