@@ -88,7 +88,7 @@ test('stale, disconnected and wrong-room teacher sockets cannot open a class; EX
 test('settings API checks an unexpired server-issued admin session and active admin before reads or writes', async t => {
     const h = fixture(t), routes = {}, tokens = new Map([['admin',{adminId:7,createdAt:Date.now()}],['expired',{adminId:7,createdAt:Date.now()-8*3600000}]]);
     let active = true;
-    mountAdminRoutes({get:(p,...handlers) => routes['GET '+p]=handlers, put:(p,...handlers) => routes['PUT '+p]=handlers}, {
+    mountAdminRoutes({get:(p,...handlers) => routes['GET '+p]=handlers, put:(p,...handlers) => routes['PUT '+p]=handlers,post:(p,...handlers) => routes['POST '+p]=handlers}, {
         policy:h.policy, adminTokens:tokens, db:{query:async () => [active ? [{id:7}] : []]}
     });
     async function request(method, token, body) {
@@ -104,6 +104,8 @@ test('settings API checks an unexpired server-issued admin session and active ad
     assert.equal((await request('PUT','admin',{enabled:'false'})).statusCode,400);
     assert.equal((await request('PUT','admin',{enabled:false})).body.settings.enabled,false);
     assert.equal((await request('GET','admin')).body.settings.enabled,false);
+    assert.equal((await request('POST','admin',{enabled:true,revisionMode:true})).body.settings.revisionMode,true);
+    assert.equal((await request('POST','fake',{revisionMode:false})).statusCode,401);
 });
 
 function loginHandler(policy) {

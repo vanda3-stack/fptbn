@@ -1716,7 +1716,7 @@ tbody tr:hover {
 .login-full-brand{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto 16px}.login-full-brand img{display:block;width:min(100%,290px);height:auto;max-height:124px;object-fit:contain}.join-card .login-full-brand img{max-height:128px}.teacher-login-card .login-full-brand img{max-height:128px}.login-card .login-full-brand img{max-height:128px}@media(max-width:500px){.login-full-brand img{width:min(100%,235px);max-height:100px}}
 </style>
 
-<link rel="stylesheet" href="/admin/admin-console.css?v=20261124">
+<link rel="stylesheet" href="/admin/admin-console.css?v=20261125-dark">
 </head>
 
 
@@ -1727,78 +1727,30 @@ tbody tr:hover {
      LOGIN
 ================================================== -->
 
-<section id="loginPage">
-
-    <div class="login-card">
-
-        <span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><div class="login-full-brand"><img src="/assets/branding/logo-full.png" alt="FPTBN Monitor"></div>
-
-        <h1>
-            Quản trị hệ thống
-        </h1>
-
-        <p class="login-description">
-            Đăng nhập vào hệ thống quản trị
-            FPTBN Monitor V3.
-        </p>
-
-
-        <form id="loginForm">
-
-
-            <div class="form-group">
-
-                <label for="username">
-                    Tài khoản
-                </label>
-
-                <input
-                    id="username"
-                    type="text"
-                    placeholder="Nhập tài khoản Admin"
-                    autocomplete="username"
-                    required
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="password">
-                    Mật khẩu
-                </label>
-
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="Nhập mật khẩu"
-                    autocomplete="current-password"
-                    required
-                >
-
-            </div>
-
-
-            <button
-                id="loginButton"
-                class="login-button"
-                type="submit"
-            >
-                Đăng nhập
-            </button>
-
-
-            <div id="loginMessage"></div>
-
-
-        </form>
-
+<section id="loginPage" aria-labelledby="adminLoginTitle">
+    <div class="admin-login-layout">
+        <aside class="admin-login-intro">
+            <img class="login-school-logo" src="/assets/branding/logo_fpt_school.png" alt="FPT Schools">
+            <div class="login-product"><img src="/assets/branding/logo-icon.png" alt=""><span>FPTBN <strong>MONITOR</strong></span></div>
+            <span class="login-eyebrow">KHÔNG GIAN QUẢN TRỊ</span>
+            <h2>Quản trị hoạt động<br> dạy và học.</h2>
+            <p>Quản lý dữ liệu người dùng, quyền truy cập và theo dõi hoạt động của hệ thống trong một không gian thống nhất.</p>
+            <div class="login-features"><span><b>01</b>Tài khoản & lớp học</span><span><b>02</b>Quyền truy cập học sinh</span><span><b>03</b>Thống kê & báo cáo</span></div>
+        </aside>
+        <div class="login-card">
+            <span class="login-card-kicker">FPTBN MONITOR</span>
+            <h1 id="adminLoginTitle">Đăng nhập admin</h1>
+            <p class="login-description">Sử dụng tài khoản quản trị của hệ thống.</p>
+            <form id="loginForm">
+                <div class="form-group"><label for="username">Tài khoản</label><input id="username" type="text" placeholder="Nhập tài khoản admin" autocomplete="username" spellcheck="false" required></div>
+                <div class="form-group"><label for="password">Mật khẩu</label><div class="admin-password-field"><input id="password" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required><button id="adminPasswordToggle" type="button" aria-controls="password" aria-pressed="false">Hiện</button></div></div>
+                <button id="loginButton" class="login-button" type="submit">Đăng nhập</button>
+                <div id="loginMessage" role="alert" aria-live="polite"></div>
+            </form>
+            <a class="login-back" href="/giaovien">Về trang giáo viên ↗</a>
+        </div>
     </div>
-
 </section>
-
-
 
 <!-- ==================================================
      ADMIN APP
@@ -1812,14 +1764,7 @@ tbody tr:hover {
     <aside class="sidebar">
 
 
-        <div class="brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><h2>FPTBN Monitor</h2>
-
-            <p>
-                Quản trị hệ thống
-            </p>
-
-        </div>
-
+        <div class="brand"><span class="sidebar-eyebrow">KHÔNG GIAN QUẢN TRỊ</span><p>Quản lý dạy và học</p></div>
 
         <nav class="menu" aria-label="Điều hướng quản trị">
 
@@ -1915,7 +1860,7 @@ tbody tr:hover {
 
             <br>
 
-            Admin System
+            Quản trị dạy và học
 
         </div>
 
@@ -1934,18 +1879,8 @@ tbody tr:hover {
         <header class="topbar">
 
 
-            <div class="topbar-title">
-
-                <h1 id="topTitle">
-                    Tổng quan
-                </h1>
-
-                <p>
-                    <img src="/assets/branding/logo-horizontal.png" alt="FPTBN Monitor" class="fptbn-admin-horizontal">
-                </p>
-
-            </div>
-
+            <a href="/admin/" class="admin-wordmark"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools"><span><strong>FPTBN MONITOR</strong><small>Không gian quản trị</small></span></a>
+            <div class="topbar-title"><span>QUẢN TRỊ HỆ THỐNG</span><h1 id="topTitle">Tổng quan</h1></div>
 
             <div class="admin-info">
 
@@ -2110,22 +2045,21 @@ tbody tr:hover {
                         <p>Áp dụng cho tất cả lớp theo giờ Việt Nam.</p>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <form id="classroomAccessForm">
-                            <label class="revision-toggle"><input id="revisionPeriodEnabled" type="checkbox" disabled><span><strong>Thời gian ôn thi</strong><small>Bật để HS vào bất kỳ lúc nào, không cần GV mở lớp; tất cả tab được mở phục vụ ôn tập. Tắt để áp dụng lại lịch và quyền tab đã lưu.</small></span><span id="revisionPeriodState" class="mode-state">Đang tải</span></label>
-                            <label style="display:flex;gap:12px;align-items:flex-start;line-height:1.6;cursor:pointer">
-                                <input id="classroomAccessEnabled" type="checkbox" disabled style="width:20px;height:20px;flex-shrink:0;margin-top:3px">
-                                <span><strong>Yêu cầu giáo viên mở lớp trong giờ học</strong><br>
-                                Từ 08:00 đến trước 17:00, thứ Hai đến thứ Sáu, học sinh chỉ vào được khi giáo viên đã mở đúng lớp và đang kết nối.</span>
-                            </label>
-                            <p style="margin:16px 0;line-height:1.6">Trước 08:00, từ 17:00 trở đi và cả ngày thứ Bảy, Chủ nhật, học sinh được vào bình thường để ôn tập. Giáo viên mở lớp bằng thao tác vào lớp trên trang giáo viên.</p>
-                            <button id="classroomAccessSave" class="btn btn-primary" type="submit" disabled>Lưu cài đặt</button>
-                            <button id="classroomAccessReload" class="btn" type="button">Tải lại</button>
-                            <p id="classroomAccessMessage" role="status" aria-live="polite" style="margin-top:12px;line-height:1.6"></p>
-                        </form>
+                <form id="classroomAccessForm" class="access-settings-form">
+                    <div class="access-settings-grid">
+                        <label class="access-setting revision-toggle" for="revisionPeriodEnabled">
+                            <span class="setting-copy"><span class="setting-kicker">01 · ÔN THI</span><strong>Thời gian ôn thi</strong><small>HS được vào bất kỳ lúc nào, không cần GV mở lớp. Tất cả tab được mở để ôn tập.</small><span id="revisionPeriodState" class="mode-state">Chưa tải</span></span>
+                            <input id="revisionPeriodEnabled" class="setting-switch" type="checkbox" role="switch" disabled>
+                        </label>
+                        <label class="access-setting" for="classroomAccessEnabled">
+                            <span class="setting-copy"><span class="setting-kicker">02 · TRONG GIỜ HỌC</span><strong>Yêu cầu giáo viên mở lớp</strong><small>Từ 08:00 đến trước 17:00, thứ Hai–thứ Sáu, HS chỉ vào được khi GV mở đúng lớp và đang kết nối.</small><span id="classroomAccessState" class="mode-state">Chưa tải</span></span>
+                            <input id="classroomAccessEnabled" class="setting-switch" type="checkbox" role="switch" disabled>
+                        </label>
                     </div>
-                </div>
+                    <section id="classroomAccessSummaryPanel" class="access-summary" aria-live="polite"><span class="setting-kicker" id="classroomAccessSummaryTitle">CHẾ ĐỘ ĐANG ÁP DỤNG</span><p id="classroomAccessSummary">Tải cài đặt để xem quy định truy cập hiện tại.</p></section>
+                    <div class="access-settings-footer"><p>Ngoài giờ học và cuối tuần, HS được ôn tập bình thường. Quyền từng tab được quản lý tại <button type="button" class="inline-link" onclick="openAdminPage('portal')">Trang mặc định & quyền HS</button>.</p><div class="access-settings-actions"><button id="classroomAccessReload" class="btn btn-light" type="button">Tải lại</button><button id="classroomAccessSave" class="btn btn-primary" type="submit" disabled>Lưu thay đổi</button></div></div>
+                    <p id="classroomAccessMessage" class="access-message" role="status" aria-live="polite"></p>
+                </form>
             </section>
 
             <section id="page-portal" class="page"><div class="page-header"><div><div class="admin-kicker">Cấu hình cổng học sinh</div><h2>Trang mặc định & quyền HS</h2><p>Quản lý theo khối 3–12. Trang mở đầu và quyền truy cập được lưu độc lập.</p></div></div><div id="adminDefaultTabsMount"></div></section>
@@ -8660,10 +8594,10 @@ async function importSchoolExcel() {
 }
 </script>
 
-<script src="/js/classroom-access-admin.js?v=20261124"></script>
+<script src="/js/classroom-access-admin.js?v=20261125-post"></script>
 <script src="/admin/portal-settings.js?v=20261124"></script>
 <script src="/admin/analytics.js?v=20261124"></script>
-<script src="/admin/admin-shell.js?v=20261124"></script>
+<script src="/admin/admin-shell.js?v=20261125-dark"></script>
 
 </body>
 

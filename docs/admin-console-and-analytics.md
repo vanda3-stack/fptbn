@@ -16,7 +16,7 @@ API mới: `GET/POST /api/admin/default-tabs`, `GET/POST /api/admin/student-tab-
 
 ## Thời gian ôn thi
 
-`revisionMode` mặc định false, lưu cùng `enabled` trong `data/classroom-access.json`. File cũ không có trường này được hiểu là tắt. `PUT /api/admin/classroom-access` nhận hai boolean hoặc cập nhật riêng một trường; ghi file nguyên tử trước khi áp dụng.
+`revisionMode` mặc định false, lưu cùng `enabled` trong `data/classroom-access.json`. File cũ không có trường này được hiểu là tắt. `POST /api/admin/classroom-access` nhận hai boolean hoặc cập nhật riêng một trường; ghi file nguyên tử trước khi áp dụng.
 
 - **Bật**: HS được vào bất kỳ thời điểm nào mà không cần GV mở lớp; cả năm tab được mở phục vụ ôn tập. Không bỏ xác thực mã HS, lớp hiện tại hoặc quy tắc một phiên HS đang hoạt động.
 - **Tắt**: khôi phục điều kiện GV mở lớp từ 08:00 đến trước 17:00 thứ Hai–thứ Sáu và quyền tab đã lưu; ngoài giờ vẫn ôn tập bình thường. Nếu admin đã tắt riêng quy định GV mở lớp, công tắc đó vẫn giữ trạng thái cũ.
@@ -54,4 +54,15 @@ Báo cáo là số liệu tổng hợp, không xuất danh sách định danh c�
 
 Kiểm thử DOM khởi chạy toàn bộ inline admin cũ cùng mã mới, kiểm tra token, menu, quyền theo khối, toggle, render báo cáo, escaping, khóa xuất khi lỗi/đổi lọc và xóa dữ liệu lúc đăng xuất. Kiểm thử HTTP kiểm tra admin/GV/phiên hết hạn/khóa tài khoản, API cũ không vượt quyền, cài đặt độc lập và CSV không xuất khi lỗi. Kiểm thử policy kiểm tra bật/tắt ôn thi, khởi động lại và rollback khi lỗi ghi file. Truy vấn thống kê kiểm tra tham số phạm vi, mẫu số, mốc ngày và chống tính trùng lưu trữ.
 
-Chưa chạy truy vấn trên CSDL VPS hoặc kiểm tra giao diện bằng trình duyệt thật trong phiên sửa mã này. Sau triển khai, admin đăng nhập lại, thử một khoảng ngắn và đối chiếu một lớp/đề thi với báo cáo GV trước khi dùng làm minh chứng cuộc thi.
+Truy vấn thống kê chưa được chạy trên CSDL VPS trong phiên sửa mã. Sau triển khai, admin đăng nhập lại, thử một khoảng ngắn và đối chiếu một lớp/đề thi với báo cáo GV trước khi dùng làm minh chứng cuộc thi.
+
+
+## Giao diện admin và tương thích máy chủ web
+
+Giao diện đăng nhập và bên trong admin dùng nền navy, menu có mô tả, thanh thương hiệu và các thẻ nội dung thống nhất với không gian GV. Trang đăng nhập giữ nguyên API/tài khoản, thêm nút Hiện/Ẩn mật khẩu và trạng thái bàn phím/đọc màn hình. Cài đặt truy cập có hai công tắc, bản xem trước chưa lưu và tóm tắt quy định đang áp dụng.
+
+Kiểm tra không đăng nhập ngày 25/11/2026 cho thấy LiteSpeed trả 403 HTML với PUT tới `/api/admin/classroom-access`, còn POST đi đến ứng dụng và nhận 401 JSON. Không gửi token hoặc ghi cài đặt thật trong phép kiểm tra này.
+
+Máy chủ bổ sung POST có cùng xác thực admin và xử lý lưu như PUT. Client dùng POST trực tiếp, không tự thử lại một thao tác ghi lỗi/chưa xác nhận. Sau phản hồi lưu, client gọi GET để đối chiếu đủ `enabled` và `revisionMode` với yêu cầu. Nếu không đọc xác nhận được, khóa chỉnh sửa cho đến khi Tải lại thành công. Nếu đọc ra trạng thái khác do thay đổi đồng thời, hiển thị trạng thái thực tế thay vì báo lưu đúng lựa chọn. Nút Lưu chỉ mở khi đã tải được cài đặt và có thay đổi.
+
+Đã kiểm tra Chrome headless với hồ sơ riêng, dữ liệu giả lập localhost, viewport 1440px và 390px: đăng nhập, tổng quan, cài đặt, cấu hình theo khối; không tràn ngang. Đã thao tác lưu trên fixture có proxy chặn PUT và xác nhận thành công bằng POST rồi GET. Chưa lưu bằng tài khoản admin thật trên VPS. CI chỉ kiểm thử, không tự triển khai.

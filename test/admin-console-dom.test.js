@@ -41,3 +41,21 @@ test('analytics renders aggregates safely, invalidates exports after filter edit
  failed=true;doc.getElementById('analyticsFilters').dispatchEvent(new w.Event('submit',{cancelable:true}));await settle();assert.equal(doc.getElementById('analyticsReport').hidden,true);assert.equal(doc.getElementById('analyticsExport').disabled,true);assert.match(doc.getElementById('analyticsStatus').textContent,/Lỗi dữ liệu/);
  w.dispatchEvent(new w.Event('fptbn-admin-logout'));assert.equal(doc.getElementById('analyticsReport').children.length,0);
 });
+
+test('redesigned login preserves credential submission, accessible password visibility and login/logout transitions',async t=>{
+ const {w,doc}=fixture(t),calls=[];
+ w.fetch=async(url,options={})=>{
+  calls.push({url,options});const json=url==='/api/admin/login'?JSON.parse(options.body):null;
+  const denied=json&&json.password!=='fixture-pass';
+  const data=json?(denied?{success:false,message:'Tài khoản hoặc mật khẩu không đúng.'}:{success:true,token:'new-fixture-admin',admin:{id:1,full_name:'Admin kiểm thử'}}):url.includes('student-tab-access')?{success:true,scope:'grade',grades}:url.includes('default-tabs')?{success:true,tabs:Object.fromEntries(Object.keys(grades).map(g=>[g,'review']))}:url.includes('/analytics/health')?{success:true,runtime:{database_ms:1}}:{success:true,students:[],teachers:[],classes:[],school_years:[{id:2,name:'2026-2027',is_current:1}]};
+  return{status:denied?401:200,ok:!denied,headers:{get:()=> 'application/json'},json:async()=>data};
+ };
+ w.eval(script('admin-api.js'));for(const el of doc.querySelectorAll('script:not([src])'))w.eval(el.textContent);w.eval(script('admin-shell.js'));w.eval(script('portal-settings.js'));
+ const password=doc.getElementById('password'),toggle=doc.getElementById('adminPasswordToggle');
+ doc.getElementById('username').value='sample-admin';password.value='wrong-fixture';toggle.click();assert.equal(password.type,'text');assert.equal(toggle.getAttribute('aria-pressed'),'true');assert.equal(password.value,'wrong-fixture');
+ doc.getElementById('loginForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await settle();assert.match(doc.getElementById('loginMessage').textContent,/không đúng/);assert.equal(w.sessionStorage.getItem('fptbnAdminToken'),null);assert.notEqual(doc.getElementById('loginPage').style.display,'none');
+ password.value='fixture-pass';doc.getElementById('loginForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await settle();
+ assert.equal(w.sessionStorage.getItem('fptbnAdminToken'),'new-fixture-admin');assert.equal(password.type,'password');assert.equal(password.value,'');assert.equal(doc.getElementById('adminApp').style.display,'block');assert.equal(doc.getElementById('loginPage').style.display,'none');
+ const login=calls.filter(c=>c.url==='/api/admin/login');assert.equal(login.length,2);assert.deepEqual(JSON.parse(login[1].options.body),{username:'sample-admin',password:'fixture-pass'});
+ w.logout();assert.equal(password.type,'password');assert.equal(password.value,'');assert.equal(toggle.getAttribute('aria-pressed'),'false');
+});
