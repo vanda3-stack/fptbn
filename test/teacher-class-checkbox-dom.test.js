@@ -72,7 +72,8 @@ test('HTML failures, expired sessions and legacy data cannot leave stale rights 
 test('teacher entry document uses grade settings and no longer loads the class checkbox component',()=>{
  const html=fs.readFileSync('public/GV.html','utf8');
  assert.doesNotMatch(html,/teacher-tab-access-multi\.js/);
- assert.match(html,/default-tabs-settings\.js\?v=20261123-grade-class/);
+ assert.doesNotMatch(html,/default-tabs-settings\.js/);
+ assert.match(fs.readFileSync('public/admin/index.html','utf8'),/admin\/portal-settings\.js/);
  assert.doesNotMatch(html,/src="\/ot\/teacher-tab-access\.js/);
 });
 

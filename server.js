@@ -20,7 +20,13 @@ setInterval(() => {
     }
 }, 60000).unref();
 
+const adminAuth=require('./lib/admin-auth')({db,adminTokens:adminLoginTokens});
+const analyticsModule=require('./lib/admin-analytics');
+const activityAnalytics=analyticsModule.createService({db,getRuntime:()=>analyticsModule.runtimeSnapshot({
+    students,teachersByClass,examTeachers,sockets:io.sockets.sockets,connections:io.engine.clientsCount
+})});
 const app = express();
+app.use((req,res,next)=>{activityAnalytics.observe(req,res);next();});
 const server = http.createServer(app);
 
 // Application flood protection. Edge/network DDoS protection is still required.
@@ -136,6 +142,14 @@ app.use("/api/ot", express.json({ limit: "1mb" }));
 app.use("/api/scan", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "64kb" }));
 
+// Every admin API, including legacy data management, requires a server-issued session.
+app.use('/api/admin',(req,res,next)=>req.path==='/login'?next():adminAuth(req,res,next));
+app.post('/api/admin/logout',(req,res)=>{
+    const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'').trim();
+    adminLoginTokens.delete(token);res.json({success:true});
+});
+analyticsModule.mountRoutes(app,{service:activityAnalytics,admin:adminAuth});
+app.get(['/admin','/admin/','/admin/index.html'],(req,res)=>{res.set('Cache-Control','no-store');res.sendFile(path.join(__dirname,'public/admin/index.html'));});
 require("./lib/review-pages")(app, {path, root: __dirname});
 app.get("/scan", (req, res) => {res.set("Cache-Control", "no-store");res.sendFile(path.join(__dirname, "public/scan.html"));});
 app.get(["/giaovien", "/GV.html"], (req, res) => {res.set("Cache-Control", "no-store");res.sendFile(path.join(__dirname, "public/GV.html"));});
@@ -4591,7 +4605,7 @@ app.patch(
 
 const teacherLoginTokens = new Map();
 require("./lib/scan")(app, { db, teacherTokens: teacherLoginTokens });
-require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens });
+require("./lib/student-default-tabs")(app, { db, teacherTokens: teacherLoginTokens, adminTokens:adminLoginTokens });
 const revisionModule = require("./lib/ot")(app, { db, teacherTokens: teacherLoginTokens, io,
     assertStudentTabAccess: (student, route) => studentTabAccess.assert(student, route),
     isParentViewingBlocked: child => {
@@ -4688,6 +4702,7 @@ app.post("/api/teacher/login", async (req, res) => {
         );
 
 
+        req.activityActor={role:'teacher',id:teacher.id};
         res.json({
             success: true,
             token,
@@ -4916,6 +4931,7 @@ app.post("/api/student/login", async (req, res) => {
 
         const access = classroomAccess.check(clbRoom.studentRoom(req.body, student.class_code));
         if (!access.allowed) return res.status(403).json({success:false, code:access.code, message:access.message});
+        req.activityActor={role:'student',id:student.student_id,classId:student.class_id};
 
         res.json({
 
@@ -4994,12 +5010,13 @@ const teachersByClass = new Map();
 const examTeachers = new Set();
 const studentTabAccess = tabAccessModule.createController({
     file:path.join(__dirname,"data","student-tab-presets.json"),
+    bypass:()=>classroomAccess.settings().revisionMode,
     notify:(code,access) => {
         // Students in EXAM/CLB keep the permissions of their enrolled class.
         for(const [id,student] of students)if(normalizeClassCode(student.originalClassCode||student.classCode)===code)io.to(id).emit("student-tab-access",access);
     }
 });
-tabAccessModule.mountRoutes(app,{db,teacherTokens:teacherLoginTokens,controller:studentTabAccess,
+tabAccessModule.mountRoutes(app,{db,teacherTokens:teacherLoginTokens,adminTokens:adminLoginTokens,controller:studentTabAccess,
     isTeaching:(code,teacherId)=>isClassTeacherOnline(code) && io.sockets.sockets.get(teachersByClass.get(code))?.data.teacherId===teacherId
 });
 setInterval(()=>studentTabAccess.refresh(),15000).unref();
@@ -5013,7 +5030,8 @@ function isClassTeacherOnline(classCode) {
 }
 const classroomAccess = classroomAccessModule.createPolicy({
     file:path.join(__dirname, "data", "classroom-access.json"),
-    isTeacherOnline:isClassTeacherOnline
+    isTeacherOnline:isClassTeacherOnline,
+    onChange:()=>studentTabAccess.refresh()
 });
 classroomAccessModule.mountAdminRoutes(app, {db, adminTokens:adminLoginTokens, policy:classroomAccess});
 

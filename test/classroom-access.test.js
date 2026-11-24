@@ -213,3 +213,12 @@ test('successful admin login issues a new opaque session token without changing 
     assert.equal(adminLoginTokens.get(allowed.body.token).adminId,7);
     assert.equal(allowed.body.admin.password_hash,undefined);
 });
+
+test('revision mode permits both HTTP and direct socket entry during school hours without a teacher',async t=>{
+    const h=fixture(t);h.policy.save({revisionMode:true});
+    assert.equal((await loginHandler(h.policy)({student_code:'FBN12345'})).statusCode,200);
+    const s=socketHandler(h.policy);await s.join({});assert.deepEqual(s.rooms,['class:9A3']);
+    h.policy.save({revisionMode:false});
+    assert.equal((await loginHandler(h.policy)({student_code:'FBN12345'})).statusCode,403);
+    const blocked=socketHandler(h.policy);await blocked.join({});assert.equal(blocked.rooms.length,0);
+});

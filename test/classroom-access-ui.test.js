@@ -4,9 +4,9 @@ const fs = require('node:fs'), vm = require('node:vm');
 
 function admin({token='admin',failure=false}={}) {
     const nodes={}, calls=[];
-    const element=id => nodes[id] ||= {disabled:false,checked:false,style:{},handlers:{},addEventListener(type,handler){this.handlers[type]=handler;}};
-    const context={sessionStorage:{getItem:()=>token}, document:{getElementById:element,querySelector:()=>element('menu')},
-        fetch:async(url,options)=>{calls.push({url,options});return {ok:!failure,json:async()=>failure?{success:false,message:'Phiên hết hạn'}:{success:true,settings:{enabled:options.method==='PUT'?JSON.parse(options.body).enabled:true}}};}};
+    const element=id => nodes[id] ||= {disabled:false,checked:false,style:{},dataset:{},handlers:{},addEventListener(type,handler){this.handlers[type]=handler;}};
+    const context={window:{addEventListener(){}},sessionStorage:{getItem:()=>token}, document:{getElementById:element,querySelector:()=>element('menu')},
+        fetch:async(url,options)=>{calls.push({url,options});return {ok:!failure,json:async()=>failure?{success:false,message:'Phiên hết hạn'}:{success:true,settings:{enabled:options.method==='PUT'?JSON.parse(options.body).enabled:true,revisionMode:options.method==='PUT'?JSON.parse(options.body).revisionMode:false}}};}};
     vm.runInNewContext(fs.readFileSync('public/js/classroom-access-admin.js','utf8'),context);
     return {nodes,calls,load:()=>element('menu').handlers.click(),save:()=>element('classroomAccessForm').handlers.submit({preventDefault(){}})};
 }
@@ -15,7 +15,8 @@ test('admin loads the server setting before editing, saves an explicit toggle an
     const h=admin();await h.save();assert.equal(h.calls.length,0);
     await h.load();assert.equal(h.nodes.classroomAccessEnabled.checked,true);assert.equal(h.nodes.classroomAccessSave.disabled,false);
     assert.equal(h.calls[0].options.headers.Authorization,'Bearer admin');assert.equal(h.calls[0].options.cache,'no-store');
-    h.nodes.classroomAccessEnabled.checked=false;await h.save();
+    h.nodes.classroomAccessEnabled.checked=false;h.nodes.revisionPeriodEnabled.checked=true;await h.save();
+    assert.equal(JSON.parse(h.calls.at(-1).options.body).revisionMode,true);assert.equal(h.nodes.revisionPeriodState.textContent,'Đang bật');
     assert.equal(JSON.parse(h.calls.at(-1).options.body).enabled,false);
     assert.match(h.nodes.classroomAccessMessage.textContent,/Đã lưu/);
 });

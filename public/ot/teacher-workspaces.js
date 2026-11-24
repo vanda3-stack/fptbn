@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const app=document.getElementById('app');if(!app)return;
- const spaces=[['overview','Tổng quan','Không gian làm việc'],['outline','Đề cương','Tài liệu và kết quả'],['live','Ôn tập tại lớp','Câu hỏi và trò chơi'],['exam','Thi thử','Đề thi và chấm điểm'],['settings','Trang mặc định','Trang mở đầu và quyền tab HS']];
+ const spaces=[['overview','Tổng quan','Không gian làm việc'],['outline','Đề cương','Tài liệu và kết quả'],['live','Ôn tập tại lớp','Câu hỏi và trò chơi'],['exam','Thi thử','Đề thi và chấm điểm']];
  const labels=Object.fromEntries(spaces.map(([id,label])=>[id,label]));
  const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const sidebar=document.createElement('aside');sidebar.id='teacherSidebar';sidebar.hidden=true;sidebar.setAttribute('aria-label','Điều hướng giáo viên');
@@ -9,14 +9,14 @@
  document.body.append(sidebar);
  let current='overview',lastHeading=null,navigating=false;
  function activate(space){
-  if(space==='permissions')space='settings';
+  if(space==='permissions'||space==='settings')space='overview';
   current=space;app.dataset.workspace=space;
   sidebar.querySelectorAll('[data-teacher-space]').forEach(button=>{const active=button.dataset.teacherSpace===space;button.classList.toggle('active',active);button.setAttribute('aria-current',active?'page':'false');});
   const title=app.querySelector('.dashboard-heading h1');
   if(title&&title.textContent!==labels[space])title.textContent=labels[space]||'Quản lý giảng dạy';
  }
  async function navigate(space){
-  if(space==='permissions')space='settings';
+  if(space==='permissions'||space==='settings')space='overview';
   if(navigating)return;navigating=true;
   try{
    if(!app.querySelector('.dashboard-heading'))await dashboard();

@@ -13,7 +13,7 @@
 >
 
 <title>
-    FPTBN Monitor V3 - Admin
+    FPTBN Monitor · Quản trị hệ thống
 </title>
 
 
@@ -1716,6 +1716,7 @@ tbody tr:hover {
 .login-full-brand{display:flex;justify-content:center;align-items:center;width:100%;margin:0 auto 16px}.login-full-brand img{display:block;width:min(100%,290px);height:auto;max-height:124px;object-fit:contain}.join-card .login-full-brand img{max-height:128px}.teacher-login-card .login-full-brand img{max-height:128px}.login-card .login-full-brand img{max-height:128px}@media(max-width:500px){.login-full-brand img{width:min(100%,235px);max-height:100px}}
 </style>
 
+<link rel="stylesheet" href="/admin/admin-console.css?v=20261124">
 </head>
 
 
@@ -1814,13 +1815,13 @@ tbody tr:hover {
         <div class="brand"><span class="school-identity"><img src="/assets/branding/logo_fpt_school.png" alt="FPT Schools" onerror="this.style.display='none'"><strong class="school-name-fallback">FPT <em>SCHOOLS</em></strong></span><h2>FPTBN Monitor</h2>
 
             <p>
-                Administration · V3
+                Quản trị hệ thống
             </p>
 
         </div>
 
 
-        <nav class="menu">
+        <nav class="menu" aria-label="Điều hướng quản trị">
 
 
             <div class="menu-title">
@@ -1898,6 +1899,9 @@ tbody tr:hover {
             </div>
 
 
+            <div class="menu-item" data-page="analytics" role="button" tabindex="0"><span>▥</span><span class="menu-label">Thống kê & báo cáo</span></div>
+            <div class="menu-title">CẤU HÌNH HỆ THỐNG</div>
+            <div class="menu-item" data-page="portal" role="button" tabindex="0"><span>☷</span><span class="menu-label">Trang mặc định & quyền HS</span></div>
             <div class="menu-item" data-page="settings">
                 <span>⚙</span>
                 <span class="menu-label">Cài đặt</span>
@@ -2076,11 +2080,11 @@ tbody tr:hover {
                         <div class="card-body">
                             <div class="system-row">
                                 <span>Máy chủ</span>
-                                <span class="system-ok"><span class="system-dot"></span>Hoạt động</span>
+                                <span id="adminServerStatus">Chưa kiểm tra</span>
                             </div>
                             <div class="system-row">
                                 <span>Cơ sở dữ liệu</span>
-                                <span class="system-ok"><span class="system-dot"></span>Kết nối</span>
+                                <span id="adminDatabaseStatus">Chưa kiểm tra</span>
                             </div>
                             <div class="system-row">
                                 <span>API học sinh</span>
@@ -2102,13 +2106,14 @@ tbody tr:hover {
                 <div class="page-header">
                     <div>
                         <div class="admin-kicker">Cài đặt hệ thống</div>
-                        <h2>Quy định học sinh vào lớp</h2>
+                        <h2>Cài đặt truy cập</h2>
                         <p>Áp dụng cho tất cả lớp theo giờ Việt Nam.</p>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-body">
                         <form id="classroomAccessForm">
+                            <label class="revision-toggle"><input id="revisionPeriodEnabled" type="checkbox" disabled><span><strong>Thời gian ôn thi</strong><small>Bật để HS vào bất kỳ lúc nào, không cần GV mở lớp; tất cả tab được mở phục vụ ôn tập. Tắt để áp dụng lại lịch và quyền tab đã lưu.</small></span><span id="revisionPeriodState" class="mode-state">Đang tải</span></label>
                             <label style="display:flex;gap:12px;align-items:flex-start;line-height:1.6;cursor:pointer">
                                 <input id="classroomAccessEnabled" type="checkbox" disabled style="width:20px;height:20px;flex-shrink:0;margin-top:3px">
                                 <span><strong>Yêu cầu giáo viên mở lớp trong giờ học</strong><br>
@@ -2123,6 +2128,11 @@ tbody tr:hover {
                 </div>
             </section>
 
+            <section id="page-portal" class="page"><div class="page-header"><div><div class="admin-kicker">Cấu hình cổng học sinh</div><h2>Trang mặc định & quyền HS</h2><p>Quản lý theo khối 3–12. Trang mở đầu và quyền truy cập được lưu độc lập.</p></div></div><div id="adminDefaultTabsMount"></div></section>
+            <section id="page-analytics" class="page"><div class="page-header"><div><div class="admin-kicker">Dữ liệu hoạt động</div><h2>Thống kê & báo cáo</h2><p>Theo dõi mức sử dụng, hoạt động học tập và xuất số liệu tổng hợp.</p></div></div>
+                <form id="analyticsFilters" class="analytics-filters"><label>Từ ngày<input id="analyticsFrom" name="from" type="date" required></label><label>Đến ngày<input id="analyticsTo" name="to" type="date" required></label><label>Năm học<select id="analyticsYear" name="year"><option value="">Năm hiện tại</option></select></label><label>Khối<select id="analyticsGrade" name="grade"><option value="">Tất cả khối</option><option value="3">Khối 3</option><option value="4">Khối 4</option><option value="5">Khối 5</option><option value="6">Khối 6</option><option value="7">Khối 7</option><option value="8">Khối 8</option><option value="9">Khối 9</option><option value="10">Khối 10</option><option value="11">Khối 11</option><option value="12">Khối 12</option></select></label><button type="submit" class="btn btn-primary" id="analyticsLoad">Xem thống kê</button><button type="button" class="btn btn-light" id="analyticsExport" disabled>Xuất CSV báo cáo</button></form>
+                <p id="analyticsStatus" role="status" aria-live="polite"></p><div id="analyticsReport" hidden></div>
+            </section>
             <!-- ==========================================
                  STUDENTS
             =========================================== -->
@@ -3411,6 +3421,7 @@ tbody tr:hover {
 
 
 
+<script src="/admin/admin-api.js?v=20261124"></script>
 <script>
 
 /* ==================================================
@@ -3616,6 +3627,8 @@ function showAdmin(admin) {
     }
 
 
+    openAdminPage('dashboard');
+    window.dispatchEvent(new Event('fptbn-admin-ready'));
     loadStudents();
     loadDashboardSummary();
     loadCurrentSchoolYear();
@@ -3627,7 +3640,8 @@ function showAdmin(admin) {
 ================================================== */
 
 function logout() {
-
+    if(sessionStorage.getItem('fptbnAdminToken'))void fetch('/api/admin/logout',{method:'POST'}).catch(()=>{});
+    window.dispatchEvent(new Event('fptbn-admin-logout'));
     sessionStorage.removeItem("fptbnAdminToken");
     sessionStorage.removeItem(
         "fptbnAdmin"
@@ -3675,8 +3689,9 @@ const pageTitles = {
 
     years:
         "Năm học",
-    settings:
-        "Cài đặt"
+    portal: "Trang mặc định & quyền HS",
+    analytics: "Thống kê & báo cáo",
+    settings: "Cài đặt truy cập"
 
 };
 
@@ -7252,6 +7267,7 @@ function clearTeacherMessage() {
         }
 
 
+        if(!sessionStorage.getItem('fptbnAdminToken')){sessionStorage.removeItem('fptbnAdmin');return;}
         const admin =
             JSON.parse(
                 saved
@@ -8644,7 +8660,10 @@ async function importSchoolExcel() {
 }
 </script>
 
-<script src="/js/classroom-access-admin.js"></script>
+<script src="/js/classroom-access-admin.js?v=20261124"></script>
+<script src="/admin/portal-settings.js?v=20261124"></script>
+<script src="/admin/analytics.js?v=20261124"></script>
+<script src="/admin/admin-shell.js?v=20261124"></script>
 
 </body>
 
